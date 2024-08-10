@@ -10,7 +10,7 @@ namespace JLL
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.0.0";
+        private const string modVersion = "1.1.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -29,6 +29,7 @@ namespace JLL
 
             harmony.PatchAll(typeof(ItemChargerPatch));
             harmony.PatchAll(typeof(TimeOfDayPatch));
+            harmony.PatchAll(typeof(HudManagerPatch));
         }
     }
 }
