@@ -2,9 +2,8 @@
 
 namespace JLL.Components
 {
-    internal class ChargeLimiter : MonoBehaviour
+    public class ChargeLimiter : MonoBehaviour
     {
-
         public int charges = 1;
         public InteractTrigger trigger;
 
