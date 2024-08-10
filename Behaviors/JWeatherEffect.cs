@@ -7,5 +7,10 @@ namespace JLL.Behaviors
         public abstract string getSceneName();
 
         public abstract void applyEffects(TimeOfDay timeOfDay, Random random);
+
+        public virtual void removeEffects(TimeOfDay timeOfDay)
+        {
+
+        }
     }
 }
