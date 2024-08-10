@@ -18,19 +18,6 @@ namespace JLL.Patches
                 {
                     JLLBase.Instance.mls.LogInfo("Found Limiter");
                     limiter.Charge();
-                } 
-                else
-                {
-                /*
-                    JLLBase.Instance.mls.LogInfo("Creating Limiter");
-                    ChargeLimiter limiter2 = child.gameObject.AddComponent<ChargeLimiter>();
-                    limiter2.charges = 1;
-                    if (__instance.TryGetComponent<InteractTrigger>(out InteractTrigger trigger))
-                    {
-                        limiter2.trigger = trigger;
-                    }
-                    limiter2.Charge();
-                */
                 }
             }
         }
