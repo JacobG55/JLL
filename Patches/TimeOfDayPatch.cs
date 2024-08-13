@@ -33,5 +33,48 @@ namespace JLL.Patches
         [HarmonyPatch(typeof(TimeOfDay), "fadeOutEffect")]
         public static IEnumerator fadeOutEffect(object instance, WeatherEffect effect, Vector3 moveFromPosition) =>
             throw new NotImplementedException("It's a stub");
+
+
+        [HarmonyPatch("DisableWeatherEffect")]
+        [HarmonyPrefix]
+        public static void DisableWeatherEffect(WeatherEffect effect)
+        {
+            JWeatherOverride overrideWeather = JWeatherOverride.Instance;
+            if (overrideWeather != null)
+            {
+                WeatherEffect overriden = overrideWeather.getOverrideEffect(effect);
+
+                if (overriden != null)
+                {
+                    if (overriden.effectObject != null)
+                    {
+                        overriden.effectObject.SetActive(false);
+                    }
+                }
+            }
+        }
+
+        [HarmonyPatch("DisableAllWeather")]
+        [HarmonyPrefix]
+        public static void DisableAllWeather(bool deactivateObjects)
+        {
+            JWeatherOverride overrideWeather = JWeatherOverride.Instance;
+            if (overrideWeather != null)
+            {
+                for (int i = 0; i < overrideWeather.overrideEffects.Length; i++)
+                {
+                    WeatherEffect effect = overrideWeather.overrideEffects[i];
+
+                    effect.effectEnabled = false;
+                    if (deactivateObjects)
+                    {
+                        if (effect.effectObject != null)
+                        {
+                            effect.effectObject.SetActive(false);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
