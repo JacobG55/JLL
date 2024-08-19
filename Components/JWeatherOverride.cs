@@ -1,14 +1,15 @@
-﻿using JLL.Patches;
+﻿using JLL.API;
+using JLL.Patches;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 
-namespace JLL.Behaviors
+namespace JLL.Components
 {
     public class JWeatherOverride : MonoBehaviour
     {
-        public static JWeatherOverride Instance;
+        public static JWeatherOverride? Instance;
 
         [Header("Overrides")]
         public WeatherEffect[] overrideEffects = new WeatherEffect[0];
@@ -22,10 +23,7 @@ namespace JLL.Behaviors
 
         public void Start()
         {
-            JLLBase.Instance.mls.LogInfo("Weather Override Start");
-
-            TimeOfDay timeOfDay = TimeOfDay.Instance;
-
+            JLL.Instance.mls.LogInfo("Weather Override Start");
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed + 101);
 
             foreach (WeatherEffect effect in overrideEffects)
@@ -37,9 +35,9 @@ namespace JLL.Behaviors
                 }
             }
 
-            if (timeOfDay.currentLevelWeather == LevelWeatherType.Foggy)
+            if (TimeOfDay.Instance.currentLevelWeather == LevelWeatherType.Foggy)
             {
-                float fogMeanPath = random.Next((int)timeOfDay.currentWeatherVariable, (int)timeOfDay.currentWeatherVariable2);
+                float fogMeanPath = random.Next((int)TimeOfDay.Instance.currentWeatherVariable, (int)TimeOfDay.Instance.currentWeatherVariable2);
 
                 foreach (LocalVolumetricFog fog in foggyWeatherVolumes)
                 {
@@ -48,7 +46,7 @@ namespace JLL.Behaviors
                 foreach (Volume volume in foggyVolumes)
                 {
                     VolumeProfile prof = volume.profile;
-                    if (prof.TryGet<Fog>(out Fog fog))
+                    if (prof.TryGet(out Fog fog))
                     {
                         fog.meanFreePath.value = fogMeanPath;
                     }
@@ -57,11 +55,11 @@ namespace JLL.Behaviors
             StartCoroutine(OverrideWeather());
         }
 
-        public WeatherEffect getOverrideEffect(WeatherEffect original)
+        public WeatherEffect? getOverrideEffect(string original)
         {
             foreach (WeatherEffect effect in overrideEffects)
             {
-                if (original.name ==  effect.name)
+                if (original.Equals(effect.name))
                 {
                     return effect;
                 }
@@ -73,10 +71,21 @@ namespace JLL.Behaviors
         {
             yield return new WaitForSeconds(overrideDelay);
 
+            OverrideWeatherObjects();
+            Instance = this;
+        }
+
+        private void OverrideWeatherObjects()
+        {
+            if (JCompatabilityHelper.IsModLoaded.WeatherRegistry)
+            {
+                JWeatherRegistryHelper.OverrideWeatherObjects(this);
+            }
+
             if (StartOfRound.Instance.currentLevel.currentWeather != LevelWeatherType.None)
             {
                 WeatherEffect original = TimeOfDay.Instance.effects[(int)StartOfRound.Instance.currentLevel.currentWeather];
-                WeatherEffect weatherEffect = getOverrideEffect(original);
+                WeatherEffect? weatherEffect = getOverrideEffect(original.name);
 
                 if (weatherEffect != null)
                 {
@@ -97,35 +106,12 @@ namespace JLL.Behaviors
                         weatherEffect.effectEnabled = true;
                     }
                 }
-
-                Instance = this;
             }
         }
 
         public void Update()
         {
-            if (StartOfRound.Instance.currentLevel.currentWeather != LevelWeatherType.None)
-            {
-                WeatherEffect original = TimeOfDay.Instance.effects[(int)StartOfRound.Instance.currentLevel.currentWeather];
-                WeatherEffect weatherEffect = getOverrideEffect(original);
-
-                if (weatherEffect != null)
-                {
-                    if (original.effectEnabled)
-                    {
-                        original.effectEnabled = false;
-                        weatherEffect.effectEnabled = true;
-                    }
-                    if (original.effectPermanentObject != null && weatherEffect.effectPermanentObject != null)
-                    {
-                        if (original.effectPermanentObject.activeSelf)
-                        {
-                            original.effectPermanentObject.SetActive(false);
-                            weatherEffect.effectPermanentObject.SetActive(true);
-                        }
-                    }
-                }
-            }
+            CheckWeatherEffectChanges();
 
             Vector3 vector = ((!GameNetworkManager.Instance.localPlayerController.isPlayerDead) ? StartOfRound.Instance.localPlayerController.transform.position : StartOfRound.Instance.spectateCamera.transform.position);
 
@@ -161,6 +147,37 @@ namespace JLL.Behaviors
                     else
                     {
                         TimeOfDayPatch.DisableWeatherEffect(TimeOfDay.Instance, overrideEffects[i]);
+                    }
+                }
+            }
+        }
+
+        private void CheckWeatherEffectChanges()
+        {
+            if (JCompatabilityHelper.IsModLoaded.WeatherRegistry)
+            {
+                JWeatherRegistryHelper.CheckWeatherChanges(this);
+            }
+
+            if (StartOfRound.Instance.currentLevel.currentWeather != LevelWeatherType.None)
+            {
+                WeatherEffect original = TimeOfDay.Instance.effects[(int)StartOfRound.Instance.currentLevel.currentWeather];
+                WeatherEffect? weatherEffect = getOverrideEffect(original.name);
+
+                if (weatherEffect != null)
+                {
+                    if (original.effectEnabled)
+                    {
+                        original.effectEnabled = false;
+                        weatherEffect.effectEnabled = true;
+                    }
+                    if (original.effectPermanentObject != null && weatherEffect.effectPermanentObject != null)
+                    {
+                        if (original.effectPermanentObject.activeSelf)
+                        {
+                            original.effectPermanentObject.SetActive(false);
+                            weatherEffect.effectPermanentObject.SetActive(true);
+                        }
                     }
                 }
             }

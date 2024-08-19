@@ -1,28 +1,49 @@
-﻿using System.Linq;
+﻿using BepInEx.Bootstrap;
+using JLL.API;
+using System;
+using System.Linq;
 using UnityEngine;
 
 namespace JLL.Components
 {
     public class JWeatherObject : MonoBehaviour
     {
-        public string[] AllowedWeather = new string[0];
+        public bool isWhitelist = true;
+        public LevelWeatherType[] AllowedWeathers = new LevelWeatherType[0];
+
+        [Header("Weather IDs")]
+        public string[] WeatherStrings = new string[0];
 
         public void Start()
         {
-            string currentWeatherName;
-            int weatherID = (int)RoundManager.Instance.currentLevel.currentWeather;
+            gameObject.SetActive((AllowedWeathers.Contains(RoundManager.Instance.currentLevel.currentWeather) || CheckWeatherStrings()) == isWhitelist);
+        }
 
-            if (weatherID < 0)
+        private bool CheckWeatherStrings()
+        {
+            int weatherId = (int)RoundManager.Instance.currentLevel.currentWeather;
+            string currentWeatherName = "";
+
+            if (weatherId > 0)
             {
-                currentWeatherName = "clear";
-            }
-            else
-            {
-                WeatherEffect LevelWeather = TimeOfDay.Instance.effects[weatherID];
+                WeatherEffect LevelWeather = TimeOfDay.Instance.effects[weatherId];
                 currentWeatherName = LevelWeather.name;
             }
 
-            gameObject.SetActive(AllowedWeather.Contains(currentWeatherName));
+            bool success = false;
+            if (currentWeatherName != "")
+            {
+                success = WeatherStrings.Contains(currentWeatherName);
+            }
+            if (!success)
+            {
+                if (JCompatabilityHelper.IsModLoaded.WeatherRegistry)
+                {
+                    WeatherStrings.Contains(JWeatherRegistryHelper.GetCurrentWeatherName());
+                }
+            }
+
+            return success;
         }
     }
 }

@@ -6,11 +6,12 @@ namespace JLL.Components
     {
         public int charges = 1;
         public InteractTrigger trigger;
+        public GameObject disableObject;
 
         public void Charge()
         {
             charges -= 1;
-            if (charges <= 0 )
+            if (charges <= 0)
             {
                 SetHasCharge(false);
             }
@@ -20,12 +21,15 @@ namespace JLL.Components
         {
             if (trigger != null)
             {
-                if (trigger.TryGetComponent<BoxCollider>(out BoxCollider collider))
+                if (trigger.TryGetComponent(out BoxCollider collider))
                 {
                     collider.enabled = value;
                 }
             }
-            gameObject.SetActive(value);
+            if (disableObject != null)
+            {
+                disableObject.SetActive(value);
+            }
         }
     }
 }

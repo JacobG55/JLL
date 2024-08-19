@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using JLL.Behaviors;
+using JLL.Components;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -9,21 +9,6 @@ namespace JLL.Patches
     [HarmonyPatch(typeof(TimeOfDay))]
     internal class TimeOfDayPatch
     {
-        [HarmonyPatch("SetWeatherBasedOnVariables")]
-        [HarmonyPrefix]
-        public static void patchSetWeatherBasedOnVariables(TimeOfDay __instance)
-        {
-            System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed + 101);
-
-            foreach (JLevelWeatherEffect weatherEffect in JBehavior.GetWeatherEffects())
-            {
-                if (__instance.currentLevel.sceneName == weatherEffect.getSceneName())
-                {
-                    weatherEffect.applyEffects(__instance, random);
-                }
-            }
-        }
-
         [HarmonyReversePatch]
         [HarmonyPatch(typeof(TimeOfDay), "DisableWeatherEffect")]
         public static void DisableWeatherEffect(object instance, WeatherEffect effect) =>
@@ -39,10 +24,10 @@ namespace JLL.Patches
         [HarmonyPrefix]
         public static void DisableWeatherEffect(WeatherEffect effect)
         {
-            JWeatherOverride overrideWeather = JWeatherOverride.Instance;
+            JWeatherOverride? overrideWeather = JWeatherOverride.Instance;
             if (overrideWeather != null)
             {
-                WeatherEffect overriden = overrideWeather.getOverrideEffect(effect);
+                WeatherEffect? overriden = overrideWeather.getOverrideEffect(effect.name);
 
                 if (overriden != null)
                 {
@@ -58,7 +43,7 @@ namespace JLL.Patches
         [HarmonyPrefix]
         public static void DisableAllWeather(bool deactivateObjects)
         {
-            JWeatherOverride overrideWeather = JWeatherOverride.Instance;
+            JWeatherOverride? overrideWeather = JWeatherOverride.Instance;
             if (overrideWeather != null)
             {
                 for (int i = 0; i < overrideWeather.overrideEffects.Length; i++)
