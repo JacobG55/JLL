@@ -31,5 +31,10 @@ namespace JLL.Components
                 disableObject.SetActive(value);
             }
         }
+
+        public void AddCharges(int amount)
+        {
+            charges += amount;
+        }
     }
 }

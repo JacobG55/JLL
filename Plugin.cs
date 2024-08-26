@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
 using JLL.API;
@@ -13,11 +12,12 @@ namespace JLL
     [BepInPlugin(modGUID, modName, modVersion)]
     [BepInDependency("evaisa.lethallib")]
     [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("imabatby.lethallevelloader", BepInDependency.DependencyFlags.SoftDependency)]
     public class JLL : BaseUnityPlugin
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.2.0";
+        private const string modVersion = "1.3.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -38,7 +38,7 @@ namespace JLL
 
             NetcodeRequired(mls);
 
-            networkObject = NetworkPrefabs.CreateNetworkPrefab("SimpleCommandsNetworkManager");
+            networkObject = NetworkPrefabs.CreateNetworkPrefab("JLL");
             networkObject.AddComponent<JLLNetworkManager>();
             networkObject.name = "JLL";
 
@@ -48,6 +48,9 @@ namespace JLL
             harmony.PatchAll(typeof(TimeOfDayPatch));
             harmony.PatchAll(typeof(HudManagerPatch));
             harmony.PatchAll(typeof(StartOfRoundPatch));
+            harmony.PatchAll(typeof(RoundManagerPatch));
+            harmony.PatchAll(typeof(LungPropPatch));
+            harmony.PatchAll(typeof(VehicleControllerPatch));
         }
 
         public static void NetcodeRequired(ManualLogSource logSource)

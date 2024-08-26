@@ -9,6 +9,8 @@ namespace JLL.API
         public class ModCompatCheck
         {
             public bool WeatherRegistry = false;
+            public bool SimpleCommands = false;
+            public bool LLL = false;
         }
 
         internal static void Init()
@@ -19,6 +21,12 @@ namespace JLL.API
                 {
                     case "mrov.WeatherRegistry":
                         IsModLoaded.WeatherRegistry = true;
+                        break;
+                    case "JacobG5.SimpleCommands":
+                        IsModLoaded.SimpleCommands = true;
+                        break;
+                    case "imabatby.lethallevelloader":
+                        IsModLoaded.LLL = true;
                         break;
                     default:
                         break;

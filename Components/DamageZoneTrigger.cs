@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using JLL.Patches;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,12 +15,15 @@ namespace JLL.Components
         [Header("Conditions")]
         public bool damageOnEnter = true;
         public bool damageOnExit = false;
+        public bool damageOnCollision = true;
 
         [Header("Damage")]
         public bool damagePlayers = true;
         public int damageForPlayers = 1;
         public bool damageEnemies = true;
         public int damageForEnemies = 1;
+        public bool damageVehicles = false;
+        public int damageForVehicles = 1;
         public bool damageObjects = false;
         public int damageForObjects = 1;
 
@@ -33,76 +37,57 @@ namespace JLL.Components
         public AudioClip[] clips = new AudioClip[0];
         public AudioSource[] sources = new AudioSource[0];
 
+        [Header("Player")]
+        public InteractEvent OnPlayerDamaged;
+
         private List<PlayerControllerB> playersInside = new List<PlayerControllerB>();
-        private List<IHittable> creaturesInside = new List<IHittable>();
+        private List<EnemyAICollisionDetect> creaturesInside = new List<EnemyAICollisionDetect>();
+        private List<VehicleController> vehiclesInside = new List<VehicleController>();
         private List<IHittable> objectsInside = new List<IHittable>();
 
         public void OnTriggerEnter(Collider collider)
         {
-            if (collider.gameObject.CompareTag("Player")) 
+            int type = DamageTarget(collider.gameObject, damageOnEnter);
+            switch (type)
             {
-                if (collider.TryGetComponent(out PlayerControllerB player))
-                {
-                    playersInside.Add(player);
-                    if (damageOnEnter && damagePlayers)
-                    {
-                        DamagePlayer(player);
-                    }
-                }
-            }
-            else if (collider.gameObject.CompareTag("Enemy"))
-            {
-                if (collider.TryGetComponent(out EnemyAICollisionDetect enemy))
-                {
-                    creaturesInside.Add(enemy);
-                    if (damageOnEnter && damageEnemies)
-                    {
-                        DamageEnemy(enemy);
-                    }
-                }
-            }
-            else if (collider.gameObject.TryGetComponent(out IHittable hittable))
-            {
-                objectsInside.Add(hittable);
-                if (damageOnEnter && damageObjects)
-                {
-                    DamageObject(hittable);
-                }
+                case 0:
+                    playersInside.Add(collider.GetComponent<PlayerControllerB>());
+                    break;
+                case 1:
+                    creaturesInside.Add(collider.GetComponent<EnemyAICollisionDetect>());
+                    break;
+                case 2:
+                    vehiclesInside.Add(collider.GetComponent<VehicleController>());
+                    break;
+                case 3:
+                    objectsInside.Add(collider.GetComponent<IHittable>());
+                    break;
             }
         }
 
         public void OnTriggerExit(Collider collider)
         {
-            if (collider.gameObject.CompareTag("Player"))
+            int type = DamageTarget(collider.gameObject, damageOnExit);
+            switch (type)
             {
-                if (collider.TryGetComponent(out PlayerControllerB player))
-                {
-                    playersInside.Remove(player);
-                    if (damageOnExit && damagePlayers)
-                    {
-                        DamagePlayer(player);
-                    }
-                }
+                case 0:
+                    playersInside.Remove(collider.GetComponent<PlayerControllerB>());
+                    break;
+                case 1:
+                    creaturesInside.Remove(collider.GetComponent<EnemyAICollisionDetect>());
+                    break;
+                case 2:
+                    vehiclesInside.Remove(collider.GetComponent<VehicleController>());
+                    break;
+                case 3:
+                    objectsInside.Remove(collider.GetComponent<IHittable>());
+                    break;
             }
-            else if (collider.gameObject.CompareTag("Enemy"))
-            {
-                if (collider.TryGetComponent(out EnemyAICollisionDetect enemy))
-                {
-                    creaturesInside.Remove(enemy);
-                    if (damageOnExit && damageEnemies)
-                    {
-                        DamageEnemy(enemy);
-                    }
-                }
-            }
-            else if (collider.gameObject.TryGetComponent(out IHittable hittable))
-            {
-                objectsInside.Add(hittable);
-                if (damageOnExit && damageObjects)
-                {
-                    DamageObject(hittable);
-                }
-            }
+        }
+
+        public void OnCollisionEnter(Collision collision)
+        {
+            DamageTarget(collision.gameObject, damageOnCollision);
         }
 
         public void Update()
@@ -114,40 +99,106 @@ namespace JLL.Components
                 if (timer <= 0)
                 {
                     timer = hitInterval;
+                    DamageAllInside();
+                }
+            }
+        }
 
-                    if (damagePlayers)
+        public void DamageAllInside()
+        {
+            if (damagePlayers)
+            {
+                for (int i = 0; i < playersInside.Count; i++)
+                {
+                    if (!playersInside[i].isPlayerDead)
                     {
-                        for (int i = 0; i < playersInside.Count; i++)
-                        {
-                            DamagePlayer(playersInside[i]);
-                        }
-                    }
-                    if (damageEnemies)
-                    {
-                        for (int i = 0; i < creaturesInside.Count; i++)
-                        {
-                            DamageEnemy(creaturesInside[i]);
-                        }
-                    }
-                    if (damageObjects)
-                    {
-                        for (int i = 0; i < objectsInside.Count; i++)
-                        {
-                            DamageObject(objectsInside[i]);
-                        }
+                        DamagePlayer(playersInside[i]);
                     }
                 }
             }
+            if (damageEnemies)
+            {
+                for (int i = 0; i < creaturesInside.Count; i++)
+                {
+                    if (!creaturesInside[i].mainScript.isEnemyDead)
+                    {
+                        DamageEnemy(creaturesInside[i]);
+                    }
+                }
+            }
+            if (damageVehicles)
+            {
+                for (int i = 0; i < vehiclesInside.Count; i++)
+                {
+                    DamageVehicle(vehiclesInside[i]);
+                }
+            }
+            if (damageObjects)
+            {
+                for (int i = 0; i < objectsInside.Count; i++)
+                {
+                    DamageObject(objectsInside[i]);
+                }
+            }
+        }
+
+        private int DamageTarget(GameObject target, bool condition = true)
+        {
+            if (target.CompareTag("Player"))
+            {
+                if (target.TryGetComponent(out PlayerControllerB player))
+                {
+                    if (condition && damagePlayers && !player.isPlayerDead)
+                    {
+                        DamagePlayer(player);
+                    }
+                    return 0;
+                }
+            }
+            else if (target.CompareTag("Enemy"))
+            {
+                if (target.TryGetComponent(out EnemyAICollisionDetect enemy))
+                {
+                    if (condition && damageEnemies && !enemy.mainScript.isEnemyDead)
+                    {
+                        DamageEnemy(enemy);
+                    }
+                    return 1;
+                }
+            }
+            else if (target.TryGetComponent(out VehicleController vehicle))
+            {
+                if (condition && damageVehicles && !vehicle.carDestroyed)
+                {
+                    DamageVehicle(vehicle);
+                }
+                return 2;
+            }
+            else if (target.TryGetComponent(out IHittable hittable))
+            {
+                if (condition && damageObjects)
+                {
+                    DamageObject(hittable);
+                }
+                return 3;
+            }
+            return -1;
         }
 
         private void DamagePlayer(PlayerControllerB player)
         {
             player.DamagePlayer(damageForPlayers, causeOfDeath: damageSource, force: hitDir, hasDamageSFX: playNormalDamageSFX, deathAnimation: Mathf.Clamp(corpseType, 0, StartOfRound.Instance.playerRagdolls.Count));
             PlayCustomAudio();
+            OnPlayerDamaged.Invoke(player);
         }
         private void DamageEnemy(IHittable enemy)
         {
             enemy.Hit(damageForEnemies, hitDir, playHitSFX: playNormalDamageSFX);
+            PlayCustomAudio();
+        }
+        private void DamageVehicle(VehicleController vehicle)
+        {
+            VehicleControllerPatch.DealPermanentDamage(vehicle, damageForVehicles, hitDir);
             PlayCustomAudio();
         }
         private void DamageObject(IHittable obj)

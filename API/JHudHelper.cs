@@ -39,7 +39,6 @@ namespace JLL.API
             return false;
         }
 
-
         private class DisplayTip
         {
             public string headerText;
