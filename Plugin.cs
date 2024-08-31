@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using JLL.API;
+using JLL.Components;
 using JLL.Patches;
 using LethalLib.Modules;
 using System.Reflection;
@@ -17,7 +18,7 @@ namespace JLL
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.3.0";
+        private const string modVersion = "1.4.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 

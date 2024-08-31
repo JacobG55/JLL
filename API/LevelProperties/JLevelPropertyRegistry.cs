@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace JLL.API.LevelProperties
 {
     public class JLevelPropertyRegistry
     {
         private static readonly Dictionary<string, JLevelProperties> Registry = new Dictionary<string, JLevelProperties>();
-        public static List<EnemyType> AllSortedEnemies = new List<EnemyType>();
+
+        public static readonly List<EnemyType> AllSortedEnemies = new List<EnemyType>();
+        public static readonly List<EntranceTeleport> EntranceTeleports = new List<EntranceTeleport>();
 
         private static JLevelProperties original = new JLevelProperties();
-
         public static JLevelProperties GetLevelProperties(SelectableLevel level)
         {
             return GetLevelProperties(level.name);
@@ -30,13 +32,55 @@ namespace JLL.API.LevelProperties
 
         public static void RegisterLevelProperties(string name, JLevelProperties properties)
         {
-            Registry.Add(name, properties);
+            if (Registry.TryGetValue(name, out JLevelProperties old))
+            {
+                old.MergeWith(properties);
+            }
+            else
+            {
+                Registry.Add(name, properties);
+            }
+        }
+
+        public static bool HasEntranceTeleports()
+        {
+            return EntranceTeleports.Count > 0;
+        }
+
+        public static Vector3? GetEntranceTeleportLocation(int id = 0, bool getOutsideEntrance = false, bool getTeleportPosition = false)
+        {
+            for (int i = 0; i < EntranceTeleports.Count; i++)
+            {
+                if (EntranceTeleports[i].entranceId == id && getOutsideEntrance == EntranceTeleports[i].isEntranceToBuilding)
+                {
+                    if (getTeleportPosition)
+                    {
+                        return EntranceTeleports[i].entrancePoint.position;
+                    }
+                    else
+                    {
+                        return EntranceTeleports[i].transform.position;
+                    }
+                }
+            }
+
+            return null;
         }
 
         internal static void ApplyLevelOverrides()
         {
+            EntranceTeleport[] entrances = Object.FindObjectsOfType<EntranceTeleport>(includeInactive: false);
+            EntranceTeleports.AddRange(entrances);
+
             SelectableLevel currentLevel = RoundManager.Instance.currentLevel;
             JLevelProperties currentProperties = GetLevelProperties(currentLevel);
+
+            foreach (LevelPrefab levelPrefab in currentProperties.levelPrefabs)
+            {
+                GameObject spawned = GameObject.Instantiate(levelPrefab.prefab);
+                spawned.transform.position = levelPrefab.position;
+                spawned.transform.rotation = levelPrefab.rotation;
+            }
 
             List<EnemyPropertyOverride> originalValues = new List<EnemyPropertyOverride>();
             foreach (EnemyPropertyOverride property in currentProperties.enemyPropertyOverrides)
@@ -57,11 +101,14 @@ namespace JLL.API.LevelProperties
 
                 originalValues.Add(og);
             }
+
             original.enemyPropertyOverrides = originalValues.ToArray();
         }
 
         internal static void RemoveLevelOverrides()
         {
+            EntranceTeleports.Clear();
+
             foreach (EnemyPropertyOverride property in original.enemyPropertyOverrides)
             {
                 EnemyType target = GetRegisteredEnemy(property.enemyType);

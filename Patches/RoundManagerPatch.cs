@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using JLL.API.LevelProperties;
 using JLL.Components;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace JLL.Patches
@@ -10,7 +9,7 @@ namespace JLL.Patches
     internal class RoundManagerPatch
     {
         [HarmonyPatch("FinishGeneratingLevel")]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         public static void spawnFinishGeneratingLevel()
         {
             JMaterialReplacer[] matReplacers = GameObject.FindObjectsOfType<JMaterialReplacer>();

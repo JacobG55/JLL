@@ -7,7 +7,7 @@ namespace JLL.Components
     public class DelayScript : MonoBehaviour
     {
         public float delaySeconds = 2f;
-        public UnityEvent events;
+        public UnityEvent events = new UnityEvent();
 
         public void StartWaiting()
         {

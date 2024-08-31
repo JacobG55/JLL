@@ -17,8 +17,8 @@ namespace JLL.Components
         public GameObject inverseObject;
 
         [Header("Event Triggers")]
-        public UnityEvent onActivate;
-        public UnityEvent onDeactivate;
+        public UnityEvent onActivate = new UnityEvent();
+        public UnityEvent onDeactivate = new UnityEvent();
 
         [Header("Weather IDs (For Modded Weathers)")]
         public string[] WeatherStrings = new string[0];

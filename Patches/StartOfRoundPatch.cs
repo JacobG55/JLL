@@ -3,7 +3,6 @@ using JLL.Components;
 using Unity.Netcode;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 using JLL.API.LevelProperties;
 
 namespace JLL.Patches
@@ -53,7 +52,7 @@ namespace JLL.Patches
                 }
             }
 
-            JLevelPropertyRegistry.AllSortedEnemies = enemyTypes;
+            JLevelPropertyRegistry.AllSortedEnemies.AddRange(enemyTypes);
         }
 
         [HarmonyPatch("EndOfGame")]

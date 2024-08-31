@@ -38,10 +38,10 @@ namespace JLL.Components
         public AudioSource[] sources = new AudioSource[0];
 
         [Header("Player")]
-        public InteractEvent OnPlayerDamaged;
+        public InteractEvent OnPlayerDamaged = new InteractEvent();
 
         private List<PlayerControllerB> playersInside = new List<PlayerControllerB>();
-        private List<EnemyAICollisionDetect> creaturesInside = new List<EnemyAICollisionDetect>();
+        private List<EnemyAI> creaturesInside = new List<EnemyAI>();
         private List<VehicleController> vehiclesInside = new List<VehicleController>();
         private List<IHittable> objectsInside = new List<IHittable>();
 
@@ -54,7 +54,7 @@ namespace JLL.Components
                     playersInside.Add(collider.GetComponent<PlayerControllerB>());
                     break;
                 case 1:
-                    creaturesInside.Add(collider.GetComponent<EnemyAICollisionDetect>());
+                    creaturesInside.Add(collider.GetComponent<EnemyAICollisionDetect>().mainScript);
                     break;
                 case 2:
                     vehiclesInside.Add(collider.GetComponent<VehicleController>());
@@ -74,7 +74,7 @@ namespace JLL.Components
                     playersInside.Remove(collider.GetComponent<PlayerControllerB>());
                     break;
                 case 1:
-                    creaturesInside.Remove(collider.GetComponent<EnemyAICollisionDetect>());
+                    creaturesInside.Remove(collider.GetComponent<EnemyAICollisionDetect>().mainScript);
                     break;
                 case 2:
                     vehiclesInside.Remove(collider.GetComponent<VehicleController>());
@@ -120,7 +120,7 @@ namespace JLL.Components
             {
                 for (int i = 0; i < creaturesInside.Count; i++)
                 {
-                    if (!creaturesInside[i].mainScript.isEnemyDead)
+                    if (!creaturesInside[i].isEnemyDead)
                     {
                         DamageEnemy(creaturesInside[i]);
                     }
@@ -161,7 +161,7 @@ namespace JLL.Components
                 {
                     if (condition && damageEnemies && !enemy.mainScript.isEnemyDead)
                     {
-                        DamageEnemy(enemy);
+                        DamageEnemy(enemy.mainScript);
                     }
                     return 1;
                 }
@@ -185,26 +185,26 @@ namespace JLL.Components
             return -1;
         }
 
-        private void DamagePlayer(PlayerControllerB player)
+        public void DamagePlayer(PlayerControllerB player, bool playCustomAudio = true)
         {
             player.DamagePlayer(damageForPlayers, causeOfDeath: damageSource, force: hitDir, hasDamageSFX: playNormalDamageSFX, deathAnimation: Mathf.Clamp(corpseType, 0, StartOfRound.Instance.playerRagdolls.Count));
-            PlayCustomAudio();
+            if (playCustomAudio) PlayCustomAudio();
             OnPlayerDamaged.Invoke(player);
         }
-        private void DamageEnemy(IHittable enemy)
+        public void DamageEnemy(EnemyAI enemy, bool playCustomAudio = true)
         {
-            enemy.Hit(damageForEnemies, hitDir, playHitSFX: playNormalDamageSFX);
-            PlayCustomAudio();
+            enemy.HitEnemyOnLocalClient(damageForEnemies, hitDir, playHitSFX: playNormalDamageSFX);
+            if (playCustomAudio) PlayCustomAudio();
         }
-        private void DamageVehicle(VehicleController vehicle)
+        public void DamageVehicle(VehicleController vehicle, bool playCustomAudio = true)
         {
             VehicleControllerPatch.DealPermanentDamage(vehicle, damageForVehicles, hitDir);
-            PlayCustomAudio();
+            if (playCustomAudio) PlayCustomAudio();
         }
-        private void DamageObject(IHittable obj)
+        public void DamageObject(IHittable obj, bool playCustomAudio = true)
         {
             obj.Hit(damageForObjects, hitDir, playHitSFX: playNormalDamageSFX);
-            PlayCustomAudio();
+            if (playCustomAudio) PlayCustomAudio();
         }
 
         private void PlayCustomAudio()

@@ -7,6 +7,8 @@ namespace JLL.Components
     {
         private Animator anim;
 
+        public float timeScale = 1f;
+
         public void Start ()
         {
             anim = GetComponent<Animator>();
@@ -15,7 +17,7 @@ namespace JLL.Components
         public void FixedUpdate()
         {
             float normalizedDayTime = TimeOfDay.Instance.currentDayTime / TimeOfDay.Instance.totalTime;
-            anim.SetFloat("time", normalizedDayTime);
+            anim.SetFloat("time", normalizedDayTime * timeScale);
         }
     }
 }
