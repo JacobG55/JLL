@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameNetcodeStuff;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -15,10 +16,13 @@ namespace JLL.Components
         public class WeightedEvent
         {
             public UnityEvent Event = new UnityEvent();
+            public InteractEvent PlayerEvent = new InteractEvent();
 
             [Range(0f, 100f)]
             public int Weight = 20;
         }
+
+        public InteractEvent RandomPlayerEvent = new InteractEvent();
         
         public void Awake()
         {
@@ -30,17 +34,22 @@ namespace JLL.Components
 
         public void RollEvent()
         {
-            RollRandomServerRpc();
+            RollRandomServerRpc(-1);
+        }
+
+        public void RollPlayerEvent(PlayerControllerB player)
+        {
+            RollRandomServerRpc((int)player.actualClientId);
         }
 
         [ServerRpc(RequireOwnership = false)]
-        private void RollRandomServerRpc()
+        private void RollRandomServerRpc(int playerId)
         {
             if (weightedEvents.Length > 0)
             {
                 int random = GetWeightedIndex();
                 JLL.Instance.mls.LogInfo($"Server Generated: {random}");
-                RollResultClientRpc(random);
+                RollResultClientRpc(random, playerId);
             }
         }
 
@@ -64,10 +73,31 @@ namespace JLL.Components
         }
 
         [ClientRpc]
-        private void RollResultClientRpc(int value)
+        private void RollResultClientRpc(int value, int playerId)
         {
             JLL.Instance.mls.LogInfo($"Client Received: {value}");
             weightedEvents[value].Event.Invoke();
+            if (playerId != -1)
+            {
+                weightedEvents[value].PlayerEvent.Invoke(RoundManager.Instance.playersManager.allPlayerScripts[playerId]);
+            }
+        }
+
+        public void StartRandomPlayerEvent()
+        {
+            RandomPlayerEventServerRpc();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void RandomPlayerEventServerRpc()
+        {
+            RandomPlayerEventClientRpc(UnityEngine.Random.Range(0, RoundManager.Instance.playersManager.allPlayerScripts.Length));
+        }
+
+        [ClientRpc]
+        private void RandomPlayerEventClientRpc(int playerId)
+        {
+            RandomPlayerEvent.Invoke(RoundManager.Instance.playersManager.allPlayerScripts[Math.Clamp(playerId, 0, RoundManager.Instance.playersManager.allPlayerScripts.Length-1)]);
         }
     }
 }

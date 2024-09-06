@@ -11,6 +11,8 @@ namespace JLL.Components
 
         public UnityEvent ShipLanded = new UnityEvent();
         public UnityEvent LevelLoaded = new UnityEvent();
+        public bool onlyOnFirstApparatus = false;
+        private bool apparatusWasPulled = false;
         public UnityEvent ApparatusPulled = new UnityEvent();
 
         public HourEvent[] hourlyEvents = new HourEvent[0];
@@ -30,7 +32,7 @@ namespace JLL.Components
             LevelLoaded.Invoke();
         }
 
-        public void Update()
+        public void FixedUpdate()
         {
             if (hourlyEvents.Length > 0)
             {
@@ -47,6 +49,13 @@ namespace JLL.Components
                 }
                 prevHour = hour;
             }
+        }
+
+        public void InvokeApparatus()
+        {
+            if (onlyOnFirstApparatus && apparatusWasPulled) return;
+            ApparatusPulled.Invoke();
+            apparatusWasPulled = true;
         }
     }
 }

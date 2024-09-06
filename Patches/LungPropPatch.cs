@@ -1,8 +1,5 @@
 ﻿using HarmonyLib;
 using JLL.Components;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace JLL.Patches
 {
@@ -17,7 +14,7 @@ namespace JLL.Patches
             {
                 for (int i = 0; i < JLevelEventTriggers.EventTriggers.Count; i++)
                 {
-                    JLevelEventTriggers.EventTriggers[i].ApparatusPulled.Invoke();
+                    JLevelEventTriggers.EventTriggers[i].InvokeApparatus();
                 }
             }
         }

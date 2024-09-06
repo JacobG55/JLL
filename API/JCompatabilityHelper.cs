@@ -11,6 +11,7 @@ namespace JLL.API
             public bool WeatherRegistry = false;
             public bool SimpleCommands = false;
             public bool LLL = false;
+            public bool ReservedSlotCore = false;
         }
 
         internal static void Init()
@@ -27,6 +28,9 @@ namespace JLL.API
                         break;
                     case "imabatby.lethallevelloader":
                         IsModLoaded.LLL = true;
+                        break;
+                    case "FlipMods.ReservedItemSlotCore":
+                        IsModLoaded.ReservedSlotCore = true;
                         break;
                     default:
                         break;

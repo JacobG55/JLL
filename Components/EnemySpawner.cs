@@ -61,15 +61,22 @@ namespace JLL.Components
         {
             if (RoundManager.Instance.IsHost || RoundManager.Instance.IsServer)
             {
+                EnemyType? spawn;
+
                 if (spawnRandom)
                 {
-                    RoundManager.Instance.SpawnEnemyGameObject(transform.position, transform.rotation.y, 0, spawnList[GetWeightedIndex()].enemyType);
+                    spawn = spawnList[GetWeightedIndex()].enemyType;
                 }
                 else
                 {
-                    if (type != null)
+                    spawn = type;
+                }
+
+                if (spawn != null)
+                {
+                    if (spawn.enemyPrefab != null)
                     {
-                        RoundManager.Instance.SpawnEnemyGameObject(transform.position, transform.rotation.y, 0, type);
+                        RoundManager.Instance.SpawnEnemyGameObject(transform.position, transform.rotation.y, 0, spawn);
                     }
                 }
             }

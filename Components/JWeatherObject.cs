@@ -12,7 +12,8 @@ namespace JLL.Components
         public bool isWhitelist = true;
         public LevelWeatherType[] AllowedWeathers = new LevelWeatherType[0];
 
-        [Header("Targets (Defaults to Self)")]
+        [Header("Targets ")]
+        public bool defaultToSelf = true;
         public GameObject activeObject;
         public GameObject inverseObject;
 
@@ -25,7 +26,7 @@ namespace JLL.Components
 
         public void Start()
         {
-            if (activeObject == null)
+            if (defaultToSelf && activeObject == null)
             {
                 activeObject = gameObject;
             }
@@ -36,11 +37,8 @@ namespace JLL.Components
         {
             bool isActiveWeather = (AllowedWeathers.Contains(RoundManager.Instance.currentLevel.currentWeather) || CheckWeatherStrings()) == isWhitelist;
 
-            activeObject.SetActive(isActiveWeather);
-            if (inverseObject != null)
-            {
-                inverseObject.SetActive(!isActiveWeather);
-            }
+            activeObject?.SetActive(isActiveWeather);
+            inverseObject?.SetActive(!isActiveWeather);
 
             if (isActiveWeather)
             {

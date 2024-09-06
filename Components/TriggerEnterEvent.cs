@@ -10,13 +10,14 @@ namespace JLL.Components
         public UnityEvent onAwake = new UnityEvent();
 
         [Header("OnTriggerEnter")]
+        public ObjectEvent anythingEntered = new ObjectEvent();
+
+        [Space(15)]
         public InteractEvent playerEntered = new InteractEvent();
         public EnemyEvent enemyEntered = new EnemyEvent();
         public VehicleEvent vehicleEntered = new VehicleEvent();
         public DamageableEvent hittableEntered = new DamageableEvent();
         public ObjectEvent unknownEntered = new ObjectEvent();
-
-        public ObjectEvent anythingEntered = new ObjectEvent();
 
         public void Awake()
         {
@@ -26,32 +27,28 @@ namespace JLL.Components
         public void OnTriggerEnter(Collider other)
         {
             anythingEntered.Invoke(other.gameObject);
+            InvokeType(other.gameObject, DamageTrigger.IdentifyCollider(other.gameObject));
+        }
 
-            if (other.CompareTag("Player"))
+        private void InvokeType(GameObject target, int type)
+        {
+            switch (type)
             {
-                if (other.TryGetComponent(out PlayerControllerB player))
-                {
-                    playerEntered.Invoke(player);
-                }
-            }
-            else if (other.CompareTag("Enemy"))
-            {
-                if (other.TryGetComponent(out EnemyAICollisionDetect enemy))
-                {
-                    enemyEntered.Invoke(enemy.mainScript);
-                }
-            }
-            else if (other.TryGetComponent(out VehicleController vehicle))
-            {
-                vehicleEntered.Invoke(vehicle);
-            }
-            else if (other.TryGetComponent(out IHittable hittable))
-            {
-                hittableEntered.Invoke(hittable);
-            }
-            else
-            {
-                unknownEntered.Invoke(other.gameObject);
+                case (int)DamageTrigger.ColliderType.Player:
+                    playerEntered.Invoke(target.GetComponent<PlayerControllerB>());
+                    break;
+                case (int)DamageTrigger.ColliderType.Enemy:
+                    enemyEntered.Invoke(target.GetComponent<EnemyAICollisionDetect>().mainScript);
+                    break;
+                case (int)DamageTrigger.ColliderType.Vehicle:
+                    vehicleEntered.Invoke(target.GetComponent<VehicleController>());
+                    break;
+                case (int)DamageTrigger.ColliderType.Object:
+                    hittableEntered.Invoke(target.GetComponent<IHittable>());
+                    break;
+                default:
+                    unknownEntered.Invoke(target);
+                    return;
             }
         }
     }

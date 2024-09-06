@@ -28,7 +28,7 @@ namespace JLL.Patches
         {
             List<EnemyType> enemyTypes = new List<EnemyType>();
 
-            SelectableLevel allEnemiesLevel = UnityEngine.Object.FindObjectOfType<QuickMenuManager>().testAllEnemiesLevel;
+            SelectableLevel allEnemiesLevel = Object.FindObjectOfType<QuickMenuManager>().testAllEnemiesLevel;
 
             for (int i = 0; i < allEnemiesLevel.Enemies.Count; i++)
             {

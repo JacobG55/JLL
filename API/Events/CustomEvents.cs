@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameNetcodeStuff;
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -18,4 +19,10 @@ namespace JLL.API.Events
 
     [Serializable]
     public class FloatEvent : UnityEvent<float> { }
+
+    [Serializable]
+    public class BoolEvent : UnityEvent<bool> { }
+
+    [Serializable]
+    public class IntEvent : UnityEvent<int> { }
 }

@@ -1,12 +1,13 @@
-﻿using GameNetcodeStuff;
+﻿using UnityEngine;
+using GameNetcodeStuff;
 using JLL.Patches;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace JLL.Components
 {
     public class DamageZoneTrigger : MonoBehaviour
     {
+        [Header("-=-DEPRICATED-=-")]
         [SerializeField]
         public CauseOfDeath damageSource = CauseOfDeath.Unknown;
         public Vector3 hitDir = Vector3.zero;

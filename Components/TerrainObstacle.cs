@@ -54,7 +54,7 @@ namespace JLL.Components
                 {
                     if (clips.Length > 0)
                     {
-                        source.clip = clips[UnityEngine.Random.Range(0, clips.Length - 1)];
+                        source.clip = clips[Random.Range(0, clips.Length - 1)];
                     }
                     source.Play();
                 }
