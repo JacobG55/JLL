@@ -12,7 +12,7 @@ namespace JLL.Components.Filters
 
         public abstract void Filter(T input);
 
-        public void Result(bool success, T input)
+        public void Result(T input, bool success = false)
         {
             if (success)
             {
@@ -35,7 +35,7 @@ namespace JLL.Components.Filters
     }
 
     [Serializable]
-    public class NumericFilter : JFilterProperty<float>
+    public abstract class NumFilter<T> : JFilterProperty<T>
     {
         public FilterOpperand operation = FilterOpperand.EqualTo;
 
@@ -43,19 +43,28 @@ namespace JLL.Components.Filters
         {
             GreaterThan,
             LessThan,
-            EqualTo
+            EqualTo,
+            GreaterThanOrEqual,
+            LessThanOrEqual,
+            ModuloZero
         }
 
-        public override bool CheckValue(float val)
+        public bool CheckNum(float check, float current)
         {
             switch (operation)
             {
                 case FilterOpperand.EqualTo:
-                    return val == value;
+                    return check == current;
                 case FilterOpperand.GreaterThan:
-                    return val > value;
+                    return check > current;
                 case FilterOpperand.LessThan:
-                    return val < value;
+                    return check < current;
+                case FilterOpperand.GreaterThanOrEqual:
+                    return check >= current;
+                case FilterOpperand.LessThanOrEqual:
+                    return check <= current;
+                case FilterOpperand.ModuloZero:
+                    return check % current == 0;
                 default:
                     break;
             }
@@ -64,10 +73,34 @@ namespace JLL.Components.Filters
     }
 
     [Serializable]
+    public class NumericFilter : NumFilter<float>
+    {
+        public override bool CheckValue(float val)
+        {
+            return CheckNum(val, value);
+        }
+    }
+
+    [Serializable]
+    public class IntFilter : NumFilter<int>
+    {
+        public override bool CheckValue(int val)
+        {
+            return CheckNum(val, value);
+        }
+    }
+
+    [Serializable]
     public class NameFilter : JFilterProperty<string>
     {
+        public bool caseSensitive = false;
+
         public override bool CheckValue(string val)
         {
+            if (caseSensitive)
+            {
+                return val == value;
+            }
             return val.ToLower() == value.ToLower();
         }
     }

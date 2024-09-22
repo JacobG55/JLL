@@ -24,7 +24,7 @@ namespace JLL.Components
 
         public void Start()
         {
-            JLL.Instance.mls.LogInfo("Weather Override Start");
+            JLogHelper.LogInfo("Weather Override Start", JLogLevel.User);
             System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed + 101);
 
             foreach (WeatherEffect effect in overrideEffects)

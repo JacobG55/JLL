@@ -1,5 +1,6 @@
 ﻿using GameNetcodeStuff;
 using JLL.API.Events;
+using JLL.Components.Filters;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,10 +12,12 @@ namespace JLL.Components
     {
         private int targetIndex = 0;
         [Header("Number Variables (\"number\")")]
-        public List<JEventVariable<float>> numberVariables = new List<JEventVariable<float>>();
+        public List<JNumberEventVariable> numberVariables = new List<JNumberEventVariable>();
+        public UnityEvent allNumbersPassEvent = new UnityEvent();
 
         [Header("Boolean Variables (\"bool\")")]
         public List<JEventVariable<bool>> booleanVariables = new List<JEventVariable<bool>>();
+        public UnityEvent allTrueEvent = new UnityEvent();
 
         [Header("GameObjects")]
         public bool allowDuplicates = true;
@@ -37,7 +40,7 @@ namespace JLL.Components
             public T Variable;
             public UnityEvent<T> Event = new UnityEvent<T>();
 
-            public void Trigger()
+            public virtual void Trigger()
             {
                 if (Variable == null)
                 {
@@ -49,6 +52,28 @@ namespace JLL.Components
             public void Set(T var)
             {
                 Variable = var;
+            }
+        }
+
+        [Serializable]
+        public class JNumberEventVariable : JEventVariable<float>
+        {
+            public IntEvent RoundedEvent = new IntEvent();
+            public NumericFilter NumberCheck = new NumericFilter();
+            public UnityEvent FailedEvent = new UnityEvent();
+            public override void Trigger()
+            {
+                if (NumberCheck.shouldCheck)
+                {
+                    if (!NumberCheck.CheckValue(Variable))
+                    {
+                        FailedEvent.Invoke();
+                        return;
+                    }
+                }
+
+                base.Trigger();
+                RoundedEvent.Invoke(Mathf.RoundToInt(Variable));
             }
         }
 
@@ -222,6 +247,10 @@ namespace JLL.Components
                 numberVariables[i].Set(num);
             }
         }
+        public void SetNumber(int num)
+        {
+            SetNumber(num);
+        }
         public void AddNumber(float num)
         {
             int i = GetIndex(VariableType.Number);
@@ -237,6 +266,20 @@ namespace JLL.Components
             {
                 numberVariables[i].Set(num * numberVariables[i].Variable);
             }
+        }
+        public void CheckAllNumbers()
+        {
+            foreach (var number in numberVariables)
+            {
+                if (number.NumberCheck.shouldCheck)
+                {
+                    if (!number.NumberCheck.CheckValue(number.Variable))
+                    {
+                        return;
+                    }
+                }
+            }
+            allNumbersPassEvent.Invoke();
         }
 
         // Bools
@@ -271,6 +314,17 @@ namespace JLL.Components
             {
                 booleanVariables[i].Set(val != booleanVariables[i].Variable);
             }
+        }
+        public void CheckAllBools()
+        {
+            foreach (var value in booleanVariables)
+            {
+                if (!value.Variable)
+                {
+                    return;
+                }
+            }
+            allTrueEvent.Invoke();
         }
 
         // Objs

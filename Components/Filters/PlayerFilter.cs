@@ -1,4 +1,6 @@
 ﻿using GameNetcodeStuff;
+using JLL.API;
+using JLL.API.Compatability;
 using System;
 using UnityEngine;
 
@@ -8,20 +10,24 @@ namespace JLL.Components.Filters
     {
         [Header("Inventory")]
         public HeldItemFilter heldItem = new HeldItemFilter();
+        [Tooltip("Checks inventory for Items with matching names\nNot case sensitive")]
         public string[] inventoryContents = new string[0];
 
         [Header("Player Stats")]
+        [Tooltip("Players have 100 HP")]
         public NumericFilter healthCheck = new NumericFilter() { value = 20f };
-        public NumericFilter staminaCheck = new NumericFilter() { value = 20f };
+        [Tooltip("Stamina is a value between 0 and 1")]
+        public NumericFilter staminaCheck = new NumericFilter() { value = 0.5f };
+        [Tooltip("Vanilla Weight Calculation: (weight - 1) * 105 lbs")]
         public NumericFilter weightCheck = new NumericFilter() { value = 2f };
+        public CheckFilter inFacility = new CheckFilter() { value = false };
 
         public override void Filter(PlayerControllerB player)
         {
-            bool success = true;
-
-            if (heldItem.shouldCheck)
+            if (heldItem.shouldCheck && !heldItem.CheckValue(player))
             {
-                success &= heldItem.CheckValue(player);
+                Result(player);
+                return;
             }
 
             if (inventoryContents.Length > 0)
@@ -39,25 +45,51 @@ namespace JLL.Components.Filters
                         }
                     }
                 }
-                success &= foundItems == inventoryContents.Length;
+                if (foundItems != inventoryContents.Length)
+                {
+                    Result(player);
+                    return;
+                }
             }
 
-            if (healthCheck.shouldCheck)
+            if (healthCheck.shouldCheck && !healthCheck.CheckValue(player.health))
             {
-                success &= healthCheck.CheckValue(player.health);
+                Result(player);
+                return;
             }
 
-            if (staminaCheck.shouldCheck)
+            if (staminaCheck.shouldCheck && !staminaCheck.CheckValue(player.sprintMeter))
             {
-                success &= staminaCheck.CheckValue(player.sprintMeter);
+                Result(player);
+                return;
             }
 
-            if (weightCheck.shouldCheck)
+            if (weightCheck.shouldCheck && !weightCheck.CheckValue(player.carryWeight))
             {
-                success &= weightCheck.CheckValue(player.carryWeight);
+                Result(player);
+                return;
             }
 
-            Result(success, player);
+            if (inFacility.shouldCheck && !inFacility.CheckValue(player.isInsideFactory))
+            {
+                Result(player);
+                return;
+            }
+
+            Result(player, true);
+        }
+
+        public void FilterLocalClient()
+        {
+            Filter(StartOfRound.Instance.localPlayerController);
+        }
+
+        public void FilterAllPlayers()
+        {
+            for (int i = 0; i < RoundManager.Instance.playersManager.allPlayerScripts.Length; i++)
+            {
+                Filter(RoundManager.Instance.playersManager.allPlayerScripts[i]);
+            }
         }
 
         [Serializable]
@@ -66,27 +98,31 @@ namespace JLL.Components.Filters
             public bool shouldCheck = false;
             public  NameFilter itemName = new NameFilter();
             public NumericFilter itemCharge = new NumericFilter() { value = 100 };
+            public string[] contentTags = new string[0];
+            public bool mustHaveAllTags = true;
 
             public bool CheckValue(PlayerControllerB player)
             {
-                if (shouldCheck && player.currentlyHeldObject != null)
+                if (shouldCheck && player.currentlyHeldObjectServer != null)
                 {
-                    GrabbableObject item = player.currentlyHeldObject;
+                    GrabbableObject item = player.currentlyHeldObjectServer;
 
-                    bool success = true;
-
-                    if (itemName.shouldCheck)
+                    if (itemName.shouldCheck && !itemName.CheckValue(item.itemProperties.itemName))
                     {
-                        success &= itemName.CheckValue(item.itemProperties.itemName);
+                        return false;
                     }
-                    if (itemCharge.shouldCheck)
+                    if (itemCharge.shouldCheck && item.insertedBattery != null && !itemCharge.CheckValue(item.insertedBattery.charge))
                     {
-                        if (item.insertedBattery != null)
+                        return false;
+                    }
+                    if (JCompatabilityHelper.IsModLoaded.LLL && contentTags.Length > 0)
+                    {
+                        if (!LLLHelper.ItemTagFilter(item.itemProperties, contentTags, mustHaveAllTags))
                         {
-                            success &= itemCharge.CheckValue(item.insertedBattery.charge);
+                            return false;
                         }
                     }
-                    return success;
+                    return true;
                 }
                 return false;
             }

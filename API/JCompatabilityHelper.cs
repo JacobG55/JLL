@@ -12,6 +12,7 @@ namespace JLL.API
             public bool SimpleCommands = false;
             public bool LLL = false;
             public bool ReservedSlotCore = false;
+            public bool LethalConfig = false;
         }
 
         internal static void Init()
@@ -31,6 +32,9 @@ namespace JLL.API
                         break;
                     case "FlipMods.ReservedItemSlotCore":
                         IsModLoaded.ReservedSlotCore = true;
+                        break;
+                    case "ainavt.lc.lethalconfig":
+                        IsModLoaded.LethalConfig = true;
                         break;
                     default:
                         break;

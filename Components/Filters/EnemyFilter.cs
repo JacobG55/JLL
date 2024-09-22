@@ -5,7 +5,9 @@ namespace JLL.Components.Filters
     public class EnemyFilter : JFilter<EnemyAI>
     {
         [Header("EnemyType")]
+        [Tooltip("Checks if the name of the EnemyType matches the given name")]
         public NameFilter enemyType = new NameFilter();
+        [Tooltip("Checks EnemyType's 'canDie' property")]
         public CheckFilter isInvulnerable = new CheckFilter();
 
         [Header("Enemy Stats")]
@@ -13,24 +15,25 @@ namespace JLL.Components.Filters
 
         public override void Filter(EnemyAI enemy)
         {
-            bool success = true;
-
-            if (enemyType.shouldCheck)
+            if (enemyType.shouldCheck && !enemyType.CheckValue(enemy.enemyType.enemyName))
             {
-                success &= enemyType.CheckValue(enemy.enemyType.enemyName);
+                Result(enemy);
+                return;
             }
 
-            if (isInvulnerable.shouldCheck)
+            if (isInvulnerable.shouldCheck && !isInvulnerable.CheckValue(!enemy.enemyType.canDie))
             {
-                success &= isInvulnerable.CheckValue(!enemy.enemyType.canDie);
+                Result(enemy);
+                return;
             }
 
-            if (healthCheck.shouldCheck)
+            if (healthCheck.shouldCheck && !healthCheck.CheckValue(enemy.enemyHP))
             {
-                success &= healthCheck.CheckValue(enemy.enemyHP);
+                Result(enemy);
+                return;
             }
 
-            Result(success, enemy);
+            Result(enemy, true);
         }
     }
 }

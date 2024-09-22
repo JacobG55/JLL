@@ -9,11 +9,12 @@ namespace JLL.API.LevelProperties
 
         public static readonly List<EnemyType> AllSortedEnemies = new List<EnemyType>();
         public static readonly List<EntranceTeleport> EntranceTeleports = new List<EntranceTeleport>();
+        private static Terminal Terminal;
 
         private static JLevelProperties original = new JLevelProperties();
         public static JLevelProperties GetLevelProperties(SelectableLevel level)
         {
-            return GetLevelProperties(level.name);
+            return GetLevelProperties(level.sceneName);
         }
 
         public static JLevelProperties GetLevelProperties(string name)
@@ -25,9 +26,9 @@ namespace JLL.API.LevelProperties
             return new JLevelProperties();
         }
 
-        public static void RegisterLevelProperties(SelectableLevel level, JLevelProperties properties)
+        public static void RegisterLevelProperties(JLevelProperties properties)
         {
-            RegisterLevelProperties(level.name, properties);
+            RegisterLevelProperties(properties.sceneName, properties);
         }
 
         public static void RegisterLevelProperties(string name, JLevelProperties properties)
@@ -67,6 +68,15 @@ namespace JLL.API.LevelProperties
             return null;
         }
 
+        public static Terminal GetTerminal()
+        {
+            if (Terminal == null)
+            {
+                Terminal = GameObject.FindObjectOfType<Terminal>();
+            }
+            return Terminal;
+        }
+
         internal static void ApplyLevelOverrides()
         {
             EntranceTeleport[] entrances = Object.FindObjectsOfType<EntranceTeleport>(includeInactive: false);
@@ -86,17 +96,20 @@ namespace JLL.API.LevelProperties
             foreach (EnemyPropertyOverride property in currentProperties.enemyPropertyOverrides)
             {
                 EnemyPropertyOverride og = new EnemyPropertyOverride();
-                EnemyType target = GetRegisteredEnemy(property.enemyType);
+                EnemyType? target = GetRegisteredEnemy(property.enemyName);
 
-                if (property.MaxCount >= 0)
+                if (target != null)
                 {
-                    og.MaxCount = target.MaxCount;
-                    target.MaxCount = property.MaxCount;
-                }
-                if (property.PowerLevel >= 0)
-                {
-                    og.PowerLevel = target.PowerLevel;
-                    target.PowerLevel = property.PowerLevel;
+                    if (property.MaxCount >= 0)
+                    {
+                        og.MaxCount = target.MaxCount;
+                        target.MaxCount = property.MaxCount;
+                    }
+                    if (property.PowerLevel >= 0)
+                    {
+                        og.PowerLevel = target.PowerLevel;
+                        target.PowerLevel = property.PowerLevel;
+                    }
                 }
 
                 originalValues.Add(og);
@@ -111,26 +124,41 @@ namespace JLL.API.LevelProperties
 
             foreach (EnemyPropertyOverride property in original.enemyPropertyOverrides)
             {
-                EnemyType target = GetRegisteredEnemy(property.enemyType);
+                EnemyType? target = GetRegisteredEnemy(property.enemyName);
 
-                if (property.MaxCount >= 0)
+                if (target != null)
                 {
-                    target.MaxCount = property.MaxCount;
-                }
-                if (property.PowerLevel >= 0)
-                {
-                    target.PowerLevel = property.PowerLevel;
+                    if (property.MaxCount >= 0)
+                    {
+                        target.MaxCount = property.MaxCount;
+                    }
+                    if (property.PowerLevel >= 0)
+                    {
+                        target.PowerLevel = property.PowerLevel;
+                    }
                 }
             }
 
             original = new JLevelProperties();
         }
 
+        public static EnemyType? GetRegisteredEnemy(string enemyName)
+        {
+            for (int i = 0; i < AllSortedEnemies.Count; i++)
+            {
+                if (AllSortedEnemies[i].enemyName == enemyName)
+                {
+                    return AllSortedEnemies[i];
+                }
+            }
+            return null;
+        }
+
         public static EnemyType GetRegisteredEnemy(EnemyType enemyType)
         {
             for (int i = 0; i < AllSortedEnemies.Count; i++)
             {
-                if (AllSortedEnemies[i].name == enemyType.name)
+                if (AllSortedEnemies[i].enemyName == enemyType.enemyName)
                 {
                     return AllSortedEnemies[i];
                 }

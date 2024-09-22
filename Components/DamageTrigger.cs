@@ -12,23 +12,39 @@ namespace JLL.Components
         [SerializeField]
         public CauseOfDeath damageSource = CauseOfDeath.Unknown;
         public Vector3 hitDir = Vector3.zero;
+        [Tooltip("Check RoundManager in the Ship Scene for corpse IDs\nA negative copseType will result in no corpse spawning")]
         public int corpseType = 0;
 
         [Header("Conditions")]
+        [Tooltip("Damage when something enters a trigger collider")]
         public bool damageOnEnter = true;
+        [Tooltip("Damage when something exits a trigger collider")]
         public bool damageOnExit = false;
+        [Tooltip("Damage when something collides with a non trigger collider")]
         public bool damageOnCollision = true;
 
         [Header("Continuous Damage")]
+        [Tooltip("Continuously damages anything inside of it's trigger collider")]
         public bool continuousDamage = true;
+        [Tooltip("Continuously calculates a raycast and attempts to damage the whatever the ray hits")]
+        public bool continuousRaycastDamage = false;
         public float hitInterval = 0.5f;
         private float timer = 0;
 
+        [Header("Raycast")]
+        public float raycastLength = 6f;
+        public Transform[] raycastDirections = new Transform[0];
+        public LayerMask raycastMask = 1202194760;
+
         [Header("Targets")]
         public float damageMultiplier = 1f;
+        [Tooltip("Players have 100 HP")]
         public DamageTarget<PlayerControllerB> playerTargets = new DamageTarget<PlayerControllerB>();
+        [Tooltip("Any instance of EnemyAICollisionDetect converted to EnemyAI")]
         public DamageTarget<EnemyAI> enemyTargets = new DamageTarget<EnemyAI>();
+        [Tooltip("The Company Cruiser has 30 HP")]
         public DamageTarget<VehicleController> vehicleTargets = new DamageTarget<VehicleController>();
+        [Tooltip("Anything that is damageable by shovels but not one of the things above")]
         public DamageTarget<IHittable> objectTargets = new DamageTarget<IHittable>();
 
         [Header("SFX")]
@@ -42,7 +58,17 @@ namespace JLL.Components
             public bool enabled = false;
             public int damage = 1;
             public bool applyDamageMultiplier = true;
+            public bool playCustomSounds = true;
             public UnityEvent<T> hitEvent = new UnityEvent<T>();
+
+            public int GetTotalDamage(float multiplier = 1)
+            {
+                if (applyDamageMultiplier)
+                {
+                    return Mathf.RoundToInt(damage * multiplier);
+                }
+                return damage;
+            }
         }
 
         private readonly Dictionary<GameObject, int> collidersInside = new Dictionary<GameObject, int>();
@@ -85,16 +111,36 @@ namespace JLL.Components
             }
         }
 
+        void OnDrawGizmos()
+        {
+            if (raycastLength > 0)
+            {
+                for (int i = 0; i < raycastDirections.Length; i++)
+                {
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawRay(transform.position, GetRayDirection(raycastDirections[i]) * raycastLength);
+                }
+            }
+        }
+
         public void Update()
         {
-            if (continuousDamage)
+            if (continuousDamage || continuousRaycastDamage)
             {
                 timer -= Time.deltaTime;
 
                 if (timer <= 0)
                 {
                     timer = hitInterval;
-                    DamageAllInside();
+
+                    if (continuousDamage)
+                    {
+                        DamageAllInside();
+                    }
+                    if (continuousRaycastDamage)
+                    {
+                        DamageRaycast();
+                    }
                 }
             }
         }
@@ -112,22 +158,43 @@ namespace JLL.Components
             switch (type)
             {
                 case (int)ColliderType.Player:
-                    DamagePlayer(target.GetComponent<PlayerControllerB>());
+                    if (playerTargets.enabled) DamagePlayer(target.GetComponent<PlayerControllerB>());
                     break;
                 case (int)ColliderType.Enemy:
-                    DamageEnemy(target.GetComponent<EnemyAICollisionDetect>().mainScript);
+                    if (enemyTargets.enabled) DamageEnemy(target.GetComponent<EnemyAICollisionDetect>().mainScript);
                     break;
                 case (int)ColliderType.Vehicle:
-                    DamageVehicle(target.GetComponent<VehicleController>());
+                    if (vehicleTargets.enabled) DamageVehicle(target.GetComponent<VehicleController>());
                     break;
                 case (int)ColliderType.Object:
-                    DamageObject(target.GetComponent<IHittable>());
+                    if (objectTargets.enabled) DamageObject(target.GetComponent<IHittable>());
                     break;
                 default:
                     return;
             }
+        }
 
-            PlayCustomAudio();
+        public void DamageRaycast()
+        {
+            if (raycastLength > 0)
+            {
+                for (int i = 0; i < raycastDirections.Length; i++)
+                {
+                    if (Physics.Raycast(transform.position, GetRayDirection(raycastDirections[i]), out RaycastHit hit, raycastLength, raycastMask))
+                    {
+                        int type = IdentifyCollider(hit.collider.gameObject);
+                        if (type != -1)
+                        {
+                            DamageType(hit.collider.gameObject, type);
+                        }
+                    }
+                }
+            }
+        }
+
+        private Vector3 GetRayDirection(Transform target)
+        {
+            return (target.position - transform.position).normalized;
         }
 
         public static int IdentifyCollider(GameObject target)
@@ -165,13 +232,19 @@ namespace JLL.Components
 
         public void DamagePlayer(PlayerControllerB player)
         {
-            int damage = playerTargets.damage;
-            if (playerTargets.applyDamageMultiplier)
+            if (player.isPlayerDead)
             {
-                damage = Mathf.RoundToInt(damage * damageMultiplier);
+                collidersInside.Remove(player.gameObject);
+                return;
             }
-            player.DamagePlayer(damage, causeOfDeath: damageSource, force: hitDir, hasDamageSFX: playNormalDamageSFX, deathAnimation: Mathf.Clamp(corpseType, 0, StartOfRound.Instance.playerRagdolls.Count));
+
+            player.DamagePlayer(playerTargets.GetTotalDamage(damageMultiplier), causeOfDeath: damageSource, force: hitDir, hasDamageSFX: playNormalDamageSFX, deathAnimation: corpseType < 0 ? -404 : Mathf.Clamp(corpseType, 0, StartOfRound.Instance.playerRagdolls.Count-1));
             playerTargets.hitEvent.Invoke(player);
+
+            if (playerTargets.playCustomSounds)
+            {
+                PlayCustomAudio();
+            }
         }
         public void SetPlayerDamage(int damage)
         {
@@ -180,13 +253,20 @@ namespace JLL.Components
 
         public void DamageEnemy(EnemyAI enemy)
         {
-            int damage = enemyTargets.damage;
-            if (enemyTargets.applyDamageMultiplier)
+            if (enemy.isEnemyDead)
             {
-                damage = Mathf.RoundToInt(damage * damageMultiplier);
+                collidersInside.Remove(enemy.gameObject);
+                return;
             }
-            enemy.HitEnemyOnLocalClient(damage, hitDir, playHitSFX: playNormalDamageSFX);
+
+            enemy.HitEnemyOnLocalClient(enemyTargets.GetTotalDamage(damageMultiplier), hitDir, playHitSFX: playNormalDamageSFX);
             enemyTargets.hitEvent.Invoke(enemy);
+
+
+            if (enemyTargets.playCustomSounds)
+            {
+                PlayCustomAudio();
+            }
         }
         public void SetEnemyDamage(int damage)
         {
@@ -195,13 +275,20 @@ namespace JLL.Components
 
         public void DamageVehicle(VehicleController vehicle)
         {
-            int damage = vehicleTargets.damage;
-            if (vehicleTargets.applyDamageMultiplier)
+            if (vehicle.carDestroyed)
             {
-                damage = Mathf.RoundToInt(damage * damageMultiplier);
+                collidersInside.Remove(vehicle.gameObject);
+                return;
             }
-            VehicleControllerPatch.DealPermanentDamage(vehicle, damage, hitDir);
+
+            VehicleControllerPatch.DealPermanentDamage(vehicle, vehicleTargets.GetTotalDamage(damageMultiplier), hitDir);
             vehicleTargets.hitEvent.Invoke(vehicle);
+
+
+            if (vehicleTargets.playCustomSounds)
+            {
+                PlayCustomAudio();
+            }
         }
         public void SetVehicleDamage(int damage)
         {
@@ -210,19 +297,19 @@ namespace JLL.Components
 
         public void DamageObject(IHittable obj)
         {
-            int damage = objectTargets.damage;
-            if (objectTargets.applyDamageMultiplier)
-            {
-                damage = Mathf.RoundToInt(damage * damageMultiplier);
-            }
-            obj.Hit(damage, hitDir, playHitSFX: playNormalDamageSFX);
+            obj.Hit(objectTargets.GetTotalDamage(damageMultiplier), hitDir, playHitSFX: playNormalDamageSFX);
             objectTargets.hitEvent.Invoke(obj);
+
+
+            if (objectTargets.playCustomSounds)
+            {
+                PlayCustomAudio();
+            }
         }
         public void SetObjectDamage(int damage)
         {
             objectTargets.damage = damage;
         }
-
 
         private void PlayCustomAudio()
         {

@@ -17,7 +17,7 @@ namespace JLL.Components
         [HideInInspector] public PlayerControllerB? currentPassenger;
         [HideInInspector] public bool localPlayerInSeat = false;
 
-        private int exitLayerMask = 2305;
+        private readonly int exitLayerMask = 2305;
 
         public void Start()
         {

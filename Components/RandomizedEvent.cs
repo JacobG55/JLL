@@ -1,39 +1,81 @@
 ﻿using GameNetcodeStuff;
+using JLL.API;
 using System;
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace JLL.Components
 {
+    public interface IWeightedItem
+    {
+        public int GetWeight();
+
+        public static int GetRandomIndex(IWeightedItem[] weightedItems)
+        {
+            int combinedWeights = 0;
+            for (int i = 0; i < weightedItems.Length; i++)
+            {
+                combinedWeights += weightedItems[i].GetWeight();
+            }
+            int random = UnityEngine.Random.Range(0, combinedWeights);
+            for (int i = 0; i < weightedItems.Length; i++)
+            {
+                random -= weightedItems[i].GetWeight();
+                if (random <= 0)
+                {
+                    return i;
+                }
+            }
+            return UnityEngine.Random.Range(0, weightedItems.Length);
+        }
+    }
+
     public class RandomizedEvent : NetworkBehaviour
     {
-        public bool triggerOnAwake = false;
+        [FormerlySerializedAs("triggerOnAwake")]
+        public bool triggerOnEnable = false;
 
         public WeightedEvent[] weightedEvents = new WeightedEvent[0];
 
+        [Header("Triggered by StartRandomPlayerEvent() using a random player in the lobby")]
+        [Tooltip("Event run on a random player in the lobby after StartRandomPlayerEvent() is called by another event.")]
+        public InteractEvent RandomPlayerEvent = new InteractEvent();
+
         [Serializable]
-        public class WeightedEvent
+        public class WeightedEvent : IWeightedItem
         {
             public UnityEvent Event = new UnityEvent();
             public InteractEvent PlayerEvent = new InteractEvent();
 
             [Range(0f, 100f)]
             public int Weight = 20;
+
+            public int GetWeight()
+            {
+                return Weight;
+            }
+        }
+        
+        public void OnEnable()
+        {
+            if (triggerOnEnable)
+            {
+                StartCoroutine(RollNextFixedUpdate());
+            }
         }
 
-        public InteractEvent RandomPlayerEvent = new InteractEvent();
-        
-        public void Awake()
+        private IEnumerator RollNextFixedUpdate()
         {
-            if (triggerOnAwake)
-            {
-                RollEvent();
-            }
+            yield return new WaitForFixedUpdate();
+            RollEvent();
         }
 
         public void RollEvent()
         {
+            JLogHelper.LogInfo($"{name} starting random roll!");
             RollRandomServerRpc(-1);
         }
 
@@ -47,35 +89,16 @@ namespace JLL.Components
         {
             if (weightedEvents.Length > 0)
             {
-                int random = GetWeightedIndex();
-                JLL.Instance.mls.LogInfo($"Server Generated: {random}");
+                int random = IWeightedItem.GetRandomIndex(weightedEvents);
+                JLogHelper.LogInfo($"{name} - Server Generated: {random}");
                 RollResultClientRpc(random, playerId);
             }
-        }
-
-        private int GetWeightedIndex()
-        {
-            int combinedWeights = 0;
-            for (int i = 0; i < weightedEvents.Length; i++)
-            {
-                combinedWeights += weightedEvents[i].Weight;
-            }
-            int random = UnityEngine.Random.Range(0, combinedWeights);
-            for (int i = 0; i < weightedEvents.Length; i++)
-            {
-                random -= weightedEvents[i].Weight;
-                if (random <= 0)
-                {
-                    return i;
-                }
-            }
-            return UnityEngine.Random.Range(0, weightedEvents.Length);
         }
 
         [ClientRpc]
         private void RollResultClientRpc(int value, int playerId)
         {
-            JLL.Instance.mls.LogInfo($"Client Received: {value}");
+            JLogHelper.LogInfo($"{name} - Client Received: {value}");
             weightedEvents[value].Event.Invoke();
             if (playerId != -1)
             {

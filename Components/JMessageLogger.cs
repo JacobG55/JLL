@@ -5,6 +5,7 @@ namespace JLL.Components
 {
     public class JMessageLogger : MonoBehaviour
     {
+        [Tooltip("Used as the header of HUD Tips/Warnings & the name provided in logs after the location name")]
         public string logName = "";
 
         public void LogMessage(string message)
@@ -14,7 +15,7 @@ namespace JLL.Components
             {
                 location = $"{RoundManager.Instance.currentLevel.PlanetName}";
             }
-            JLL.Instance.mls.LogMessage($"({location})<{logName}>: {message}");
+            JLogHelper.LogInfo($"({location})<{logName}>: {message}", JLogLevel.User);
         }
 
         public void SendTip(string message)

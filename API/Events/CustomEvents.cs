@@ -1,5 +1,4 @@
-﻿using GameNetcodeStuff;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -25,4 +24,7 @@ namespace JLL.API.Events
 
     [Serializable]
     public class IntEvent : UnityEvent<int> { }
+
+    [Serializable]
+    public class StringEvent : UnityEvent<string> { }
 }

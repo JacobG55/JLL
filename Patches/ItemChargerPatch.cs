@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using JLL.API;
 using JLL.Components;
 
 namespace JLL.Patches
@@ -12,7 +13,7 @@ namespace JLL.Patches
         {
             if (__instance.TryGetComponent(out ChargeLimiter limiter))
             {
-                JLL.Instance.mls.LogInfo("Found Limiter");
+                JLogHelper.LogInfo("Found Limiter");
                 limiter.Charge();
             }
         }

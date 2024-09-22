@@ -4,6 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using System.Collections.Generic;
 using JLL.API.LevelProperties;
+using JLL.API;
 
 namespace JLL.Patches
 {
@@ -18,7 +19,7 @@ namespace JLL.Patches
             {
                 GameObject obj = GameObject.Instantiate(JLL.Instance.networkObject);
                 obj.GetComponent<NetworkObject>().Spawn();
-                JLL.Instance.mls.LogInfo("JLL Network Manager Initialized.");
+                JLogHelper.LogInfo("JLL Network Manager Initialized.", JLogLevel.User);
             }
         }
 
@@ -78,6 +79,16 @@ namespace JLL.Patches
             for (int i = 0; i < JLevelEventTriggers.EventTriggers.Count; i++)
             {
                 JLevelEventTriggers.EventTriggers[i].ShipLanded.Invoke();
+            }
+        }
+
+        [HarmonyPatch("ShipLeave")]
+        [HarmonyPrefix]
+        public static void patchShipLeave()
+        {
+            for (int i = 0; i < JLevelEventTriggers.EventTriggers.Count; i++)
+            {
+                JLevelEventTriggers.EventTriggers[i].ShipLeaving.Invoke();
             }
         }
     }

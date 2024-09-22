@@ -6,7 +6,7 @@ namespace JLL.Components
 {
     public class ExtendedLevelLocker : MonoBehaviour
     {
-        public SelectableLevel targetLevel;
+        public string sceneName;
 
         [Header("OnTriggerEnter")]
         public bool isTriggerActivated = false;
@@ -16,14 +16,29 @@ namespace JLL.Components
         {
             if (JCompatabilityHelper.IsModLoaded.LLL)
             {
-                LLLHelper.LockExtendedLevel(targetLevel, locked);
+                LLLHelper.LockExtendedLevel(sceneName, locked);
             }
         }
         public void SetLevelHidden(bool hidden)
         {
             if (JCompatabilityHelper.IsModLoaded.LLL)
             {
-                LLLHelper.HideExtendedLevel(targetLevel, hidden);
+                LLLHelper.HideExtendedLevel(sceneName, hidden);
+            }
+        }
+
+        public void LockLevel(string sceneName)
+        {
+            if (JCompatabilityHelper.IsModLoaded.LLL)
+            {
+                LLLHelper.LockExtendedLevel(sceneName, shouldUnlock);
+            }
+        }
+        public void HideLevel(string sceneName)
+        {
+            if (JCompatabilityHelper.IsModLoaded.LLL)
+            {
+                LLLHelper.HideExtendedLevel(sceneName, shouldUnlock);
             }
         }
 

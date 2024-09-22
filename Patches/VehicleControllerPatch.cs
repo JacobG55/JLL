@@ -5,7 +5,7 @@ using UnityEngine;
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(VehicleController))]
-    internal class VehicleControllerPatch
+    public class VehicleControllerPatch
     {
         [HarmonyReversePatch]
         [HarmonyPatch(typeof(VehicleController), "DealPermanentDamage")]

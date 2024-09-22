@@ -5,6 +5,7 @@ namespace JLL.Components
 {
     public class JWaterFilter : MonoBehaviour
     {
+        [Tooltip("If you have multiple of the same type of water in your level you can point all of your JWaterFilter scripts to the same Volume")]
         public Volume underwaterFilter;
 
         [Header("Audio")]

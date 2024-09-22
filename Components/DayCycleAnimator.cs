@@ -7,6 +7,7 @@ namespace JLL.Components
     {
         private Animator anim;
 
+        [Tooltip("Scale of time the animation synced to the day progression will use. Defaults to 1 second.")]
         public float timeScale = 1f;
 
         public void Start ()

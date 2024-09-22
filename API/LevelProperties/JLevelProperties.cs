@@ -8,6 +8,7 @@ namespace JLL.API.LevelProperties
     [Serializable]
     public class JLevelProperties
     {
+        public string sceneName = "";
         public EnemyPropertyOverride[] enemyPropertyOverrides = new EnemyPropertyOverride[0];
         public LevelPrefab[] levelPrefabs = new LevelPrefab[0];
 
@@ -26,7 +27,7 @@ namespace JLL.API.LevelProperties
     [Serializable]
     public class EnemyPropertyOverride
     {
-        public EnemyType enemyType;
+        public string enemyName = "";
 
         public float PowerLevel = -1;
         public int MaxCount = -1;
