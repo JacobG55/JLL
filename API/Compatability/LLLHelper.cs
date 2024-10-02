@@ -167,5 +167,17 @@ namespace JLL.API.Compatability
 
             return foundItems == contentTags.Length;
         }
+
+        internal static void LinkBundlesLoadedEvent()
+        {
+            JFileHelper.LLLBundlesLoaded = AssetBundleLoader.CurrentLoadingStatus == AssetBundleLoader.LoadingStatus.Complete;
+            AssetBundleLoader.onBundlesFinishedLoading += LLLBundlesLoaded;
+        }
+
+        internal static void LLLBundlesLoaded()
+        {
+            JFileHelper.LLLBundlesLoaded = true;
+            JFileHelper.SearchAllBundles();
+        }
     }
 }

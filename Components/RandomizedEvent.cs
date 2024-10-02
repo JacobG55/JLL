@@ -1,5 +1,6 @@
 ﻿using GameNetcodeStuff;
 using JLL.API;
+using LethalLib.Modules;
 using System;
 using System.Collections;
 using Unity.Netcode;
@@ -38,11 +39,14 @@ namespace JLL.Components
         [FormerlySerializedAs("triggerOnAwake")]
         public bool triggerOnEnable = false;
 
-        public WeightedEvent[] weightedEvents = new WeightedEvent[0];
+        public WeightedEvent[] weightedEvents = new WeightedEvent[1] { new WeightedEvent() { Weight = 20 } };
 
         [Header("Triggered by StartRandomPlayerEvent() using a random player in the lobby")]
         [Tooltip("Event run on a random player in the lobby after StartRandomPlayerEvent() is called by another event.")]
         public InteractEvent RandomPlayerEvent = new InteractEvent();
+
+        [Header("Advanced")]
+        public bool isNetworkSynced = true;
 
         [Serializable]
         public class WeightedEvent : IWeightedItem
@@ -63,7 +67,7 @@ namespace JLL.Components
         {
             if (triggerOnEnable)
             {
-                StartCoroutine(RollNextFixedUpdate());
+                RollEvent();
             }
         }
 
@@ -76,12 +80,26 @@ namespace JLL.Components
         public void RollEvent()
         {
             JLogHelper.LogInfo($"{name} starting random roll!");
-            RollRandomServerRpc(-1);
+            if (isNetworkSynced)
+            {
+                RollRandomServerRpc(-1);
+            }
+            else
+            {
+                TriggerEvent(IWeightedItem.GetRandomIndex(weightedEvents), -1);
+            }
         }
 
         public void RollPlayerEvent(PlayerControllerB player)
         {
-            RollRandomServerRpc((int)player.actualClientId);
+            if (isNetworkSynced)
+            {
+                RollRandomServerRpc((int)player.actualClientId);
+            }
+            else
+            {
+                TriggerEvent(IWeightedItem.GetRandomIndex(weightedEvents), (int)player.actualClientId);
+            }
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -99,12 +117,17 @@ namespace JLL.Components
         private void RollResultClientRpc(int value, int playerId)
         {
             JLogHelper.LogInfo($"{name} - Client Received: {value}");
+            TriggerEvent(value, playerId);
+        }
+
+        private void TriggerEvent(int value, int playerId = -1)
+        {
             weightedEvents[value].Event.Invoke();
             if (playerId != -1)
             {
                 weightedEvents[value].PlayerEvent.Invoke(RoundManager.Instance.playersManager.allPlayerScripts[playerId]);
             }
-        }
+        } 
 
         public void StartRandomPlayerEvent()
         {

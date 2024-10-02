@@ -3,13 +3,15 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
+using static JLL.Components.EnemySpawner;
 
 namespace JLL.Components
 {
     public class ItemSpawner : MonoBehaviour
     {
         public SpawnPoolSource SourcePool = SpawnPoolSource.CustomList;
-        public WeightedItemRefrence[] CustomList = new WeightedItemRefrence[0];
+        public WeightedItemRefrence[] CustomList = new WeightedItemRefrence[1] { new WeightedItemRefrence() };
+        public RotationType spawnRotation = RotationType.NoRotation;
         [FormerlySerializedAs("spawnOnAwake")]
         public bool spawnOnEnabled = true;
 
@@ -120,11 +122,26 @@ namespace JLL.Components
 
         public void SpawnRandom(int count = 1)
         {
-            SpawnRandomItems(SourcePool, transform.position, RoundManager.Instance.spawnedScrapContainer, CustomList, count: count);
+            SpawnRandomItems(SourcePool, transform.position, RoundManager.Instance.spawnedScrapContainer, CustomList, count: count, rotation: spawnRotation);
+        }
+
+        public void SpawnRandom(MonoBehaviour target)
+        {
+            SpawnRandom(target.transform.position);
+        }
+
+        public void SpawnRandom(GameObject target)
+        {
+            SpawnRandom(target.transform.position);
+        }
+
+        public void SpawnRandom(Vector3 pos)
+        {
+            SpawnRandomItems(SourcePool, pos, RoundManager.Instance.spawnedScrapContainer, CustomList, count: 1, rotation: spawnRotation);
         }
 
         // Returned list contains spawned items on server and is empty on client.
-        public static List<GrabbableObject> SpawnRandomItems(SpawnPoolSource sourcePool, Vector3 position, Transform parent, WeightedItemRefrence[]? customList = null, Vector3[]? offsets = null, int count = 1, bool spawnOnNetwork = true)
+        public static List<GrabbableObject> SpawnRandomItems(SpawnPoolSource sourcePool, Vector3 position, Transform parent, WeightedItemRefrence[]? customList = null, Vector3[]? offsets = null, int count = 1, bool spawnOnNetwork = true, RotationType rotation = RotationType.NoRotation)
         {
             List<GrabbableObject> grabbableObjects = new List<GrabbableObject>();
             if (RoundManager.Instance.IsServer || RoundManager.Instance.IsHost)
@@ -141,7 +158,7 @@ namespace JLL.Components
                         {
                             offset += offsets[i];
                         }
-                        GrabbableObject? spawned = SpawnItem(itemToSpawn, position + offset, parent, overrideValue, spawnOnNetwork);
+                        GrabbableObject? spawned = SpawnItem(itemToSpawn, position + offset, parent, overrideValue, spawnOnNetwork, rotation: rotation);
                         if (spawned != null)
                         {
                             grabbableObjects.Add(spawned);
@@ -152,13 +169,13 @@ namespace JLL.Components
             return grabbableObjects;
         }
 
-        public static GrabbableObject? SpawnItem(Item item, Vector3 pos, Transform? parent, int overrideValue = -1, bool spawnOnNetwork = true)
+        public static GrabbableObject? SpawnItem(Item item, Vector3 pos, Transform? parent, int overrideValue = -1, bool spawnOnNetwork = true, RotationType rotation = RotationType.NoRotation)
         {
             if (RoundManager.Instance.IsServer || RoundManager.Instance.IsHost)
             {
-                GrabbableObject grabbable = Instantiate(item.spawnPrefab, pos, Quaternion.identity, parent).GetComponent<GrabbableObject>();
+                GrabbableObject grabbable = Instantiate(item.spawnPrefab, pos, Quaternion.Euler(new Vector3(0, parent == null ? 0 : GetRot(rotation, parent), 0)), parent).GetComponent<GrabbableObject>();
                 grabbable.fallTime = 0f;
-                OverrideScrapValue(grabbable, overrideValue);
+                OverrideScrapValue(ref grabbable, overrideValue);
                 if (spawnOnNetwork)
                 {
                     grabbable.NetworkObject.Spawn();
@@ -168,15 +185,15 @@ namespace JLL.Components
             return null;
         }
 
-        public static void OverrideScrapValue(GrabbableObject grabbable, int overrideValue = -1)
+        public static void OverrideScrapValue(ref GrabbableObject grabbable, int overrideValue = -1)
         {
             if (overrideValue >= 0)
             {
-                grabbable.scrapValue = overrideValue;
+                grabbable.SetScrapValue(overrideValue);
             }
             else
             {
-                grabbable.scrapValue = Mathf.RoundToInt(UnityEngine.Random.Range(grabbable.itemProperties.minValue, grabbable.itemProperties.maxValue) * RoundManager.Instance.scrapValueMultiplier);
+                grabbable.SetScrapValue(Mathf.RoundToInt(UnityEngine.Random.Range(grabbable.itemProperties.minValue, grabbable.itemProperties.maxValue) * RoundManager.Instance.scrapValueMultiplier));
             }
         }
     }

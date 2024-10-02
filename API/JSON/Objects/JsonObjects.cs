@@ -1,4 +1,6 @@
 ﻿using JLL.API.LevelProperties;
+using JLL.ScriptableObjects;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace JLL.API.JSON.Objects
@@ -10,6 +12,56 @@ namespace JLL.API.JSON.Objects
 
         public JsonConfigValue[] configOptions = new JsonConfigValue[0];
         public JsonLevelPropertyOverrides[] levelPropertyOverrides = new JsonLevelPropertyOverrides[0];
+
+        public JLLMod ToMod()
+        {
+            JLLMod mod = ScriptableObject.CreateInstance<JLLMod>();
+            mod.modAuthor = modAuthor;
+            mod.modName = modName;
+
+            foreach (var config in configOptions)
+            {
+                switch (config.type.ToLower())
+                {
+                    case "bool":
+                        List<string> trueValues = new List<string>() { "true", "1", "t" };
+                        mod.Booleans.Add(ParseConfig(config, trueValues.Contains(config.defaultValue.ToLower())));
+                        break;
+                    case "int":
+                        int intDefault = 1;
+                        if (int.TryParse(config.defaultValue, out int intVal))
+                        {
+                            intDefault = intVal;
+                        }
+                        mod.Integers.Add(ParseConfig(config, intDefault));
+                        break;
+                    case "float":
+                        float floatDefault = 1.0f;
+                        if (float.TryParse(config.defaultValue, out float floatVal))
+                        {
+                            floatDefault = floatVal;
+                        }
+                        mod.Floats.Add(ParseConfig(config, floatDefault));
+                        break;
+                    case "string":
+                        mod.Strings.Add(ParseConfig(config, config.defaultValue));
+                        break;
+                }
+            }
+
+            return mod;
+        }
+
+        private JLLMod.ConfigValue<T> ParseConfig<T>(JsonConfigValue config, T defaultValue)
+        {
+            return new JLLMod.ConfigValue<T>
+            {
+                configName = config.configName,
+                configCategory = config.configCategory,
+                configDescription = config.configDescription,
+                defaultValue = defaultValue
+            };
+        }
     }
 
     public class JsonConfigValue

@@ -1,9 +1,11 @@
 ﻿using GameNetcodeStuff;
+using JLL.API;
 using JLL.Patches;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using static JLL.Components.EnemySpawner;
 
 namespace JLL.Components
 {
@@ -12,6 +14,7 @@ namespace JLL.Components
         [SerializeField]
         public CauseOfDeath damageSource = CauseOfDeath.Unknown;
         public Vector3 hitDir = Vector3.zero;
+        public RotationType hitRotation = RotationType.ObjectRotation;
         [Tooltip("Check RoundManager in the Ship Scene for corpse IDs\nA negative copseType will result in no corpse spawning")]
         public int corpseType = 0;
 
@@ -60,6 +63,7 @@ namespace JLL.Components
             public bool applyDamageMultiplier = true;
             public bool playCustomSounds = true;
             public UnityEvent<T> hitEvent = new UnityEvent<T>();
+            public UnityEvent<T> killEvent = new UnityEvent<T>();
 
             public int GetTotalDamage(float multiplier = 1)
             {
@@ -72,15 +76,43 @@ namespace JLL.Components
         }
 
         private readonly Dictionary<GameObject, int> collidersInside = new Dictionary<GameObject, int>();
+        private readonly List<GameObject> markedForRemoval = new List<GameObject>();
+        private readonly List<GameObject> foundInside = new List<GameObject>();
 
         public enum ColliderType
         {
+            Unknown = -1,
             Player = 0,
             Enemy = 1,
             Vehicle = 2,
             Object = 3
         }
 
+        public void OnTriggerStay(Collider collider)
+        {
+            foundInside.Add(collider.gameObject);
+            if (!collidersInside.ContainsKey(collider.gameObject))
+            {
+                int type = IdentifyCollider(collider.gameObject);
+                collidersInside.Add(collider.gameObject, type);
+                if (damageOnEnter) DamageType(collider.gameObject, type);
+            }
+        }
+
+        public void FixedUpdate()
+        {
+            foreach (var pair in collidersInside)
+            {
+                if (!foundInside.Contains(pair.Key))
+                {
+                    if (damageOnExit) DamageType(pair.Key, pair.Value);
+                    markedForRemoval.Add(pair.Key);
+                }
+            }
+            foundInside.Clear();
+        }
+
+        /*
         public void OnTriggerEnter(Collider collider)
         {
             int type = IdentifyCollider(collider.gameObject);
@@ -95,8 +127,14 @@ namespace JLL.Components
         {
             if (collidersInside.TryGetValue(collider.gameObject, out int type)) {
                 if (damageOnExit) DamageType(collider.gameObject, type);
-                collidersInside.Remove(collider.gameObject);
+                markedForRemoval.Add(collider.gameObject);
             }
+        }
+        */
+
+        public void OnDisable()
+        {
+            collidersInside.Clear();
         }
 
         public void OnCollisionEnter(Collision collision)
@@ -125,6 +163,12 @@ namespace JLL.Components
 
         public void Update()
         {
+            for (int i = 0; i < markedForRemoval.Count; i++)
+            {
+                collidersInside.Remove(markedForRemoval[i]);
+            }
+            markedForRemoval.Clear();
+
             if (continuousDamage || continuousRaycastDamage)
             {
                 timer -= Time.deltaTime;
@@ -225,6 +269,19 @@ namespace JLL.Components
             return -1;
         }
 
+        private Vector3 CalcHitDir(Transform target)
+        {
+            switch (hitRotation)
+            {
+                case RotationType.ObjectRotation:
+                    return Quaternion.AngleAxis(transform.rotation.y, Vector3.up) * hitDir;
+                case RotationType.RandomRotation:
+                    return Quaternion.AngleAxis(UnityEngine.Random.Range(0f, 360f), Vector3.up) * hitDir;
+                default:
+                    return hitDir;
+            }
+        }
+
         public void SetDamageMultiplier(float multiplier)
         {
             damageMultiplier = multiplier;
@@ -234,12 +291,21 @@ namespace JLL.Components
         {
             if (player.isPlayerDead)
             {
-                collidersInside.Remove(player.gameObject);
+                markedForRemoval.Add(player.gameObject);
                 return;
             }
 
-            player.DamagePlayer(playerTargets.GetTotalDamage(damageMultiplier), causeOfDeath: damageSource, force: hitDir, hasDamageSFX: playNormalDamageSFX, deathAnimation: corpseType < 0 ? -404 : Mathf.Clamp(corpseType, 0, StartOfRound.Instance.playerRagdolls.Count-1));
+            player.DamagePlayer(playerTargets.GetTotalDamage(damageMultiplier), causeOfDeath: damageSource, force: CalcHitDir(player.transform), hasDamageSFX: playNormalDamageSFX, deathAnimation: Mathf.Clamp(corpseType, 0, StartOfRound.Instance.playerRagdolls.Count-1));
             playerTargets.hitEvent.Invoke(player);
+
+            if (player.isPlayerDead)
+            {
+                if (corpseType < 0)
+                {
+                    JLLNetworkManager.Instance.DestroyPlayerCorpse(player);
+                }
+                playerTargets.killEvent.Invoke(player);
+            }
 
             if (playerTargets.playCustomSounds)
             {
@@ -255,13 +321,17 @@ namespace JLL.Components
         {
             if (enemy.isEnemyDead)
             {
-                collidersInside.Remove(enemy.gameObject);
+                markedForRemoval.Add(enemy.gameObject);
                 return;
             }
 
-            enemy.HitEnemyOnLocalClient(enemyTargets.GetTotalDamage(damageMultiplier), hitDir, playHitSFX: playNormalDamageSFX);
+            enemy.HitEnemyOnLocalClient(enemyTargets.GetTotalDamage(damageMultiplier), CalcHitDir(enemy.transform), playHitSFX: playNormalDamageSFX);
             enemyTargets.hitEvent.Invoke(enemy);
 
+            if (enemy.isEnemyDead)
+            {
+                enemyTargets.killEvent.Invoke(enemy);
+            }
 
             if (enemyTargets.playCustomSounds)
             {
@@ -277,13 +347,17 @@ namespace JLL.Components
         {
             if (vehicle.carDestroyed)
             {
-                collidersInside.Remove(vehicle.gameObject);
+                markedForRemoval.Add(vehicle.gameObject);
                 return;
             }
 
-            VehicleControllerPatch.DealPermanentDamage(vehicle, vehicleTargets.GetTotalDamage(damageMultiplier), hitDir);
+            VehicleControllerPatch.DealPermanentDamage(vehicle, vehicleTargets.GetTotalDamage(damageMultiplier), CalcHitDir(vehicle.transform));
             vehicleTargets.hitEvent.Invoke(vehicle);
 
+            if (vehicle.carDestroyed)
+            {
+                vehicleTargets.killEvent.Invoke(vehicle);
+            }
 
             if (vehicleTargets.playCustomSounds)
             {
@@ -297,9 +371,8 @@ namespace JLL.Components
 
         public void DamageObject(IHittable obj)
         {
-            obj.Hit(objectTargets.GetTotalDamage(damageMultiplier), hitDir, playHitSFX: playNormalDamageSFX);
+            obj.Hit(objectTargets.GetTotalDamage(damageMultiplier), CalcHitDir(obj is MonoBehaviour behaviour ? behaviour.transform : transform), playHitSFX: playNormalDamageSFX);
             objectTargets.hitEvent.Invoke(obj);
-
 
             if (objectTargets.playCustomSounds)
             {

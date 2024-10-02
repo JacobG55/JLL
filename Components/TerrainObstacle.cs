@@ -1,5 +1,6 @@
 ﻿using JLL.API;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace JLL.Components
 {
@@ -17,6 +18,9 @@ namespace JLL.Components
         public bool detectTriggers = true;
         public bool detectColliders = true;
 
+        public UnityEvent OnDamage = new UnityEvent();
+        public UnityEvent OnDestroy = new UnityEvent();
+
         public void OnTriggerEnter(Collider other)
         {
             if (detectTriggers) CalcCollision(other);
@@ -32,6 +36,7 @@ namespace JLL.Components
             if (detected.TryGetComponent(out VehicleController component))
             {
                 float damage = component.averageVelocity.magnitude;
+                JLogHelper.LogInfo($"Hit by cruiser: {damage}", JLogLevel.Wesley);
                 if (!(component == null) && component.IsOwner && damage > damageThreshold && Vector3.Angle(component.averageVelocity, transform.position - component.mainRigidbody.position) < 80f)
                 {
                     JLLNetworkManager.Instance.DestroyTerrainObstacleOnLocalClient(transform.position, Mathf.RoundToInt(damage));
@@ -42,7 +47,9 @@ namespace JLL.Components
 
         public void Damage(int ammount)
         {
+            if (health <= 0) return;
             health -= ammount;
+            JLogHelper.LogInfo($"{name} hit for {ammount} dmg! HP = {health}", JLogLevel.Wesley);
 
             if (breakFX != null)
             {
@@ -62,7 +69,12 @@ namespace JLL.Components
 
             if (health <= 0)
             {
+                OnDestroy.Invoke();
                 Destroy(gameObject);
+            }
+            else
+            {
+                OnDamage.Invoke();
             }
         }
     }

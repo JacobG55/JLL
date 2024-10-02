@@ -46,7 +46,8 @@ namespace JLL.Components.Filters
             EqualTo,
             GreaterThanOrEqual,
             LessThanOrEqual,
-            ModuloZero
+            ModuloZero,
+            NotEqualTo,
         }
 
         public bool CheckNum(float check, float current)
@@ -65,6 +66,8 @@ namespace JLL.Components.Filters
                     return check <= current;
                 case FilterOpperand.ModuloZero:
                     return check % current == 0;
+                case FilterOpperand.NotEqualTo:
+                    return check != current;
                 default:
                     break;
             }

@@ -1,20 +1,16 @@
-﻿using JLL.API;
-using JLL.API.JSON;
-using JLL.Components.Filters;
-using System;
+﻿using JLL.Components.Filters;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
+using static JLL.Components.JModConfigGrabber;
 
 namespace JLL.Components
 {
     public class JsonConfigGrabber : MonoBehaviour
     {
+        [Header("-=-DEPRICATED-=-")]
         public string modAuthor = "";
         public string modName = "";
-
-        private string modGUID;
-        private JsonModEntry? modEntry;
 
         [FormerlySerializedAs("checkAllOnAwake")]
         public bool checkAllOnEnable = true;
@@ -29,155 +25,20 @@ namespace JLL.Components
         public UnityEvent CheckSuccess = new UnityEvent();
         public UnityEvent CheckFailure = new UnityEvent();
 
-        [Serializable]
-        public class PropertyCheck<T, F> where F : JFilterProperty<T>
+        public void Start()
         {
-            public string propertyName;
-            [Tooltip("When filter is disabled the Success event gets triggered")]
-            public F Filter;
-            [FormerlySerializedAs("Event")]
-            public UnityEvent<T> Success = new UnityEvent<T>();
-            public UnityEvent<T> Failed = new UnityEvent<T>();
+            JModConfigGrabber grabber = gameObject.AddComponent<JModConfigGrabber>();
 
-            public bool Check(T value)
-            {
-                JLogHelper.LogInfo($"{propertyName} = {value}");
-                if (Filter.shouldCheck && !Filter.CheckValue(value))
-                {
-                    Failed.Invoke(value);
-                    return false;
-                }
-                Success.Invoke(value);
-                return true;
-            }
-        }
+            grabber.modAuthor = modAuthor;
+            grabber.modName = modName;
+            grabber.checkAllOnEnable = checkAllOnEnable;
+            grabber.BoolChecks = BoolChecks;
+            grabber.IntChecks = IntChecks;
+            grabber.FloatChecks = FloatChecks;
+            grabber.CheckSuccess = CheckSuccess;
+            grabber.CheckFailure = CheckFailure;
 
-        void Awake()
-        {
-            if (modEntry == null)
-            {
-                modGUID = $"{modAuthor}.{modName}";
-                if (JsonModRegistry.Mods.ContainsKey(modGUID))
-                {
-                    modEntry = JsonModRegistry.Mods[modGUID];
-                    modEntry.LogInfo("Found JsonMod!");
-                }
-                else
-                {
-                    JLogHelper.LogWarning($"{modGUID} JSON mod could not be found in registry.");
-                }
-            }
-        }
-
-        void OnEnable()
-        {
-            if (checkAllOnEnable)
-            {
-                CheckAll();
-            }
-        }
-
-        public void CheckAll()
-        {
-            if (modEntry == null) return;
-
-            bool success = true;
-
-            foreach (var check in BoolChecks)
-            {
-                success &= check.Check(modEntry.GetBool(check.propertyName));
-            }
-
-            foreach (var check in IntChecks)
-            {
-                success &= check.Check(modEntry.GetInt(check.propertyName));
-            }
-
-            foreach (var check in FloatChecks)
-            {
-                success &= check.Check(modEntry.GetFloat(check.propertyName));
-            }
-
-            foreach (var check in StringChecks)
-            {
-                success &= check.Check(modEntry.GetString(check.propertyName));
-            }
-
-            if (success)
-            {
-                CheckSuccess.Invoke();
-            }
-            else
-            {
-                CheckFailure.Invoke();
-            }
-        }
-
-        public void GetPropertyValue(string name)
-        {
-            if (modEntry == null)
-            {
-                return;
-            }
-
-            if (modEntry.Configs.ContainsKey(name))
-            {
-                var pair = modEntry.Configs[name];
-
-                switch (pair.Value.type)
-                {
-                    case JsonModEntry.EntryType.Bool:
-                        for (int i = 0; i < BoolChecks.Length; i++)
-                        {
-                            if (BoolChecks[i].propertyName == name)
-                            {
-                                BoolChecks[i].Check(modEntry.GetBool(name));
-                                break;
-                            }
-                        }
-                        break;
-                    case JsonModEntry.EntryType.Int:
-                        for (int i = 0; i < IntChecks.Length; i++)
-                        {
-                            if (IntChecks[i].propertyName == name)
-                            {
-                                IntChecks[i].Check(modEntry.GetInt(name));
-                                break;
-                            }
-                        }
-                        break;
-                    case JsonModEntry.EntryType.Float:
-                        for (int i = 0; i < FloatChecks.Length; i++)
-                        {
-                            if (FloatChecks[i].propertyName == name)
-                            {
-                                FloatChecks[i].Check(modEntry.GetFloat(name));
-                                break;
-                            }
-                        }
-                        break;
-                    case JsonModEntry.EntryType.String:
-                        for (int i = 0; i < StringChecks.Length; i++)
-                        {
-                            if (StringChecks[i].propertyName == name)
-                            {
-                                StringChecks[i].Check(modEntry.GetString(name));
-                                break;
-                            }
-                        }
-                        break;
-                }
-            }
-        }
-
-        public void LogInfo(string message)
-        {
-            modEntry?.LogInfo(message);
-        }
-
-        public void LogWarning(string message)
-        {
-            modEntry?.LogWarning(message);
+            Destroy(this);
         }
     }
 }

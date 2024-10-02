@@ -4,12 +4,8 @@ using BepInEx.Logging;
 using HarmonyLib;
 using JLL.API;
 using JLL.API.Compatability;
-using JLL.API.JSON;
-using JLL.API.JSON.Objects;
-using JLL.API.LevelProperties;
 using JLL.Patches;
 using LethalLib.Modules;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -24,7 +20,7 @@ namespace JLL
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.6.0";
+        private const string modVersion = "1.6.5";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -74,11 +70,13 @@ namespace JLL
             harmony.PatchAll(typeof(LungPropPatch));
             harmony.PatchAll(typeof(VehicleControllerPatch));
             harmony.PatchAll(typeof(MenuManagerPatch));
-            harmony.PatchAll(typeof(PlayerControllerBPatch));
+            harmony.PatchAll(typeof(BreakerBoxPatch));
 
-            List<JsonModSettings> jsonMods = JsonHelper.ParseJsonFiles<JsonModSettings>(JsonHelper.GetFilesInDirectory(Paths.PluginPath, new List<string> { "JLLMod.json" }));
+            JFileHelper.LoadFilesInPlugins();
+            /*
+            List<JsonModSettings> jsonMods = JFileHelper.ParseJsonFiles<JsonModSettings>(JFileHelper.GetFilesInDirectory(Paths.PluginPath, new List<string> { "JLLMod.json" }));
             JLogHelper.LogInfo($"Found {jsonMods.Count} JLLMods. Registering them now...", JLogLevel.User);
-            int registeredMods = JsonModRegistry.RegisterMods(jsonMods);
+            int registeredMods = CustomConfigRegistry.RegisterMods(jsonMods);
 
             int registeredLevelOverrides = 0;
             for (int i = 0; i < jsonMods.Count; i++)
@@ -91,6 +89,7 @@ namespace JLL
             }
 
             JLogHelper.LogInfo($"Successfully Registered {registeredMods} JLLMods with {registeredLevelOverrides} level property overrides.", JLogLevel.User);
+            */
         }
 
         public static void NetcodeRequired(ManualLogSource logSource)

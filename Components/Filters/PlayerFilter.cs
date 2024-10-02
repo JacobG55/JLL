@@ -22,12 +22,15 @@ namespace JLL.Components.Filters
         public NumericFilter weightCheck = new NumericFilter() { value = 2f };
         public CheckFilter inFacility = new CheckFilter() { value = false };
 
+        [Header("Player Info")]
+        public NameFilter username = new NameFilter() { value = "Player" };
+        public CheckFilter isLocalPlayer = new CheckFilter() { value = true };
+
         public override void Filter(PlayerControllerB player)
         {
             if (heldItem.shouldCheck && !heldItem.CheckValue(player))
             {
-                Result(player);
-                return;
+                goto Failed;
             }
 
             if (inventoryContents.Length > 0)
@@ -47,36 +50,45 @@ namespace JLL.Components.Filters
                 }
                 if (foundItems != inventoryContents.Length)
                 {
-                    Result(player);
-                    return;
+                    goto Failed;
                 }
             }
 
             if (healthCheck.shouldCheck && !healthCheck.CheckValue(player.health))
             {
-                Result(player);
-                return;
+                goto Failed;
             }
 
             if (staminaCheck.shouldCheck && !staminaCheck.CheckValue(player.sprintMeter))
             {
-                Result(player);
-                return;
+                goto Failed;
             }
 
             if (weightCheck.shouldCheck && !weightCheck.CheckValue(player.carryWeight))
             {
-                Result(player);
-                return;
+                goto Failed;
             }
 
             if (inFacility.shouldCheck && !inFacility.CheckValue(player.isInsideFactory))
             {
-                Result(player);
-                return;
+                goto Failed;
+            }
+
+            if (isLocalPlayer.shouldCheck && !isLocalPlayer.CheckValue(player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId))
+            {
+                goto Failed;
+            }
+
+            if (username.shouldCheck && !username.CheckValue(player.playerUsername))
+            {
+                goto Failed;
             }
 
             Result(player, true);
+            return;
+
+            Failed:
+            Result(player);
         }
 
         public void FilterLocalClient()

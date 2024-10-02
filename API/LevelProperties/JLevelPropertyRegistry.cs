@@ -5,35 +5,35 @@ namespace JLL.API.LevelProperties
 {
     public class JLevelPropertyRegistry
     {
-        private static readonly Dictionary<string, JLevelProperties> Registry = new Dictionary<string, JLevelProperties>();
+        private static readonly Dictionary<string, JLevelPropertyEntry> Registry = new Dictionary<string, JLevelPropertyEntry>();
 
         public static readonly List<EnemyType> AllSortedEnemies = new List<EnemyType>();
         public static readonly List<EntranceTeleport> EntranceTeleports = new List<EntranceTeleport>();
         private static Terminal Terminal;
 
-        private static JLevelProperties original = new JLevelProperties();
-        public static JLevelProperties GetLevelProperties(SelectableLevel level)
+        private static JLevelPropertyEntry original = new JLevelPropertyEntry();
+        public static JLevelPropertyEntry GetLevelProperties(SelectableLevel level)
         {
             return GetLevelProperties(level.sceneName);
         }
 
-        public static JLevelProperties GetLevelProperties(string name)
+        public static JLevelPropertyEntry GetLevelProperties(string name)
         {
-            if (Registry.TryGetValue(name, out JLevelProperties properties))
+            if (Registry.TryGetValue(name, out JLevelPropertyEntry properties))
             {
                 return properties;
             }
-            return new JLevelProperties();
+            return new JLevelPropertyEntry();
         }
 
-        public static void RegisterLevelProperties(JLevelProperties properties)
+        public static void RegisterLevelProperties(JLevelPropertyEntry properties)
         {
             RegisterLevelProperties(properties.sceneName, properties);
         }
 
-        public static void RegisterLevelProperties(string name, JLevelProperties properties)
+        public static void RegisterLevelProperties(string name, JLevelPropertyEntry properties)
         {
-            if (Registry.TryGetValue(name, out JLevelProperties old))
+            if (Registry.TryGetValue(name, out JLevelPropertyEntry old))
             {
                 old.MergeWith(properties);
             }
@@ -83,7 +83,7 @@ namespace JLL.API.LevelProperties
             EntranceTeleports.AddRange(entrances);
 
             SelectableLevel currentLevel = RoundManager.Instance.currentLevel;
-            JLevelProperties currentProperties = GetLevelProperties(currentLevel);
+            JLevelPropertyEntry currentProperties = GetLevelProperties(currentLevel);
 
             foreach (LevelPrefab levelPrefab in currentProperties.levelPrefabs)
             {
@@ -139,7 +139,7 @@ namespace JLL.API.LevelProperties
                 }
             }
 
-            original = new JLevelProperties();
+            original = new JLevelPropertyEntry();
         }
 
         public static EnemyType? GetRegisteredEnemy(string enemyName)
@@ -156,14 +156,26 @@ namespace JLL.API.LevelProperties
 
         public static EnemyType GetRegisteredEnemy(EnemyType enemyType)
         {
-            for (int i = 0; i < AllSortedEnemies.Count; i++)
+            if (GetRegisteredEnemy(enemyType.enemyName, out EnemyType match))
             {
-                if (AllSortedEnemies[i].enemyName == enemyType.enemyName)
-                {
-                    return AllSortedEnemies[i];
-                }
+                return match;
             }
             return enemyType;
+        }
+
+        public static bool GetRegisteredEnemy(string enemyName, out EnemyType match)
+        {
+            JLogHelper.LogInfo($"Searching registry for {enemyName}", JLogLevel.Wesley);
+            for (int i = 0; i < AllSortedEnemies.Count; i++)
+            {
+                if (AllSortedEnemies[i].enemyName == enemyName)
+                {
+                    match = AllSortedEnemies[i];
+                    return true;
+                }
+            }
+            match = AllSortedEnemies[0];
+            return false;
         }
     }
 }

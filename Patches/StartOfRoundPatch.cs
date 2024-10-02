@@ -19,6 +19,7 @@ namespace JLL.Patches
             {
                 GameObject obj = GameObject.Instantiate(JLL.Instance.networkObject);
                 obj.GetComponent<NetworkObject>().Spawn();
+
                 JLogHelper.LogInfo("JLL Network Manager Initialized.", JLogLevel.User);
             }
         }
@@ -31,29 +32,23 @@ namespace JLL.Patches
 
             SelectableLevel allEnemiesLevel = Object.FindObjectOfType<QuickMenuManager>().testAllEnemiesLevel;
 
-            for (int i = 0; i < allEnemiesLevel.Enemies.Count; i++)
-            {
-                if (!enemyTypes.Contains(allEnemiesLevel.Enemies[i].enemyType))
-                {
-                    enemyTypes.Add(allEnemiesLevel.Enemies[i].enemyType);
-                }
-            }
-            for (int i = 0; i < allEnemiesLevel.OutsideEnemies.Count; i++)
-            {
-                if (!enemyTypes.Contains(allEnemiesLevel.OutsideEnemies[i].enemyType))
-                {
-                    enemyTypes.Add(allEnemiesLevel.OutsideEnemies[i].enemyType);
-                }
-            }
-            for (int i = 0; i < allEnemiesLevel.DaytimeEnemies.Count; i++)
-            {
-                if (!enemyTypes.Contains(allEnemiesLevel.DaytimeEnemies[i].enemyType))
-                {
-                    enemyTypes.Add(allEnemiesLevel.DaytimeEnemies[i].enemyType);
-                }
-            }
+            FindEnemyTypes(allEnemiesLevel.Enemies, ref enemyTypes);
+            FindEnemyTypes(allEnemiesLevel.OutsideEnemies, ref enemyTypes);
+            FindEnemyTypes(allEnemiesLevel.DaytimeEnemies, ref enemyTypes);
 
+            JLevelPropertyRegistry.AllSortedEnemies.Clear();
             JLevelPropertyRegistry.AllSortedEnemies.AddRange(enemyTypes);
+        }
+
+        private static void FindEnemyTypes(List<SpawnableEnemyWithRarity> spawnableEnemies, ref List<EnemyType> enemyTypes)
+        {
+            for (int i = 0; i < spawnableEnemies.Count; i++)
+            {
+                if (spawnableEnemies[i].enemyType != null && !enemyTypes.Contains(spawnableEnemies[i].enemyType))
+                {
+                    enemyTypes.Add(spawnableEnemies[i].enemyType);
+                }
+            }
         }
 
         [HarmonyPatch("EndOfGame")]

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JLL.API.Events;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -16,10 +17,15 @@ namespace JLL.Components
         [Tooltip("Invoked when the ship leaves")]
         public UnityEvent ShipLeaving = new UnityEvent();
         [Tooltip("If you only want the Apparatus event to run 1 time then check this so interiors with multiple Apparatuses don't break things")]
+
         public bool onlyOnFirstApparatus = false;
         private bool apparatusWasPulled = false;
         [Tooltip("Invoked when an Apparatus gets pulled inside the facility")]
         public UnityEvent ApparatusPulled = new UnityEvent();
+
+        public bool breakerIgnoresApparatus = false;
+        [Tooltip("Triggered on breaker box being toggled.")]
+        public BoolEvent BreakerBox = new BoolEvent();
 
         public HourEvent[] hourlyEvents = new HourEvent[0];
         private int prevHour = 0;
@@ -60,8 +66,14 @@ namespace JLL.Components
         public void InvokeApparatus()
         {
             if (onlyOnFirstApparatus && apparatusWasPulled) return;
-            ApparatusPulled.Invoke();
             apparatusWasPulled = true;
+            ApparatusPulled.Invoke();
+        }
+
+        public void ToggleBreakerBox(bool active)
+        {
+            if (apparatusWasPulled && !breakerIgnoresApparatus) return;
+            BreakerBox.Invoke(active);
         }
     }
 }

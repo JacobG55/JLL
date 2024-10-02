@@ -1,4 +1,5 @@
-﻿using JLL.Components;
+﻿using GameNetcodeStuff;
+using JLL.Components;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ namespace JLL.API
         {
             if (DestroyTerrainObstacleAtPosition(pos, damage))
             {
+                JLogHelper.LogInfo($"Sending Terrain Obstacle RPC! {pos} {damage}", JLogLevel.Wesley);
                 BreakTerrainObstacleServerRpc(pos, damage, (int)GameNetworkManager.Instance.localPlayerController.playerClientId);
             }
         }
@@ -38,6 +40,7 @@ namespace JLL.API
                     obstacle.Damage(damage);
                     success = true;
                 }
+                JLogHelper.LogInfo($"Damaging {tempColliderResults[i]} {success}", JLogLevel.Wesley);
             }
             if (success)
             {
@@ -64,9 +67,32 @@ namespace JLL.API
         [ClientRpc]
         public void BreakTerrainObstacleClientRpc(Vector3 pos, int damage, int playerWhoSent)
         {
+            JLogHelper.LogInfo($"Received RPC! {pos} {damage} {playerWhoSent}", JLogLevel.Wesley);
             if ((int)GameNetworkManager.Instance.localPlayerController.playerClientId != playerWhoSent)
             {
                 DestroyTerrainObstacleAtPosition(pos, damage);
+            }
+        }
+
+        public void DestroyPlayerCorpse(PlayerControllerB player)
+        {
+            DestroyPlayerCorpseServerRpc((int)player.actualClientId);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void DestroyPlayerCorpseServerRpc(int playerTarget)
+        {
+            DestroyPlayerCorpseClientRpc(playerTarget);
+        }
+
+        [ClientRpc]
+        public void DestroyPlayerCorpseClientRpc(int playerTarget)
+        {
+            PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerTarget];
+            if (player.isPlayerDead && player.deadBody != null)
+            {
+                Destroy(player.deadBody.gameObject);
+                player.deadBody = null;
             }
         }
     }

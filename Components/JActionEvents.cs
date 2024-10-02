@@ -23,7 +23,7 @@ namespace JLL.Components
         [Header("NoiseListener")]
         public bool isListening = false;
         public float minLoudness = 0.25f;
-        public int minTimesInOneSpot = 2;
+        public int minTimesInOneSpot = 0;
         public UnityEvent SoundListenedEvent = new UnityEvent();
 
         public bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)

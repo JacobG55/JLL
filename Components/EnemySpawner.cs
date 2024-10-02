@@ -1,8 +1,11 @@
-﻿using JLL.API.Events;
+﻿using JLL.API;
+using JLL.API.Events;
 using JLL.API.LevelProperties;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Serialization;
 
 namespace JLL.Components
@@ -16,14 +19,35 @@ namespace JLL.Components
         [Header("Randomized")]
         [Tooltip("Determines weather to spawn a random enemy from the pool or to spawn the specified type")]
         public bool spawnRandom = false;
-        public SpawnableEnemyWithRarity[] randomPool = new SpawnableEnemyWithRarity[0];
-        private readonly List<SpawnableEnemyWithRarity> spawnList = new List<SpawnableEnemyWithRarity>();
+        public RotationType spawnRotation = RotationType.ObjectRotation;
+        public List<SpawnableEnemyWithRarity> randomPool = new List<SpawnableEnemyWithRarity>();
+
+        [Header("NavMesh")]
+        [Tooltip("The max distance from this transform that a navmesh will be found")]
+        public float navMeshRange = 1f;
 
         [Header("Object Enabled")]
         [FormerlySerializedAs("spawnOnAwake")]
         public bool spawnOnEnable = false;
-
         private bool checkRegistry = true;
+
+        [Serializable]
+        public enum RotationType
+        {
+            ObjectRotation,
+            RandomRotation,
+            NoRotation,
+        }
+
+        public static float GetRot(RotationType rotation, Transform refrence)
+        {
+            return rotation switch
+            {
+                RotationType.ObjectRotation => refrence.rotation.y,
+                RotationType.RandomRotation => UnityEngine.Random.Range(0f, 360f),
+                _ => 0,
+            };
+        }
 
         public void Awake()
         {
@@ -34,16 +58,18 @@ namespace JLL.Components
                     type = JLevelPropertyRegistry.GetRegisteredEnemy(type);
                 }
 
-                if (randomPool.Length > 0)
+                if (randomPool.Count > 0)
                 {
-                    for (int i = 0; i < randomPool.Length; i++)
+                    for (int i = 0; i < randomPool.Count; i++)
                     {
-                        SpawnableEnemyWithRarity spawnableRarity = new SpawnableEnemyWithRarity
+                        if (randomPool[i].enemyType != null)
                         {
-                            enemyType = JLevelPropertyRegistry.GetRegisteredEnemy(randomPool[i].enemyType),
-                            rarity = randomPool[i].rarity
-                        };
-                        spawnList.Add(spawnableRarity);
+                            randomPool[i].enemyType = JLevelPropertyRegistry.GetRegisteredEnemy(randomPool[i].enemyType);
+                        }
+                        else
+                        {
+                            JLogHelper.LogWarning($"({name}) Enemy spawner is missing enemy at {i}", JLogLevel.Debuging);
+                        }
                     }
                 }
                 else
@@ -55,7 +81,7 @@ namespace JLL.Components
                             enemyType = JLevelPropertyRegistry.AllSortedEnemies[i],
                             rarity = 10
                         };
-                        spawnList.Add(spawnableRarity);
+                        randomPool.Add(spawnableRarity);
                     }
                 }
                 checkRegistry = false;
@@ -67,19 +93,31 @@ namespace JLL.Components
             if (spawnOnEnable)
             {
                 StartCoroutine(SpawnNextFixedUpdate());
-
-                SpawnEnemy();
             }
         }
 
         private IEnumerator SpawnNextFixedUpdate()
         {
             yield return new WaitForFixedUpdate();
-            yield return new WaitForEndOfFrame();
             SpawnEnemy();
         }
 
         public void SpawnEnemy()
+        {
+            SpawnEnemy(transform.position);
+        }
+
+        public void SpawnEnemy(GameObject target)
+        {
+            SpawnEnemy(target.transform.position);
+        }
+
+        public void SpawnEnemy(MonoBehaviour target)
+        {
+            SpawnEnemy(target.transform.position);
+        }
+
+        public void SpawnEnemy(Vector3 pos)
         {
             if (RoundManager.Instance.IsHost || RoundManager.Instance.IsServer)
             {
@@ -87,7 +125,9 @@ namespace JLL.Components
 
                 if (spawnRandom)
                 {
-                    spawn = spawnList[GetWeightedIndex()].enemyType;
+                    int i = GetWeightedIndex();
+                    JLogHelper.LogInfo($"({name}) Attempting to spawn enmy at index {i}");
+                    spawn = randomPool[i].enemyType;
                 }
                 else
                 {
@@ -96,14 +136,23 @@ namespace JLL.Components
 
                 if (spawn != null)
                 {
+                    JLogHelper.LogInfo($"({name}) Spawning: {spawn.enemyName} at {pos}");
+
                     if (spawn.enemyPrefab != null)
                     {
-                        GameObject obj = RoundManager.Instance.SpawnEnemyGameObject(transform.position, transform.rotation.y, 0, spawn);
-                        if (obj.TryGetComponent(out EnemyAI enemy))
+                        if (NavMesh.SamplePosition(pos, out NavMeshHit hit, navMeshRange, NavMesh.AllAreas))
                         {
-                            SpawnedEvent.Invoke(enemy);
+                            GameObject obj = RoundManager.Instance.SpawnEnemyGameObject(hit.position, GetRot(spawnRotation, transform), 0, spawn);
+                            if (obj.TryGetComponent(out EnemyAI enemy))
+                            {
+                                SpawnedEvent.Invoke(enemy);
+                            }
                         }
                     }
+                }
+                else
+                {
+                    JLogHelper.LogWarning($"({name}) Enemy Spawner tried to spawn a null EnemyType!");
                 }
             }
         }
@@ -111,20 +160,20 @@ namespace JLL.Components
         private int GetWeightedIndex()
         {
             int combinedWeights = 0;
-            for (int i = 0; i < spawnList.Count; i++)
+            for (int i = 0; i < randomPool.Count; i++)
             {
-                combinedWeights += spawnList[i].rarity;
+                combinedWeights += randomPool[i].rarity;
             }
-            int random = Random.Range(0, combinedWeights);
-            for (int i = 0; i < spawnList.Count; i++)
+            int random = UnityEngine.Random.Range(0, combinedWeights);
+            for (int i = 0; i < randomPool.Count; i++)
             {
-                random -= spawnList[i].rarity;
+                random -= randomPool[i].rarity;
                 if (random <= 0)
                 {
                     return i;
                 }
             }
-            return Random.Range(0, spawnList.Count);
+            return UnityEngine.Random.Range(0, randomPool.Count);
         }
     }
 }

@@ -17,23 +17,24 @@ namespace JLL.Components.Filters
         {
             if (enemyType.shouldCheck && !enemyType.CheckValue(enemy.enemyType.enemyName))
             {
-                Result(enemy);
-                return;
+                goto Failed;
             }
 
             if (isInvulnerable.shouldCheck && !isInvulnerable.CheckValue(!enemy.enemyType.canDie))
             {
-                Result(enemy);
-                return;
+                goto Failed;
             }
 
             if (healthCheck.shouldCheck && !healthCheck.CheckValue(enemy.enemyHP))
             {
-                Result(enemy);
-                return;
+                goto Failed;
             }
 
             Result(enemy, true);
+            return;
+
+            Failed:
+            Result(enemy);
         }
     }
 }

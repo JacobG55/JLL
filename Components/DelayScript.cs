@@ -1,6 +1,5 @@
 ﻿using GameNetcodeStuff;
 using JLL.API;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -12,6 +11,7 @@ namespace JLL.Components
     {
         [FormerlySerializedAs("waitOnAwake")]
         public bool waitOnEnabled = false;
+        public bool clearOnDisable = false;
         public float delaySeconds = 2f;
         [Tooltip("Event run after StartWaiting() is called by another event.")]
         public UnityEvent events = new UnityEvent();
@@ -32,6 +32,14 @@ namespace JLL.Components
             if (waitOnEnabled)
             {
                 StartWaiting();
+            }
+        }
+
+        public void OnDisable()
+        {
+            if (clearOnDisable)
+            {
+                ClearEventQueue();
             }
         }
 
@@ -71,6 +79,11 @@ namespace JLL.Components
         {
             JLogHelper.LogInfo($"{name} started waiting {delaySeconds}", JLogLevel.Debuging);
             queuedEvents.Add(new QueuedEvent { timer = delaySeconds });
+        }
+
+        public void ClearEventQueue()
+        {
+            queuedEvents.Clear();
         }
     }
 }

@@ -32,38 +32,37 @@ namespace JLL.Components.Filters
         {
             if (sceneName.shouldCheck && !sceneName.CheckValue(level.sceneName))
             {
-                Result(level);
-                return;
+                goto Failed;
             }
 
             if (planetName.shouldCheck && !planetName.CheckValue(level.PlanetName))
             {
-                Result(level);
-                return;
+                goto Failed;
             }
 
             if (scrapInside.shouldCheck && !scrapInside.CheckValue(RoundManager.Instance.totalScrapValueInLevel))
             {
-                Result(level);
-                return;
+                goto Failed;
             }
 
             if (moldIterations.shouldCheck && !moldIterations.CheckValue(level.moldSpreadIterations))
             {
-                Result(level);
-                return;
+                goto Failed;
             }
 
             if (JCompatabilityHelper.IsModLoaded.LLL)
             {
                 if (!LLLHelper.ExtendedLevelFilters(this, level))
                 {
-                    Result(level);
-                    return;
+                    goto Failed;
                 }
             }
 
             Result(level, true);
+            return;
+
+            Failed:
+            Result(level);
         }
 
         public void FilterCurrentLevel()
