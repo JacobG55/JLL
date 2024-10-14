@@ -19,13 +19,13 @@ namespace JLLItemsModule.Components
         public float openCooldown = 0.4f;
 
         public PlayerEvent OpenEvent = new PlayerEvent();
-        public WeightedEvent[] RandomOpenEvent = new WeightedEvent[0];
+        public WeightedEvent[] RandomOpenEvent = new WeightedEvent[1] { new WeightedEvent() { Weight = 20 } };
 
         [Header("Item Spawner")]
         public bool spawnItemsOnOpen = true;
         public int numberToSpawn = 1;
         public SpawnPoolSource SourcePool = SpawnPoolSource.CustomList;
-        public WeightedItemRefrence[] CustomList = new WeightedItemRefrence[0];
+        public WeightedItemRefrence[] CustomList = new WeightedItemRefrence[1] { new WeightedItemRefrence() };
 
         [Header("Audio & FX")]
         public ParticleSystem? PoofParticle;
@@ -91,6 +91,11 @@ namespace JLLItemsModule.Components
             if (RandomOpenEvent.Length > 0)
             {
                 random = IWeightedItem.GetRandomIndex(RandomOpenEvent);
+                if (!RandomOpenEvent[random].SendClientRPC)
+                {
+                    InvokeRandomEvent(random);
+                    random = -1;
+                }
             }
             OpenBoxClientRpc(random, destroyWhenEmpty && boxUses <= 0);
         }
@@ -134,11 +139,7 @@ namespace JLLItemsModule.Components
                 RoundManager.Instance.PlayAudibleNoise(BoxAudio.transform.position, 8f, 0.5f, 0, isInShipRoom && StartOfRound.Instance.hangarDoorsClosed);
             }
             OnBoxOpen();
-            if (weightedEvent >= 0 && weightedEvent < RandomOpenEvent.Length)
-            {
-                RandomOpenEvent[weightedEvent].Event.Invoke();
-                if (playerHeldBy != null) RandomOpenEvent[weightedEvent].PlayerEvent.Invoke(playerHeldBy);
-            }
+            InvokeRandomEvent(weightedEvent);
             if (playerHeldBy != null)
             {
                 OpenEvent.Invoke(playerHeldBy);
@@ -147,6 +148,15 @@ namespace JLLItemsModule.Components
                 {
                     DestroyObjectInHand(playerHeldBy);
                 }
+            }
+        }
+
+        private void InvokeRandomEvent(int weightedEvent)
+        {
+            if (weightedEvent >= 0 && weightedEvent < RandomOpenEvent.Length)
+            {
+                RandomOpenEvent[weightedEvent].Event.Invoke();
+                if (playerHeldBy != null) RandomOpenEvent[weightedEvent].PlayerEvent.Invoke(playerHeldBy);
             }
         }
 

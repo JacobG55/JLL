@@ -11,6 +11,7 @@ namespace JLLItemsModule.Components
     public class JThrowableItem : JGrabbableObject
     {
         [Header("Throwable Item")]
+        public bool throwable = true;
         public string throwString = "Throw grenade: [RMB]";
 
         private LayerMask projectileMask = 268437761;
@@ -40,6 +41,9 @@ namespace JLLItemsModule.Components
         private Coroutine? interactCoroutine;
 
         public bool interactionStartsTimer = false;
+        [Tooltip("Waits timeToExplode before exploding. If interactionStartsTimer is checked the timer will have to run twice for the explosion to occur.")]
+        public bool explodeOnTimer = false;
+        private bool markedToExplode = false;
         public float timeToExplode = 2.25f;
         private float explodeTimer = 0;
 
@@ -60,7 +64,7 @@ namespace JLLItemsModule.Components
         [Tooltip("How many items get spawned in")]
         public int numberToSpawn = 1;
         public SpawnPoolSource SourcePool = SpawnPoolSource.CustomList;
-        public WeightedItemRefrence[] CustomList = new WeightedItemRefrence[0];
+        public WeightedItemRefrence[] CustomList = new WeightedItemRefrence[1] { new WeightedItemRefrence() };
         [Tooltip("Spawn offsets. Index is the number spawned")]
         public Vector3[] SpawnOffsets = new Vector3[0];
 
@@ -70,6 +74,7 @@ namespace JLLItemsModule.Components
         public InteractEvent CollisionEvent = new InteractEvent();
 
         [Header("FX")]
+        [Tooltip("Trigger: \"pullPin\"\nTrigger: \"explode\"")]
         public Animator? itemAnimator;
         public AudioSource itemAudio;
         public AudioClip? interactSFX;
@@ -99,8 +104,11 @@ namespace JLLItemsModule.Components
             }
             else if (IsOwner)
             {
-                wasThrown = true;
-                playerHeldBy.DiscardHeldObject(placeObject: true, null, GetThrowDestination());
+                if (throwable)
+                {
+                    wasThrown = true;
+                    playerHeldBy.DiscardHeldObject(placeObject: true, null, GetThrowDestination());
+                }
             }
         }
 
@@ -121,6 +129,7 @@ namespace JLLItemsModule.Components
 
             explodeOnThrow = false;
             explodeOnDrop = false;
+            wasThrown = false;
 
             SetExplodeOnThrowServerRpc();
 
@@ -157,7 +166,14 @@ namespace JLLItemsModule.Components
         {
             List<string> tips = new List<string>();
             tips.AddRange(itemProperties.toolTips);
-            tips.Add((!interactedWith) ? interactString : throwString);
+            if (interactedWith)
+            {
+                tips.Add(interactString);
+            }
+            else if (throwable)
+            {
+                tips.Add(throwString);
+            }
             HUDManager.Instance.ChangeControlTipMultiple(tips.ToArray(), holdingItem: true, itemProperties);
         }
 
@@ -217,12 +233,20 @@ namespace JLLItemsModule.Components
         public override void Update()
         {
             base.Update();
-            if (interactionStartsTimer && interactedWith && !hasExploded)
+            if (((interactionStartsTimer && interactedWith) || (explodeOnTimer && markedToExplode)) && !hasExploded)
             {
                 explodeTimer += Time.deltaTime;
                 if (explodeTimer > timeToExplode)
                 {
-                    ExplodeProjectile(destroyOnExplode);
+                    if (interactionStartsTimer && explodeOnTimer && !markedToExplode)
+                    {
+                        markedToExplode = true;
+                        explodeTimer = 0;
+                    }
+                    else
+                    {
+                        ExplodeProjectile(destroyOnExplode);
+                    }
                 }
             }
         }
@@ -254,7 +278,7 @@ namespace JLLItemsModule.Components
             }
         }
 
-        private void ExplodeProjectile(bool destroy = false)
+        public void ExplodeProjectile(bool destroy = false)
         {
             if (hasExploded)
             {
@@ -268,6 +292,14 @@ namespace JLLItemsModule.Components
                     playerThrownBy.activatingItem = false;
                 }
 
+                return;
+            }
+
+            itemAnimator?.SetTrigger("explode");
+
+            if (explodeOnTimer && !markedToExplode)
+            {
+                markedToExplode = true;
                 return;
             }
 
@@ -309,6 +341,11 @@ namespace JLLItemsModule.Components
                 itemAudio.PlayOneShot(explodeSFX);
                 WalkieTalkie.TransmitOneShotAudio(itemAudio, explodeSFX);
             }
+        }
+
+        public void ResetExplosionTimer()
+        {
+            explodeTimer = 0;
         }
 
         public void SpawnItemsOnServer(int amount)

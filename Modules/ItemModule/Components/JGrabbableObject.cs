@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using JLL.API.Events;
+using UnityEngine;
 
 namespace JLLItemsModule.Components
 {
@@ -7,6 +8,8 @@ namespace JLLItemsModule.Components
         [Header("JGrabbableObject")]
         public GameObject chargedEffects;
         public GameObject[] hideWhenPocketed = new GameObject[0];
+
+        public BoolEvent OnSetInShip = new BoolEvent();
 
         private bool pocketedLastFrame;
 
@@ -46,6 +49,11 @@ namespace JLLItemsModule.Components
         }
 
         public virtual void HeldUpdate()
+        {
+
+        }
+
+        public virtual void OnSetInsideShip(bool isEntering)
         {
 
         }

@@ -57,10 +57,10 @@ namespace JLLItemsModule.Components
         public UnityEvent<IHittable> OnObjectHit = new UnityEvent<IHittable>();
 
         [Header("Audio")]
+        public AudioClip[] hitSFX;
         [Tooltip("Only used for Heavy Weapons")]
         public AudioClip[] reelUpSFX;
         public AudioClip[] swingSFX;
-        public AudioClip[] hitSFX;
         public AudioSource weaponAudio;
 
         private PlayerControllerB previousPlayerHeldBy;

@@ -1,6 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
+using HarmonyLib;
 using JLL.API;
+using JLLItemsModule.Patches;
 using LethalLib.Modules;
 using System.IO;
 using System.Reflection;
@@ -15,12 +17,15 @@ namespace JLLItemsModule
     {
         private const string modGUID = "JacobG5.JLLItemModule";
         private const string modName = "JLLItemModule";
-        private const string modVersion = "1.0.0";
+        private const string modVersion = "1.1.0";
+
+        private readonly Harmony harmony = new Harmony(modGUID);
 
         public void Awake()
         {
             NetcodeRequired(JLogHelper.GetSource());
             //RegisterTestItems();
+            harmony.PatchAll(typeof(PlayerPatch));
         }
 
         private static void NetcodeRequired(ManualLogSource logSource)
