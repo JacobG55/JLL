@@ -13,7 +13,7 @@ namespace JLL.Components.Helpers
             OutputObject.Invoke(behaviour.gameObject);
         }
 
-        public PlayerEvent OutputPlayer = new PlayerEvent();
+        public InteractEvent OutputPlayer = new InteractEvent();
 
         public void AsPlayer(GameObject obj)
         {

@@ -8,7 +8,7 @@ namespace JLL.Components
         public Item[] validItems;
         public bool checkExact = false;
 
-        public PlayerEvent OnSuccess = new PlayerEvent();
+        public InteractEvent OnSuccess = new InteractEvent();
 
         public void CheckHeldItem(PlayerControllerB player)
         {

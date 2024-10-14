@@ -8,7 +8,7 @@ namespace JLL.Components
 {
     public class JPlayerInsideRegion : NetworkBehaviour
     {
-        public PlayerEvent PlayerEnterEvent = new PlayerEvent();
+        public InteractEvent PlayerEnterEvent = new InteractEvent();
 
         [Header("Chance Event")]
         [Range(0, 100)]
