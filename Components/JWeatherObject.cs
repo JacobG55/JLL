@@ -13,8 +13,8 @@ namespace JLL.Components
         public LevelWeatherType[] AllowedWeathers = new LevelWeatherType[0];
 
         [Header("Targets ")]
-        public bool defaultToSelf = true;
         public GameObject activeObject;
+        public bool defaultToSelf = true;
         public GameObject inverseObject;
 
         [Header("Event Triggers")]

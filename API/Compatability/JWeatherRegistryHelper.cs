@@ -51,11 +51,7 @@ namespace JLL.API.Compatability
         private static Weather GetCurrentWeather()
         {
             SelectableLevel level = RoundManager.Instance.currentLevel;
-            if (WeatherManager.CurrentWeathers.ContainsKey(level))
-            {
-                return WeatherManager.CurrentWeathers[level];
-            }
-            return WeatherManager.GetWeather(level.currentWeather);
+            return WeatherManager.GetCurrentWeather(level);
         }
 
         public static void OverrideWeatherObjects(JWeatherOverride jWeatherOverride)

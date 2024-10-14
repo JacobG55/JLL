@@ -1,7 +1,10 @@
 ﻿using GameNetcodeStuff;
 using JLL.Components;
+using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using static JLL.Components.DamageTrigger;
 
 namespace JLL.API
 {
@@ -59,13 +62,13 @@ namespace JLL.API
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void BreakTerrainObstacleServerRpc(Vector3 pos, int damage, int playerWhoSent)
+        private void BreakTerrainObstacleServerRpc(Vector3 pos, int damage, int playerWhoSent)
         {
             BreakTerrainObstacleClientRpc(pos, damage, playerWhoSent);
         }
 
         [ClientRpc]
-        public void BreakTerrainObstacleClientRpc(Vector3 pos, int damage, int playerWhoSent)
+        private void BreakTerrainObstacleClientRpc(Vector3 pos, int damage, int playerWhoSent)
         {
             JLogHelper.LogInfo($"Received RPC! {pos} {damage} {playerWhoSent}", JLogLevel.Wesley);
             if ((int)GameNetworkManager.Instance.localPlayerController.playerClientId != playerWhoSent)
@@ -74,26 +77,100 @@ namespace JLL.API
             }
         }
 
-        public void DestroyPlayerCorpse(PlayerControllerB player)
-        {
-            DestroyPlayerCorpseServerRpc((int)player.actualClientId);
-        }
-
         [ServerRpc(RequireOwnership = false)]
-        public void DestroyPlayerCorpseServerRpc(int playerTarget)
+        public void RandomTeleportServerRpc(int playerTarget, int selection, bool withRotation = false, float rotation = 0, float range = 10f)
         {
-            DestroyPlayerCorpseClientRpc(playerTarget);
+            if (Enum.IsDefined(typeof(RandomTeleportRegion), selection))
+            {
+                List<GameObject> nodes = new List<GameObject>();
+
+                switch (selection)
+                {
+                    case (int)RandomTeleportRegion.Indoor:
+                        nodes.AddRange(RoundManager.Instance.insideAINodes);
+                        break;
+                    case (int)RandomTeleportRegion.Outdoor:
+                        nodes.AddRange(RoundManager.Instance.outsideAINodes);
+                        break;
+                    case (int)RandomTeleportRegion.Moon:
+                        nodes.AddRange(RoundManager.Instance.insideAINodes);
+                        nodes.AddRange(RoundManager.Instance.outsideAINodes);
+                        break;
+                    case (int)RandomTeleportRegion.Nearby:
+                        nodes.Add(RoundManager.Instance.playersManager.allPlayerObjects[playerTarget]);
+                        break;
+                    case (int)RandomTeleportRegion.RandomPlayer:
+                        nodes.AddRange(RoundManager.Instance.playersManager.allPlayerObjects);
+                        break;
+                    default: break;
+                }
+
+                if (nodes.Count > 0)
+                {
+                    RandomTeleportClientRpc(playerTarget, RoundManager.Instance.GetRandomNavMeshPositionInRadius(nodes[UnityEngine.Random.Range(0, nodes.Count)].transform.position, range), withRotation, rotation);
+                }
+            }
         }
 
         [ClientRpc]
-        public void DestroyPlayerCorpseClientRpc(int playerTarget)
+        private void RandomTeleportClientRpc(int playerTarget, Vector3 pos, bool withRotation = false, float rotation = 0)
         {
-            PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerTarget];
-            if (player.isPlayerDead && player.deadBody != null)
+            RoundManager.Instance.playersManager.allPlayerScripts[playerTarget].TeleportPlayer(pos, withRotation, rotation);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void DamageTriggerKilledPlayerServerRpc(string objectPath, int playerTarget)
+        {
+            DamageTriggerKilledPlayerClientRpc(objectPath, (int)ColliderType.Player, playerTarget);
+        }
+
+        [ServerRpc(RequireOwnership = true)]
+        public void DamageTriggerKilledServerRpc(string objectPath, int type)
+        {
+            DamageTriggerKilledPlayerClientRpc(objectPath, type);
+        }
+
+        [ClientRpc]
+        private void DamageTriggerKilledPlayerClientRpc(string objectPath, int type, int playerTarget = -1)
+        {
+            GameObject obj = GameObject.Find(objectPath);
+
+            if (obj && obj.TryGetComponent(out DamageTrigger damageTrigger))
             {
-                Destroy(player.deadBody.gameObject);
-                player.deadBody = null;
+                switch (type)
+                {
+                    case (int)ColliderType.Player:
+                        if (playerTarget >= 0)
+                        {
+                            PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerTarget];
+
+                            if (player.isPlayerDead)
+                            {
+                                if (player.deadBody != null)
+                                {
+                                    Destroy(player.deadBody.gameObject);
+                                    player.deadBody = null;
+                                }
+
+                                damageTrigger.playerTargets.killEvent.Invoke();
+                            }
+                        }
+                        break;
+                    case (int)ColliderType.Enemy:
+                        damageTrigger.enemyTargets.killEvent.Invoke();
+                        break;
+                    case (int)ColliderType.Vehicle:
+                        damageTrigger.vehicleTargets.killEvent.Invoke();
+                        break;
+                    default: break;
+                }
             }
+        }
+
+        public static string GetPath(Transform current)
+        {
+            if (current.parent == null) return "/" + current.name;
+            return GetPath(current.parent) + "/" + current.name;
         }
     }
 }

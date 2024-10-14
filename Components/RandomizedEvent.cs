@@ -1,6 +1,5 @@
 ﻿using GameNetcodeStuff;
 using JLL.API;
-using LethalLib.Modules;
 using System;
 using System.Collections;
 using Unity.Netcode;
@@ -21,7 +20,7 @@ namespace JLL.Components
             {
                 combinedWeights += weightedItems[i].GetWeight();
             }
-            int random = UnityEngine.Random.Range(0, combinedWeights);
+            int random = UnityEngine.Random.Range(0, combinedWeights + 1);
             for (int i = 0; i < weightedItems.Length; i++)
             {
                 random -= weightedItems[i].GetWeight();
@@ -37,7 +36,8 @@ namespace JLL.Components
     public class RandomizedEvent : NetworkBehaviour
     {
         [FormerlySerializedAs("triggerOnAwake")]
-        public bool triggerOnEnable = false;
+        [FormerlySerializedAs("triggerOnEnable")]
+        public bool triggerOnStart = false;
 
         public WeightedEvent[] weightedEvents = new WeightedEvent[1] { new WeightedEvent() { Weight = 20 } };
 
@@ -56,6 +56,8 @@ namespace JLL.Components
 
             [Range(0f, 100f)]
             public int Weight = 20;
+            
+            public bool SendClientRPC = true;
 
             public int GetWeight()
             {
@@ -63,9 +65,9 @@ namespace JLL.Components
             }
         }
         
-        public void OnEnable()
+        public void Start()
         {
-            if (triggerOnEnable)
+            if (triggerOnStart)
             {
                 RollEvent();
             }
@@ -109,7 +111,14 @@ namespace JLL.Components
             {
                 int random = IWeightedItem.GetRandomIndex(weightedEvents);
                 JLogHelper.LogInfo($"{name} - Server Generated: {random}");
-                RollResultClientRpc(random, playerId);
+                if (weightedEvents[random].SendClientRPC)
+                {
+                    RollResultClientRpc(random, playerId);
+                }
+                else
+                {
+                    TriggerEvent(random, playerId);
+                }
             }
         }
 

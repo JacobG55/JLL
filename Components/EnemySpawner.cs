@@ -12,24 +12,23 @@ namespace JLL.Components
 {
     public class EnemySpawner : MonoBehaviour
     {
-        public EnemyType type;
-        [Tooltip("Ran after an enemy spawns. Enemy provided is the one that was just spawned.")]
-        public EnemyEvent SpawnedEvent = new EnemyEvent();
-
-        [Header("Randomized")]
         [Tooltip("Determines weather to spawn a random enemy from the pool or to spawn the specified type")]
         public bool spawnRandom = false;
         public RotationType spawnRotation = RotationType.ObjectRotation;
         public List<SpawnableEnemyWithRarity> randomPool = new List<SpawnableEnemyWithRarity>();
 
+        public EnemyType type;
+        [Tooltip("Ran after an enemy spawns. Enemy provided is the one that was just spawned.")]
+        public EnemyEvent SpawnedEvent = new EnemyEvent();
+
         [Header("NavMesh")]
         [Tooltip("The max distance from this transform that a navmesh will be found")]
         public float navMeshRange = 1f;
 
-        [Header("Object Enabled")]
+        [Header("Misc")]
         [FormerlySerializedAs("spawnOnAwake")]
         public bool spawnOnEnable = false;
-        private bool checkRegistry = true;
+        public bool checkRegistry = true;
 
         [Serializable]
         public enum RotationType

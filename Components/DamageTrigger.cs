@@ -63,7 +63,7 @@ namespace JLL.Components
             public bool applyDamageMultiplier = true;
             public bool playCustomSounds = true;
             public UnityEvent<T> hitEvent = new UnityEvent<T>();
-            public UnityEvent<T> killEvent = new UnityEvent<T>();
+            public UnityEvent killEvent = new UnityEvent();
 
             public int GetTotalDamage(float multiplier = 1)
             {
@@ -109,7 +109,6 @@ namespace JLL.Components
                     markedForRemoval.Add(pair.Key);
                 }
             }
-            foundInside.Clear();
         }
 
         /*
@@ -271,15 +270,12 @@ namespace JLL.Components
 
         private Vector3 CalcHitDir(Transform target)
         {
-            switch (hitRotation)
+            return hitRotation switch
             {
-                case RotationType.ObjectRotation:
-                    return Quaternion.AngleAxis(transform.rotation.y, Vector3.up) * hitDir;
-                case RotationType.RandomRotation:
-                    return Quaternion.AngleAxis(UnityEngine.Random.Range(0f, 360f), Vector3.up) * hitDir;
-                default:
-                    return hitDir;
-            }
+                RotationType.ObjectRotation => Quaternion.AngleAxis(transform.rotation.y, Vector3.up) * hitDir,
+                RotationType.RandomRotation => Quaternion.AngleAxis(UnityEngine.Random.Range(0f, 360f), Vector3.up) * hitDir,
+                _ => hitDir,
+            };
         }
 
         public void SetDamageMultiplier(float multiplier)
@@ -300,11 +296,7 @@ namespace JLL.Components
 
             if (player.isPlayerDead)
             {
-                if (corpseType < 0)
-                {
-                    JLLNetworkManager.Instance.DestroyPlayerCorpse(player);
-                }
-                playerTargets.killEvent.Invoke(player);
+                JLLNetworkManager.Instance.DamageTriggerKilledPlayerServerRpc(JLLNetworkManager.GetPath(transform), (int)player.actualClientId);
             }
 
             if (playerTargets.playCustomSounds)
@@ -328,9 +320,9 @@ namespace JLL.Components
             enemy.HitEnemyOnLocalClient(enemyTargets.GetTotalDamage(damageMultiplier), CalcHitDir(enemy.transform), playHitSFX: playNormalDamageSFX);
             enemyTargets.hitEvent.Invoke(enemy);
 
-            if (enemy.isEnemyDead)
+            if ((RoundManager.Instance.IsHost || RoundManager.Instance.IsServer) && enemy.isEnemyDead)
             {
-                enemyTargets.killEvent.Invoke(enemy);
+                JLLNetworkManager.Instance.DamageTriggerKilledServerRpc(JLLNetworkManager.GetPath(transform), (int)ColliderType.Enemy);
             }
 
             if (enemyTargets.playCustomSounds)
@@ -354,9 +346,9 @@ namespace JLL.Components
             VehicleControllerPatch.DealPermanentDamage(vehicle, vehicleTargets.GetTotalDamage(damageMultiplier), CalcHitDir(vehicle.transform));
             vehicleTargets.hitEvent.Invoke(vehicle);
 
-            if (vehicle.carDestroyed)
+            if (vehicle.IsOwner && vehicle.carDestroyed)
             {
-                vehicleTargets.killEvent.Invoke(vehicle);
+                JLLNetworkManager.Instance.DamageTriggerKilledServerRpc(JLLNetworkManager.GetPath(transform), (int)ColliderType.Vehicle);
             }
 
             if (vehicleTargets.playCustomSounds)

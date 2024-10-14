@@ -1,4 +1,5 @@
-﻿using JLL.API.LevelProperties;
+﻿using JLL.API;
+using JLL.API.LevelProperties;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,11 +10,11 @@ namespace JLL.Components
 {
     public class ItemSpawner : MonoBehaviour
     {
-        public SpawnPoolSource SourcePool = SpawnPoolSource.CustomList;
-        public WeightedItemRefrence[] CustomList = new WeightedItemRefrence[1] { new WeightedItemRefrence() };
-        public RotationType spawnRotation = RotationType.NoRotation;
         [FormerlySerializedAs("spawnOnAwake")]
         public bool spawnOnEnabled = true;
+        public RotationType spawnRotation = RotationType.NoRotation;
+        public SpawnPoolSource SourcePool = SpawnPoolSource.CustomList;
+        public WeightedItemRefrence[] CustomList = new WeightedItemRefrence[1] { new WeightedItemRefrence() };
 
         [Serializable]
         public class WeightedItemRefrence : IWeightedItem
@@ -171,6 +172,7 @@ namespace JLL.Components
 
         public static GrabbableObject? SpawnItem(Item item, Vector3 pos, Transform? parent, int overrideValue = -1, bool spawnOnNetwork = true, RotationType rotation = RotationType.NoRotation)
         {
+            JLogHelper.LogInfo($"Spawn on network: {spawnOnNetwork}", JLogLevel.Wesley);
             if (RoundManager.Instance.IsServer || RoundManager.Instance.IsHost)
             {
                 GrabbableObject grabbable = Instantiate(item.spawnPrefab, pos, Quaternion.Euler(new Vector3(0, parent == null ? 0 : GetRot(rotation, parent), 0)), parent).GetComponent<GrabbableObject>();
@@ -178,6 +180,7 @@ namespace JLL.Components
                 OverrideScrapValue(ref grabbable, overrideValue);
                 if (spawnOnNetwork)
                 {
+                    JLogHelper.LogInfo("Spawning item on network.", JLogLevel.Wesley);
                     grabbable.NetworkObject.Spawn();
                 }
                 return grabbable;

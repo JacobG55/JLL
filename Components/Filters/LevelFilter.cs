@@ -69,5 +69,10 @@ namespace JLL.Components.Filters
         {
             Filter(RoundManager.Instance.currentLevel);
         }
+
+        public override void FilterDefault()
+        {
+            FilterCurrentLevel();
+        }
     }
 }

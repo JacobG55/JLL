@@ -104,6 +104,11 @@ namespace JLL.Components.Filters
             }
         }
 
+        public override void FilterDefault()
+        {
+            FilterAllPlayers();
+        }
+
         [Serializable]
         public class HeldItemFilter
         {

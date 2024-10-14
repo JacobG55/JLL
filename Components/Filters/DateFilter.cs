@@ -106,11 +106,6 @@ namespace JLL.Components.Filters
             }
         }
 
-        public void FilterCurrentDate()
-        {
-            Filter(DateTime.Now);
-        }
-
         public override void Filter(DateTime date)
         {
             if (DateFilters.Length > 0)
@@ -166,6 +161,16 @@ namespace JLL.Components.Filters
 
             Failed:
             Result(date);
+        }
+
+        public void FilterCurrentDate()
+        {
+            Filter(DateTime.Now);
+        }
+
+        public override void FilterDefault()
+        {
+            FilterCurrentDate();
         }
     }
 }

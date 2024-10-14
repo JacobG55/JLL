@@ -4,11 +4,14 @@ using UnityEngine.Events;
 
 namespace JLL.Components.Filters
 {
-    public abstract class JFilter<T> : MonoBehaviour
+    public abstract class JFilter<T> : MonoBehaviour, IJFilter
     {
         [Header("JFilter")]
         public UnityEvent<T> filteredEvent = new UnityEvent<T>();
         public UnityEvent<T> failedEvent = new UnityEvent<T>();
+
+        [HideInInspector]
+        private UnityEvent<bool> FilteredResult = new UnityEvent<bool>();
 
         public abstract void Filter(T input);
 
@@ -22,8 +25,26 @@ namespace JLL.Components.Filters
             {
                 failedEvent.Invoke(input);
             }
+            FilteredResult.Invoke(success);
+        }
+
+        public virtual void FilterDefault()
+        {
+
+        }
+
+        public ref UnityEvent<bool> GetResultEvent()
+        {
+            return ref FilteredResult;
         }
     }
+
+    public interface IJFilter
+    {
+        public abstract void FilterDefault();
+        public abstract ref UnityEvent<bool> GetResultEvent();
+    }
+
 
     [Serializable]
     public abstract class JFilterProperty<T>
@@ -52,26 +73,17 @@ namespace JLL.Components.Filters
 
         public bool CheckNum(float check, float current)
         {
-            switch (operation)
+            return operation switch
             {
-                case FilterOpperand.EqualTo:
-                    return check == current;
-                case FilterOpperand.GreaterThan:
-                    return check > current;
-                case FilterOpperand.LessThan:
-                    return check < current;
-                case FilterOpperand.GreaterThanOrEqual:
-                    return check >= current;
-                case FilterOpperand.LessThanOrEqual:
-                    return check <= current;
-                case FilterOpperand.ModuloZero:
-                    return check % current == 0;
-                case FilterOpperand.NotEqualTo:
-                    return check != current;
-                default:
-                    break;
-            }
-            return false;
+                FilterOpperand.EqualTo => check == current,
+                FilterOpperand.GreaterThan => check > current,
+                FilterOpperand.LessThan => check < current,
+                FilterOpperand.GreaterThanOrEqual => check >= current,
+                FilterOpperand.LessThanOrEqual => check <= current,
+                FilterOpperand.ModuloZero => check % current == 0,
+                FilterOpperand.NotEqualTo => check != current,
+                _ => false,
+            };
         }
     }
 
@@ -97,14 +109,29 @@ namespace JLL.Components.Filters
     public class NameFilter : JFilterProperty<string>
     {
         public bool caseSensitive = false;
+        public CompareFilter compareMethod = CompareFilter.Equal;
+
+        public enum CompareFilter
+        {
+            Equal,
+            Contains,
+            StartsWith,
+            EndsWith,
+        }
 
         public override bool CheckValue(string val)
         {
-            if (caseSensitive)
+            string compare = caseSensitive ? value : value.ToLower();
+            if (!caseSensitive) val = val.ToLower();
+
+            return compareMethod switch
             {
-                return val == value;
-            }
-            return val.ToLower() == value.ToLower();
+                CompareFilter.Equal => val == compare,
+                CompareFilter.Contains => val.Contains(compare),
+                CompareFilter.StartsWith => val.StartsWith(compare),
+                CompareFilter.EndsWith => val.EndsWith(compare),
+                _ => false,
+            };
         }
     }
 
