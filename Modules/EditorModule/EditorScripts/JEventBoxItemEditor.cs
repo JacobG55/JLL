@@ -1,7 +1,6 @@
 ﻿using JLLItemsModule.Components;
 using UnityEditor;
 using UnityEditorInternal;
-using UnityEngine;
 using static JLL.Components.ItemSpawner;
 
 namespace JLLEditorModule.EditorScripts
@@ -20,18 +19,7 @@ namespace JLLEditorModule.EditorScripts
             JEventBoxItem = (JEventBoxItem)target;
 
             CustomList = serializedObject.FindProperty("CustomList");
-
-            weightedProperties = new ReorderableList(serializedObject, CustomList);
-            weightedProperties.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused)
-                => JLLEditor.WeightedItemProperty(weightedProperties.serializedProperty.GetArrayElementAtIndex(index), rect);
-            weightedProperties.elementHeightCallback = (int index) =>
-            {
-                return JLLEditor.GetElementRectHeight(5) + 5f;
-            };
-            weightedProperties.drawHeaderCallback = (Rect rect) =>
-            {
-                EditorGUI.LabelField(rect, new GUIContent("Custom Item List"));
-            };
+            weightedProperties = JLLEditor.CreateWeightedItemSpawnProperties(serializedObject, CustomList);
         }
 
         public override void OnInspectorGUI()

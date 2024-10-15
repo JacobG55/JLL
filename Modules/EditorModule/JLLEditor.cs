@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace JLLEditorModule
@@ -55,6 +56,22 @@ namespace JLLEditorModule
         public static float GetElementRectHeight(int index, float seperation = 5f)
         {
             return (EditorGUIUtility.singleLineHeight + seperation) * index;
+        }
+
+        public static ReorderableList CreateWeightedItemSpawnProperties(SerializedObject obj, SerializedProperty CustomList)
+        {
+            ReorderableList weightedProperties = new ReorderableList(obj, CustomList);
+            weightedProperties.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused)
+                => WeightedItemProperty(weightedProperties.serializedProperty.GetArrayElementAtIndex(index), rect);
+            weightedProperties.elementHeightCallback = (int index) =>
+            {
+                return GetElementRectHeight(5) + 5f;
+            };
+            weightedProperties.drawHeaderCallback = (Rect rect) =>
+            {
+                EditorGUI.LabelField(rect, new GUIContent("Custom Item List"));
+            };
+            return weightedProperties;
         }
     }
 }
