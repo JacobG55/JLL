@@ -94,6 +94,7 @@ namespace JLL.Components
             if (!collidersInside.ContainsKey(collider.gameObject))
             {
                 int type = IdentifyCollider(collider.gameObject);
+                if (IsTargetDead(collider.gameObject, type)) return;
                 collidersInside.Add(collider.gameObject, type);
                 if (damageOnEnter) DamageType(collider.gameObject, type);
             }
@@ -109,6 +110,7 @@ namespace JLL.Components
                     markedForRemoval.Add(pair.Key);
                 }
             }
+            foundInside.Clear();
         }
 
         /*
@@ -215,6 +217,17 @@ namespace JLL.Components
                 default:
                     return;
             }
+        }
+
+        public static bool IsTargetDead(GameObject target, int type)
+        {
+            return type switch
+            {
+                (int)ColliderType.Player => target.GetComponent<PlayerControllerB>().isPlayerDead,
+                (int)ColliderType.Enemy => target.GetComponent<EnemyAICollisionDetect>().mainScript.isEnemyDead,
+                (int)ColliderType.Vehicle => target.GetComponent<VehicleController>().carDestroyed,
+                _ => false,
+            };
         }
 
         public void DamageRaycast()

@@ -49,6 +49,7 @@ namespace JLL.Components
                     markRemoval.Add(playersInside[i]);
                 }
             }
+            foundInside.Clear();
 
             for (int i = 0; i < markRemoval.Count; i++)
             {

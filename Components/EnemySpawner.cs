@@ -23,7 +23,7 @@ namespace JLL.Components
 
         [Header("NavMesh")]
         [Tooltip("The max distance from this transform that a navmesh will be found")]
-        public float navMeshRange = 1f;
+        public float navMeshRange = 10f;
 
         [Header("Misc")]
         [FormerlySerializedAs("spawnOnAwake")]
@@ -125,7 +125,7 @@ namespace JLL.Components
                 if (spawnRandom)
                 {
                     int i = GetWeightedIndex();
-                    JLogHelper.LogInfo($"({name}) Attempting to spawn enmy at index {i}");
+                    JLogHelper.LogInfo($"({name}) Attempting to spawn enemy at index {i}");
                     spawn = randomPool[i].enemyType;
                 }
                 else
@@ -135,17 +135,21 @@ namespace JLL.Components
 
                 if (spawn != null)
                 {
-                    JLogHelper.LogInfo($"({name}) Spawning: {spawn.enemyName} at {pos}");
-
                     if (spawn.enemyPrefab != null)
                     {
-                        if (NavMesh.SamplePosition(pos, out NavMeshHit hit, navMeshRange, NavMesh.AllAreas))
+                        bool flag;
+                        if ((flag = NavMesh.SamplePosition(pos, out NavMeshHit hit, navMeshRange, NavMesh.AllAreas)) || navMeshRange < 0)
                         {
-                            GameObject obj = RoundManager.Instance.SpawnEnemyGameObject(hit.position, GetRot(spawnRotation, transform), 0, spawn);
+                            JLogHelper.LogInfo($"({name}) Spawning: {spawn.enemyName} at {pos}");
+                            GameObject obj = RoundManager.Instance.SpawnEnemyGameObject(flag ? hit.position : pos, GetRot(spawnRotation, transform), 0, spawn);
                             if (obj.TryGetComponent(out EnemyAI enemy))
                             {
                                 SpawnedEvent.Invoke(enemy);
                             }
+                        }
+                        else
+                        {
+                            JLogHelper.LogInfo($"({name}) Failed to spawn. (Couldn't Find NavMesh. If try increasing the EnemySpawner's navMeshDistance if you're having an issue.)");
                         }
                     }
                 }

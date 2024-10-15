@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using JLL.Components.Filters;
 using UnityEngine;
 
 namespace JLL.Components
@@ -6,6 +7,7 @@ namespace JLL.Components
     public class InventoryRemover : MonoBehaviour
     {
         public string[] itemsToRemove;
+        public ItemFilter.Properties[] removeByFilter = new ItemFilter.Properties[0];
         public bool removeAllInstances = false;
 
         public void RemoveItems(PlayerControllerB player)
@@ -14,13 +16,9 @@ namespace JLL.Components
             {
                 if (player.ItemSlots[i] == null) continue;
 
-                for (int r = 0; r < itemsToRemove.Length; r++)
+                if (CheckSlot(player, i) && !removeAllInstances)
                 {
-                    if (player.ItemSlots[i].itemProperties.itemName.ToLower() == itemsToRemove[r].ToLower())
-                    {
-                        player.DestroyItemInSlotAndSync(i);
-                        if (removeAllInstances) break;
-                    }
+                    break;
                 }
             }
         }
@@ -39,15 +37,29 @@ namespace JLL.Components
         {
             if (player.currentlyHeldObjectServer != null)
             {
-                for (int r = 0; r < itemsToRemove.Length; r++)
+                CheckSlot(player, player.currentItemSlot);
+            }
+        }
+
+        private bool CheckSlot(PlayerControllerB player, int slot)
+        {
+            for (int r = 0; r < itemsToRemove.Length; r++)
+            {
+                if (player.ItemSlots[slot].itemProperties.itemName.ToLower() == itemsToRemove[r].ToLower())
                 {
-                    if (player.currentlyHeldObjectServer.itemProperties.itemName.ToLower() == itemsToRemove[r].ToLower())
-                    {
-                        player.DestroyItemInSlotAndSync(player.currentItemSlot);
-                        break;
-                    }
+                    player.DestroyItemInSlotAndSync(slot);
+                    return true;
                 }
             }
+            for (int r = 0; r < removeByFilter.Length; r++)
+            {
+                if (removeByFilter[r].Check(player.ItemSlots[slot]))
+                {
+                    player.DestroyItemInSlotAndSync(slot);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

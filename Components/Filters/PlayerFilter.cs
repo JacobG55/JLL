@@ -9,7 +9,7 @@ namespace JLL.Components.Filters
     public class PlayerFilter : JFilter<PlayerControllerB>
     {
         [Header("Inventory")]
-        public HeldItemFilter heldItem = new HeldItemFilter();
+        public ItemFilter heldItemFilter = new ItemFilter();
         [Tooltip("Checks inventory for Items with matching names\nNot case sensitive")]
         public string[] inventoryContents = new string[0];
 
@@ -26,8 +26,16 @@ namespace JLL.Components.Filters
         public NameFilter username = new NameFilter() { value = "Player" };
         public CheckFilter isLocalPlayer = new CheckFilter() { value = true };
 
+        [Header("Legacy (May be removed in the future)")]
+        public HeldItemFilter heldItem = new HeldItemFilter();
+
         public override void Filter(PlayerControllerB player)
         {
+            if (heldItemFilter.shouldCheck && !heldItemFilter.CheckValue(player.currentlyHeldObjectServer))
+            {
+                goto Failed;
+            }
+
             if (heldItem.shouldCheck && !heldItem.CheckValue(player))
             {
                 goto Failed;

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using JLL.API.Compatability;
+using JLL.API;
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -47,13 +49,16 @@ namespace JLL.Components.Filters
 
 
     [Serializable]
-    public abstract class JFilterProperty<T>
+    public abstract class JFilterProperty<T, F>
     {
         public bool shouldCheck = false;
-        public T value;
+        public F value;
 
         public abstract bool CheckValue(T val);
     }
+
+    [Serializable]
+    public abstract class JFilterProperty<T> : JFilterProperty<T, T> { }
 
     [Serializable]
     public abstract class NumFilter<T> : JFilterProperty<T>
@@ -108,8 +113,8 @@ namespace JLL.Components.Filters
     [Serializable]
     public class NameFilter : JFilterProperty<string>
     {
-        public bool caseSensitive = false;
         public CompareFilter compareMethod = CompareFilter.Equal;
+        public bool caseSensitive = false;
 
         public enum CompareFilter
         {
@@ -141,6 +146,65 @@ namespace JLL.Components.Filters
         public override bool CheckValue(bool val)
         {
             return val == value;
+        }
+    }
+
+    [Serializable]
+    public class ItemFilter : JFilterProperty<GrabbableObject, ItemFilter.Properties>
+    {
+        public override bool CheckValue(GrabbableObject item)
+        {
+            return value.Check(item);
+        }
+
+        [Serializable]
+        public class Properties
+        {
+            public NameFilter itemName = new NameFilter();
+            public CheckFilter twoHanded = new CheckFilter();
+            public CheckFilter isScrap = new CheckFilter();
+            public NumericFilter scrapValue = new NumericFilter() { value = 100, operation = NumFilter<float>.FilterOpperand.GreaterThan };
+            public NumericFilter itemCharge = new NumericFilter() { value = 20, operation = NumFilter<float>.FilterOpperand.LessThan };
+            public CheckFilter insideFactory = new CheckFilter();
+            public string[] contentTags = new string[0];
+            public bool mustHaveAllTags = true;
+
+            public bool Check(GrabbableObject item)
+            {
+                if (item == null) return false;
+                if (itemName.shouldCheck && !itemName.CheckValue(item.itemProperties.itemName))
+                {
+                    return false;
+                }
+                if (twoHanded.shouldCheck && !twoHanded.CheckValue(item.itemProperties.twoHanded))
+                {
+                    return false;
+                }
+                if (isScrap.shouldCheck && !isScrap.CheckValue(item.itemProperties.isScrap))
+                {
+                    return false;
+                }
+                if (scrapValue.shouldCheck && !scrapValue.CheckValue(item.scrapValue))
+                {
+                    return false;
+                }
+                if (itemCharge.shouldCheck && item.insertedBattery != null && !itemCharge.CheckValue(item.insertedBattery.charge))
+                {
+                    return false;
+                }
+                if (insideFactory.shouldCheck && !insideFactory.CheckValue(item.isInFactory))
+                {
+                    return false;
+                }
+                if (JCompatabilityHelper.IsModLoaded.LLL && contentTags.Length > 0)
+                {
+                    if (!LLLHelper.ItemTagFilter(item.itemProperties, contentTags, mustHaveAllTags))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
         }
     }
 }

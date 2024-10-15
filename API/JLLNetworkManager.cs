@@ -121,17 +121,17 @@ namespace JLL.API
         [ServerRpc(RequireOwnership = false)]
         public void DamageTriggerKilledPlayerServerRpc(string objectPath, int playerTarget)
         {
-            DamageTriggerKilledPlayerClientRpc(objectPath, (int)ColliderType.Player, playerTarget);
+            DamageTriggerKilledClientRpc(objectPath, (int)ColliderType.Player, playerTarget);
         }
 
         [ServerRpc(RequireOwnership = true)]
         public void DamageTriggerKilledServerRpc(string objectPath, int type)
         {
-            DamageTriggerKilledPlayerClientRpc(objectPath, type);
+            DamageTriggerKilledClientRpc(objectPath, type);
         }
 
         [ClientRpc]
-        private void DamageTriggerKilledPlayerClientRpc(string objectPath, int type, int playerTarget = -1)
+        private void DamageTriggerKilledClientRpc(string objectPath, int type, int playerTarget = -1)
         {
             GameObject obj = GameObject.Find(objectPath);
 
@@ -140,7 +140,7 @@ namespace JLL.API
                 switch (type)
                 {
                     case (int)ColliderType.Player:
-                        if (playerTarget >= 0)
+                        if (playerTarget >= 0 && playerTarget < RoundManager.Instance.playersManager.allPlayerScripts.Length)
                         {
                             PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerTarget];
 
