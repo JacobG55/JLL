@@ -5,6 +5,7 @@ using HarmonyLib;
 using JLL.API;
 using JLL.API.Compatability;
 using JLL.Patches;
+using JLL.ScriptableObjects;
 using LethalLib.Modules;
 using System.Reflection;
 using UnityEngine;
@@ -20,7 +21,7 @@ namespace JLL
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.7.2";
+        private const string modVersion = "1.7.4";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -56,6 +57,8 @@ namespace JLL
             networkObject.AddComponent<JLLNetworkManager>();
             networkObject.name = "JLL";
 
+            JNetworkPrefabSet.EmptyNetworkObject = NetworkPrefabs.CreateNetworkPrefab("EmptyPrefab");
+
             JCompatabilityHelper.Init();
             if (JCompatabilityHelper.IsModLoaded.LethalConfig)
             {
@@ -71,6 +74,8 @@ namespace JLL
             harmony.PatchAll(typeof(VehicleControllerPatch));
             harmony.PatchAll(typeof(MenuManagerPatch));
             harmony.PatchAll(typeof(BreakerBoxPatch));
+            harmony.PatchAll(typeof(ItemDropshipPatch));
+            harmony.PatchAll(typeof(GameNetworkManagerPatch));
 
             JFileHelper.LoadFilesInPlugins();
             /*

@@ -1,6 +1,7 @@
 ﻿using GameNetcodeStuff;
 using JLL.Components;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -142,16 +143,9 @@ namespace JLL.API
                     case (int)ColliderType.Player:
                         if (playerTarget >= 0 && playerTarget < RoundManager.Instance.playersManager.allPlayerScripts.Length)
                         {
-                            PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerTarget];
-
-                            if (player.isPlayerDead)
+                            if (RoundManager.Instance.playersManager.allPlayerScripts[playerTarget].isPlayerDead)
                             {
-                                if (player.deadBody != null)
-                                {
-                                    Destroy(player.deadBody.gameObject);
-                                    player.deadBody = null;
-                                }
-
+                                damageTrigger.OnPlayerKilled(playerTarget);
                                 damageTrigger.playerTargets.killEvent.Invoke();
                             }
                         }

@@ -6,7 +6,7 @@ namespace JLL.Components
     {
         public void MakeShipLeave()
         {
-            StartOfRound.Instance.ShipLeaveAutomatically(false);
+            StartOfRound.Instance.ShipLeaveAutomatically(true);
         }
 
         public void PowerSurgeShip()

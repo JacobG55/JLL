@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace JLL.API
 {
@@ -16,12 +17,21 @@ namespace JLL.API
     {
         public readonly static List<AssetBundle> JLLBundles = new List<AssetBundle>();
 
-        public static bool JLLBundlesLoaded { private set; get; } = false;
-        public static bool LLLBundlesLoaded { internal set; get; } = true;
+        private static bool JLLBundlesLoaded = false;
+        internal static bool LLLBundlesLoaded = true;
 
         private static int filesRead = 0;
-        private static int jllMods = 0;
+        private static int jllModsCount = 0;
         private static int levelPropertyOverrides = 0;
+
+        public static bool HaveJLLBundlesLoaded
+        {
+            get 
+            {
+                return JLLBundlesLoaded && LLLBundlesLoaded;
+            }
+        }
+        public static UnityEvent OnJLLBundlesLoaded = new UnityEvent();
 
         public static string AsJson<T>(T type, bool formatted = true)
         {
@@ -114,7 +124,7 @@ namespace JLL.API
                         {
                             if (CustomConfigRegistry.RegisterMod(modSettings.ToMod()))
                             {
-                                jllMods++;
+                                jllModsCount++;
                                 for (int i = 0; i < modSettings.levelPropertyOverrides.Length; i++)
                                 {
                                     levelPropertyOverrides++;
@@ -145,7 +155,7 @@ namespace JLL.API
 
         internal static void SearchAllBundles()
         {
-            if (!(JLLBundlesLoaded && LLLBundlesLoaded))
+            if (!HaveJLLBundlesLoaded)
             {
                 return;
             }
@@ -158,12 +168,13 @@ namespace JLL.API
                 }
                 try
                 {
-                    JLLMod[] jllConfigMods = bundle.LoadAllAssets<JLLMod>();
+                    JLLMod[] jllMods = bundle.LoadAllAssets<JLLMod>();
 
-                    for (int i = 0; i < jllConfigMods.Length; i++)
+                    for (int i = 0; i < jllMods.Length; i++)
                     {
-                        jllMods++;
-                        CustomConfigRegistry.RegisterMod(jllConfigMods[i]);
+                        jllModsCount++;
+                        CustomConfigRegistry.RegisterMod(jllMods[i]);
+                        jllMods[i].Init();
                     }
 
                     JLevelProperties[] levelProperties = bundle.LoadAllAssets<JLevelProperties>();
@@ -176,12 +187,12 @@ namespace JLL.API
                 }
                 catch (Exception e) 
                 {
-
                     JLogHelper.LogWarning($"Failed to read a bundle!\n{e}");
                 }
             }
 
-            JLogHelper.LogInfo($"Successfully Registered {jllMods} JLLMods and {levelPropertyOverrides} LevelPropertyOverrides.", JLogLevel.User);
+            JLogHelper.LogInfo($"Successfully Registered {jllModsCount} JLLMods and {levelPropertyOverrides} LevelPropertyOverrides.", JLogLevel.User);
+            OnJLLBundlesLoaded.Invoke();
         }
     }
 }

@@ -2,6 +2,7 @@
 using JLL.API;
 using JLL.Patches;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -17,6 +18,12 @@ namespace JLL.Components
         public RotationType hitRotation = RotationType.ObjectRotation;
         [Tooltip("Check RoundManager in the Ship Scene for corpse IDs\nA negative copseType will result in no corpse spawning")]
         public int corpseType = 0;
+        public Mesh OverrideCorpseMesh;
+        public bool attachCorpseToPoint = false;
+        public Transform corpseAttachPoint;
+        public bool matchPointExactly = false;
+        [Tooltip("Negative number will stay stuck to a point indefinately.")]
+        public float corpseStickTime = 2f;
 
         [Header("Conditions")]
         [Tooltip("Damage when something enters a trigger collider")]
@@ -320,6 +327,50 @@ namespace JLL.Components
         public void SetPlayerDamage(int damage)
         {
             playerTargets.damage = damage;
+        }
+
+        public void OnPlayerKilled(int playerId)
+        {
+            StartCoroutine(ModifyPlayerCorpse(playerId));
+        }
+
+        private IEnumerator ModifyPlayerCorpse(int playerKilled)
+        {
+            yield return null;
+            PlayerControllerB playerScript = StartOfRound.Instance.allPlayerScripts[playerKilled];
+            float startTime = Time.realtimeSinceStartup;
+            yield return new WaitUntil(() => playerScript.deadBody != null || Time.realtimeSinceStartup - startTime > 2f);
+            if (playerScript.deadBody == null)
+            {
+                JLogHelper.LogInfo("Player Corpse could not be found after two seconds!");
+                yield break;
+            }
+
+            if (corpseType < 0)
+            {
+                Destroy(playerScript.deadBody.gameObject);
+                playerScript.deadBody = null;
+            }
+            else
+            {
+                if (OverrideCorpseMesh != null)
+                {
+                    playerScript.deadBody.ChangeMesh(OverrideCorpseMesh);
+                }
+
+                if (attachCorpseToPoint && corpseAttachPoint != null)
+                {
+                    playerScript.deadBody.attachedLimb = playerScript.deadBody.bodyParts[6];
+                    playerScript.deadBody.attachedTo = corpseAttachPoint;
+                    playerScript.deadBody.matchPositionExactly = matchPointExactly;
+
+                    if (corpseStickTime >= 0)
+                    {
+                        yield return new WaitForSeconds(corpseStickTime);
+                        playerScript.deadBody.attachedTo = null;
+                    }
+                }
+            }
         }
 
         public void DamageEnemy(EnemyAI enemy)

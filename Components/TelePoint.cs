@@ -62,7 +62,7 @@ namespace JLL.Components
             yield return new WaitForSeconds(teleportDelay);
             if (TeleportPlayerIds.Count > 0)
             {
-                RoundManager.Instance.playersManager.allPlayerScripts[TeleportPlayerIds[0]].TeleportPlayer(transform.position, rotatePlayer, transform.rotation.y);
+                RoundManager.Instance.playersManager.allPlayerScripts[TeleportPlayerIds[0]].TeleportPlayer(transform.position, rotatePlayer, transform.eulerAngles.y);
                 TeleportPlayerIds.RemoveAt(0);
             }
         }

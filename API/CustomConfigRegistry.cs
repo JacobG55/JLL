@@ -24,25 +24,25 @@ namespace JLL.API
 
         public static bool RegisterMod(JLLMod mod)
         {
-            CustomConfigEntry jsonMod = CustomConfigEntry.Create(mod);
+            CustomConfigEntry configEntry = CustomConfigEntry.Create(mod);
 
-            if (Register(jsonMod.GUID, jsonMod))
+            if (Register(configEntry.GUID, configEntry))
             {
                 foreach (var config in mod.Booleans)
                 {
-                    jsonMod.RegisterConfig(config);
+                    configEntry.RegisterConfig(config);
                 }
                 foreach (var config in mod.Strings)
                 {
-                    jsonMod.RegisterConfig(config);
+                    configEntry.RegisterConfig(config);
                 }
                 foreach (var config in mod.Integers)
                 {
-                    jsonMod.RegisterConfig(config);
+                    configEntry.RegisterConfig(config);
                 }
                 foreach (var config in mod.Floats)
                 {
-                    jsonMod.RegisterConfig(config);
+                    configEntry.RegisterConfig(config);
                 }
                 return true;
             }

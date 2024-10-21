@@ -46,10 +46,18 @@ namespace JLL.Components
 
             OnSuccess:
 
-            player.DestroyItemInSlotAndSync(player.currentItemSlot);
-            OnSuccess.Invoke(player);
+            RemoveItemFromClientRpc(playerWhoSent);
 
             return;
+        }
+
+        [ClientRpc]
+        private void RemoveItemFromClientRpc(int playerWhoSent)
+        {
+            PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerWhoSent];
+
+            if (player.IsOwner) player.DestroyItemInSlotAndSync(player.currentItemSlot);
+            OnSuccess.Invoke(player);
         }
     }
 }

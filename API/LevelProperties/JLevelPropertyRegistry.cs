@@ -6,6 +6,7 @@ namespace JLL.API.LevelProperties
     public class JLevelPropertyRegistry
     {
         private static readonly Dictionary<string, JLevelPropertyEntry> Registry = new Dictionary<string, JLevelPropertyEntry>();
+        public static bool IsLevelGenerated { private set; get; } = false;
 
         public static readonly List<EnemyType> AllSortedEnemies = new List<EnemyType>();
         public static readonly List<EntranceTeleport> EntranceTeleports = new List<EntranceTeleport>();
@@ -81,6 +82,7 @@ namespace JLL.API.LevelProperties
         {
             EntranceTeleport[] entrances = Object.FindObjectsOfType<EntranceTeleport>(includeInactive: false);
             EntranceTeleports.AddRange(entrances);
+            IsLevelGenerated = true;
 
             SelectableLevel currentLevel = RoundManager.Instance.currentLevel;
             JLevelPropertyEntry currentProperties = GetLevelProperties(currentLevel);
@@ -120,6 +122,7 @@ namespace JLL.API.LevelProperties
 
         internal static void RemoveLevelOverrides()
         {
+            IsLevelGenerated = false;
             EntranceTeleports.Clear();
 
             foreach (EnemyPropertyOverride property in original.enemyPropertyOverrides)
