@@ -3,38 +3,21 @@ using UnityEditor;
 
 namespace JLLEditorModule.EditorScripts
 {
-    [CanEditMultipleObjects]
     [CustomEditor(typeof(EnemySpawner))]
-    public class EnemySpawnerEditor : Editor
+    [CanEditMultipleObjects]
+    public class EnemySpawnerEditor : JLLCustomEditor<EnemySpawner>
     {
-        private EnemySpawner EnemySpawner;
-
-        private void OnEnable()
+        public override bool DisplayProperty(SerializedProperty property)
         {
-            EnemySpawner = (EnemySpawner)target;
-        }
-
-        public override void OnInspectorGUI()
-        {
-            serializedObject.Update();
-
-            SerializedProperty iterator = serializedObject.GetIterator();
-
-            for (int i = 0; iterator.NextVisible(i == 0); i++)
+            if (Component.spawnRandom)
             {
-                if (EnemySpawner.spawnRandom)
-                {
-                    if (iterator.name == "type") continue;
-                }
-                else
-                {
-                    if (iterator.name == "randomPool") continue;
-                }
-
-                EditorGUILayout.PropertyField(iterator);
+                if (property.name == "type") return false;
             }
-
-            serializedObject.ApplyModifiedProperties();
+            else
+            {
+                if (property.name == "randomPool") return false;
+            }
+            return true;
         }
     }
 }

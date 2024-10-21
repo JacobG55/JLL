@@ -73,5 +73,18 @@ namespace JLLEditorModule
             };
             return weightedProperties;
         }
+
+        public static bool ObjectIsParent(GameObject target, Transform search)
+        {
+            if (search.transform.parent != null)
+            {
+                if (search.transform.parent.gameObject == target)
+                {
+                    return true;
+                }
+                else return ObjectIsParent(target, search.transform.parent);
+            }
+            return false;
+        }
     }
 }

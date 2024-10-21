@@ -5,44 +5,31 @@ using static JLL.Components.ItemSpawner;
 
 namespace JLLEditorModule.EditorScripts
 {
-    [CanEditMultipleObjects]
     [CustomEditor(typeof(JThrowableItem))]
-    public class JThrowableItemEditor : Editor
+    [CanEditMultipleObjects]
+    public class JThrowableItemEditor : JLLCustomEditor<JThrowableItem>
     {
-        private JThrowableItem JThrowableItem;
-
         private SerializedProperty CustomList;
         private ReorderableList weightedProperties;
 
-        private void OnEnable()
+        public override void OnEnable()
         {
-            JThrowableItem = (JThrowableItem)target;
-
+            base.OnEnable();
             CustomList = serializedObject.FindProperty("CustomList");
             weightedProperties = JLLEditor.CreateWeightedItemSpawnProperties(serializedObject, CustomList);
         }
 
-        public override void OnInspectorGUI()
+        public override bool DisplayProperty(SerializedProperty property)
         {
-            serializedObject.Update();
-
-            SerializedProperty iterator = serializedObject.GetIterator();
-
-            for (int i = 0; iterator.NextVisible(i == 0); i++)
+            if (property.name == "CustomList")
             {
-                if (iterator.name == "CustomList")
+                if (Component.SourcePool == SpawnPoolSource.CustomList)
                 {
-                    if (JThrowableItem.SourcePool == SpawnPoolSource.CustomList)
-                    {
-                        weightedProperties.DoLayoutList();
-                    }
-                    continue;
+                    weightedProperties.DoLayoutList();
                 }
-
-                EditorGUILayout.PropertyField(iterator);
+                return false;
             }
-
-            serializedObject.ApplyModifiedProperties();
+            return true;
         }
     }
 }

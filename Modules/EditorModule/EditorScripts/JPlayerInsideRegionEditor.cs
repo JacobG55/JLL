@@ -3,35 +3,17 @@ using UnityEditor;
 
 namespace JLLEditorModule.EditorScripts
 {
-    [CanEditMultipleObjects]
     [CustomEditor(typeof(JPlayerInsideRegion))]
-    public class JPlayerInsideRegionEditor : Editor
+    [CanEditMultipleObjects]
+    public class JPlayerInsideRegionEditor : JLLCustomEditor<JPlayerInsideRegion>
     {
-        private JPlayerInsideRegion JPlayerInsideRegion;
-
-        private void OnEnable()
+        public override bool DisplayProperty(SerializedProperty property)
         {
-            JPlayerInsideRegion = (JPlayerInsideRegion)target;
-        }
-
-        public override void OnInspectorGUI()
-        {
-            serializedObject.Update();
-
-            SerializedProperty iterator = serializedObject.GetIterator();
-
-            for (int i = 0; iterator.NextVisible(i == 0); i++)
+            if (!Component.limitEventTriggers)
             {
-                if (!JPlayerInsideRegion.limitEventTriggers)
-                {
-                    if (iterator.name == "maxEventTriggers") 
-                        continue;
-                }
-
-                EditorGUILayout.PropertyField(iterator);
+                if (property.name == "maxEventTriggers") return false;
             }
-
-            serializedObject.ApplyModifiedProperties();
+            return true;
         }
     }
 }

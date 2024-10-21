@@ -3,51 +3,34 @@ using UnityEditor;
 
 namespace JLLEditorModule.EditorScripts
 {
-    [CanEditMultipleObjects]
     [CustomEditor(typeof(JMeleeWeapon))]
-    public class JMeleeWeaponEditor : Editor
+    [CanEditMultipleObjects]
+    public class JMeleeWeaponEditor : JLLCustomEditor<JMeleeWeapon>
     {
-        private JMeleeWeapon JMeleeWeapon;
-
-        private void OnEnable()
+        public override bool DisplayProperty(SerializedProperty property)
         {
-            JMeleeWeapon = (JMeleeWeapon)target;
-        }
-
-        public override void OnInspectorGUI()
-        {
-            serializedObject.Update();
-
-            SerializedProperty iterator = serializedObject.GetIterator();
-
-            for (int i = 0; iterator.NextVisible(i == 0); i++)
+            if (!Component.isHeavyWeapon && (property.name == "reelingTime" || property.name == "swingTime" || property.name == "reelUpSFX"))
             {
-                if (!JMeleeWeapon.isHeavyWeapon && (iterator.name == "reelingTime" || iterator.name == "swingTime" || iterator.name == "reelUpSFX"))
-                { 
-                    continue; 
-                }
-
-                if (iterator.name == "OnPlayerHit" && !JMeleeWeapon.damagePlayers)
-                {
-                    continue;
-                }
-                if (iterator.name == "OnEnemyHit" && !JMeleeWeapon.damageEnemies)
-                {
-                    continue;
-                }
-                if (iterator.name == "OnVehicleHit" && !JMeleeWeapon.damageVehicles)
-                {
-                    continue;
-                }
-                if (iterator.name == "OnObjectHit" && !JMeleeWeapon.damageObjects)
-                {
-                    continue;
-                }
-
-                EditorGUILayout.PropertyField(iterator);
+                return false;
             }
 
-            serializedObject.ApplyModifiedProperties();
+            if (property.name == "OnPlayerHit" && !Component.damagePlayers)
+            {
+                return false;
+            }
+            if (property.name == "OnEnemyHit" && !Component.damageEnemies)
+            {
+                return false;
+            }
+            if (property.name == "OnVehicleHit" && !Component.damageVehicles)
+            {
+                return false;
+            }
+            if (property.name == "OnObjectHit" && !Component.damageObjects)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

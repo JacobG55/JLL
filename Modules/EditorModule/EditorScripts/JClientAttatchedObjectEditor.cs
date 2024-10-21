@@ -1,55 +1,27 @@
 ﻿using JLL.Components;
 using UnityEditor;
-using UnityEngine;
 
 namespace JLLEditorModule.EditorScripts
 {
-    [CanEditMultipleObjects]
     [CustomEditor(typeof(JClientAttatchedObject))]
-    public class JClientAttatchedObjectEditor : Editor
+    [CanEditMultipleObjects]
+    public class JClientAttatchedObjectEditor : JLLCustomEditor<JClientAttatchedObject>
     {
-        private JClientAttatchedObject JClientAttatchedObject;
-
-        private void OnEnable()
+        public override bool DisplayProperty(SerializedProperty property)
         {
-            JClientAttatchedObject = (JClientAttatchedObject)target;
+            if (property.name == "lerpPosition" && !Component.attachToLocalPlayer)
+            {
+                return false;
+            }
+            return true;
         }
 
-        public override void OnInspectorGUI()
+        public override void DisplayWarnings(SerializedProperty property)
         {
-            serializedObject.Update();
-
-            SerializedProperty iterator = serializedObject.GetIterator();
-
-            for (int i = 0; iterator.NextVisible(i == 0); i++)
+            if (property.name == "target" && Component.enableCondition != JClientAttatchedObject.ActiveCondition.None && (Component.gameObject == Component.target || JLLEditor.ObjectIsParent(Component.target, Component.transform)))
             {
-                if (iterator.name == "lerpPosition" && !JClientAttatchedObject.attachToLocalPlayer)
-                {
-                    continue;
-                }
-
-                EditorGUILayout.PropertyField(iterator);
-
-                if (iterator.name == "target" && JClientAttatchedObject.enableCondition != JClientAttatchedObject.ActiveCondition.None && (JClientAttatchedObject.gameObject == JClientAttatchedObject.target || ObjectIsParent(JClientAttatchedObject.target, JClientAttatchedObject.transform)))
-                {
-                    JLLEditor.HelpMessage("Target should not be self or parent when an Enable Condition is set.", "Disabling the object containing this script will stop it from working.");
-                }
+                JLLEditor.HelpMessage("Target should not be self or parent when an Enable Condition is set.", "Disabling the object containing this script will stop it from working.");
             }
-
-            serializedObject.ApplyModifiedProperties();
-        }
-
-        private bool ObjectIsParent(GameObject target, Transform search)
-        {
-            if (search.transform.parent != null)
-            {
-                if (search.transform.parent.gameObject == target)
-                {
-                    return true;
-                }
-                else return ObjectIsParent(target, search.transform.parent);
-            }
-            return false;
         }
     }
 }

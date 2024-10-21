@@ -4,25 +4,22 @@ using UnityEngine;
 
 namespace JLLEditorModule.EditorScripts
 {
-    [CanEditMultipleObjects]
     [CustomEditor(typeof(DamageTrigger))]
-    public class DamageTriggerEditor : Editor
+    [CanEditMultipleObjects]
+    public class DamageTriggerEditor : JLLCustomEditor<DamageTrigger>
     {
-        private DamageTrigger DamageTrigger;
+        bool hasTriggerCollider = false;
+        bool hasCollider = false;
+        int indent = 0;
 
-        private void OnEnable()
+        public override void AtHeader()
         {
-            DamageTrigger = (DamageTrigger)target;
-        }
+            base.AtHeader();
 
-        public override void OnInspectorGUI()
-        {
-            serializedObject.Update();
+            hasTriggerCollider = false;
+            hasCollider = false;
 
-            bool hasTriggerCollider = false;
-            bool hasCollider = false;
-
-            foreach (Collider collider in DamageTrigger.gameObject.GetComponents<Collider>())
+            foreach (Collider collider in Component.gameObject.GetComponents<Collider>())
             {
                 if (collider.isTrigger)
                 {
@@ -37,50 +34,75 @@ namespace JLLEditorModule.EditorScripts
                     break;
                 }
             }
+        }
 
-            SerializedProperty iterator = serializedObject.GetIterator();
-
-            for (int i = 0; iterator.NextVisible(i == 0); i++)
+        public override bool DisplayProperty(SerializedProperty property)
+        {
+            if (!Component.attachCorpseToPoint)
             {
-                EditorGUILayout.PropertyField(iterator);
-
-                if (iterator.name == "vehicleTargets" && DamageTrigger.vehicleTargets.enabled && Physics.GetIgnoreLayerCollision(DamageTrigger.gameObject.layer, 30))
+                if (property.name == "corpseAttachPoint" || property.name == "matchPointExactly" || property.name == "corpseStickTime")
                 {
-                    JLLEditor.HelpMessage(
-                        $"{LayerMask.LayerToName(DamageTrigger.gameObject.layer)} Layer does not interact with the Vehicle Layer.",
-                        "In order to damage Vehicles you will need to make sure your colliders / Layermasks can interact with the vehicle layer.",
-                        "The Collision Matrix can be found at: ProjectSettings/Physics/LayerCollisionMatrix"
-                    );
+                    return false;
                 }
-
-                if (!hasCollider && iterator.name == "damageOnCollision" && DamageTrigger.damageOnCollision)
+            }
+            else
+            {
+                if (indent == 0)
                 {
-                    JLLEditor.HelpMessage("'damageOnCollision' requires a collider on the same object that has 'isTrigger' disabled.");
-                }
-
-                if (!hasTriggerCollider)
-                {
-                    if (iterator.name == "damageOnEnter" && DamageTrigger.damageOnEnter)
+                    if (property.name == "attachCorpseToPoint")
                     {
-                        JLLEditor.HelpMessage("'damageOnEnter' requires a collider on the same object that has 'isTrigger' enabled.");
+                        indent++;
                     }
-                    else if (iterator.name == "damageOnExit" && DamageTrigger.damageOnExit)
+                    else if (property.name == "corpseStickTime")
                     {
-                        JLLEditor.HelpMessage("'damageOnExit' requires a collider on the same object that has 'isTrigger' enabled.");
-                    }
-                    else if (iterator.name == "continuousDamage" && DamageTrigger.continuousDamage)
-                    {
-                        JLLEditor.HelpMessage("'continuousDamage' requires a collider on the same object that has 'isTrigger' enabled.");
+                        indent--;
                     }
                 }
-
-                if (iterator.name == "continuousRaycastDamage" && DamageTrigger.continuousRaycastDamage && DamageTrigger.raycastDirections.Length == 0)
+                else
                 {
-                    JLLEditor.HelpMessage("'continuousRaycastDamage' requires at least one raycast direction to be defined in 'raycastDirections'.");
+                    EditorGUI.indentLevel += indent;
+                    indent = 0;
+                }
+            }
+            return true;
+        }
+
+        public override void DisplayWarnings(SerializedProperty property)
+        {
+            if (property.name == "vehicleTargets" && Component.vehicleTargets.enabled && Physics.GetIgnoreLayerCollision(Component.gameObject.layer, 30))
+            {
+                JLLEditor.HelpMessage(
+                    $"{LayerMask.LayerToName(Component.gameObject.layer)} Layer does not interact with the Vehicle Layer.",
+                    "In order to damage Vehicles you will need to make sure your colliders / Layermasks can interact with the vehicle layer.",
+                    "The Collision Matrix can be found at: ProjectSettings/Physics/LayerCollisionMatrix"
+                );
+            }
+
+            if (!hasCollider && property.name == "damageOnCollision" && Component.damageOnCollision)
+            {
+                JLLEditor.HelpMessage("'damageOnCollision' requires a collider on the same object that has 'isTrigger' disabled.");
+            }
+
+            if (!hasTriggerCollider)
+            {
+                if (property.name == "damageOnEnter" && Component.damageOnEnter)
+                {
+                    JLLEditor.HelpMessage("'damageOnEnter' requires a collider on the same object that has 'isTrigger' enabled.");
+                }
+                else if (property.name == "damageOnExit" && Component.damageOnExit)
+                {
+                    JLLEditor.HelpMessage("'damageOnExit' requires a collider on the same object that has 'isTrigger' enabled.");
+                }
+                else if (property.name == "continuousDamage" && Component.continuousDamage)
+                {
+                    JLLEditor.HelpMessage("'continuousDamage' requires a collider on the same object that has 'isTrigger' enabled.");
                 }
             }
 
-            serializedObject.ApplyModifiedProperties();
+            if (property.name == "continuousRaycastDamage" && Component.continuousRaycastDamage && Component.raycastDirections.Length == 0)
+            {
+                JLLEditor.HelpMessage("'continuousRaycastDamage' requires at least one raycast direction to be defined in 'raycastDirections'.");
+            }
         }
     }
 }

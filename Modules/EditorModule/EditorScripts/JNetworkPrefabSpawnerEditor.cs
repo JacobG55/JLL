@@ -3,15 +3,15 @@ using UnityEditor;
 
 namespace JLLEditorModule.EditorScripts
 {
-    [CustomEditor(typeof(JWeatherObject))]
+    [CustomEditor(typeof(JNetworkPrefabSpawner))]
     [CanEditMultipleObjects]
-    public class JWeatherObjectEditor : JLLCustomEditor<JWeatherObject>
+    public class JNetworkPrefabSpawnerEditor : JLLCustomEditor<JNetworkPrefabSpawner>
     {
         public override bool DisplayProperty(SerializedProperty property)
         {
-            if (property.name == "defaultToSelf" && Component.activeObject != null)
+            if (Component.spawnRandom)
             {
-                return false;
+                if (property.name == "spawnPrefabName") return false;
             }
             return true;
         }
