@@ -8,7 +8,17 @@ namespace JLL.Components
         public bool attatchPos = true;
         public bool attatchRot = true;
 
-        public void LateUpdate()
+        void Update()
+        {
+            UpdatePosition();
+        }
+
+        void LateUpdate()
+        {
+            UpdatePosition();
+        }
+
+        public void UpdatePosition()
         {
             if (parent == null || !parent) return;
             if (attatchPos)

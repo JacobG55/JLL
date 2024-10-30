@@ -7,6 +7,7 @@ using JLL.API.Compatability;
 using JLL.Patches;
 using JLL.ScriptableObjects;
 using LethalLib.Modules;
+using System;
 using System.Reflection;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ namespace JLL
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.7.4";
+        private const string modVersion = "1.7.5";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -51,7 +52,7 @@ namespace JLL
 
             JLogHelper.UpdateLogLevel();
 
-            NetcodeRequired(mls);
+            NetcodePatch(mls, Assembly.GetExecutingAssembly().GetTypes());
 
             networkObject = NetworkPrefabs.CreateNetworkPrefab("JLL");
             networkObject.AddComponent<JLLNetworkManager>();
@@ -65,42 +66,41 @@ namespace JLL
                 LethalConfigHelper.CreateJLLModConfig();
             }
 
-            harmony.PatchAll(typeof(ItemChargerPatch));
-            harmony.PatchAll(typeof(TimeOfDayPatch));
-            harmony.PatchAll(typeof(HudManagerPatch));
-            harmony.PatchAll(typeof(StartOfRoundPatch));
-            harmony.PatchAll(typeof(RoundManagerPatch));
-            harmony.PatchAll(typeof(LungPropPatch));
-            harmony.PatchAll(typeof(VehicleControllerPatch));
-            harmony.PatchAll(typeof(MenuManagerPatch));
-            harmony.PatchAll(typeof(BreakerBoxPatch));
-            harmony.PatchAll(typeof(ItemDropshipPatch));
-            harmony.PatchAll(typeof(GameNetworkManagerPatch));
+            HarmonyPatch(harmony, mls,
+                typeof(ItemChargerPatch),
+                typeof(TimeOfDayPatch),
+                typeof(HudManagerPatch),
+                typeof(StartOfRoundPatch),
+                typeof(RoundManagerPatch),
+                typeof(LungPropPatch),
+                typeof(VehicleControllerPatch),
+                typeof(MenuManagerPatch),
+                typeof(BreakerBoxPatch),
+                typeof(ItemDropshipPatch),
+                typeof(GameNetworkManagerPatch)
+            );
 
             JFileHelper.LoadFilesInPlugins();
-            /*
-            List<JsonModSettings> jsonMods = JFileHelper.ParseJsonFiles<JsonModSettings>(JFileHelper.GetFilesInDirectory(Paths.PluginPath, new List<string> { "JLLMod.json" }));
-            JLogHelper.LogInfo($"Found {jsonMods.Count} JLLMods. Registering them now...", JLogLevel.User);
-            int registeredMods = CustomConfigRegistry.RegisterMods(jsonMods);
-
-            int registeredLevelOverrides = 0;
-            for (int i = 0; i < jsonMods.Count; i++)
-            {
-                foreach (var levelPropertis in jsonMods[i].levelPropertyOverrides)
-                {
-                    JLevelPropertyRegistry.RegisterLevelProperties(new JLevelProperties() { sceneName = levelPropertis.sceneName, enemyPropertyOverrides = levelPropertis.enemyPropertyOverrides });
-                    registeredLevelOverrides++;
-                }
-            }
-
-            JLogHelper.LogInfo($"Successfully Registered {registeredMods} JLLMods with {registeredLevelOverrides} level property overrides.", JLogLevel.User);
-            */
         }
 
-        public static void NetcodeRequired(ManualLogSource logSource)
+        public static void HarmonyPatch(Harmony harmony, ManualLogSource logSource, params Type[] patches)
         {
-            var types = Assembly.GetExecutingAssembly().GetTypes();
-            foreach (var type in types)
+            foreach (Type patch in patches)
+            {
+                try
+                {
+                    harmony.PatchAll(patch);
+                }
+                catch (Exception e)
+                {
+                    logSource.LogError($"Caught Error while trying to patch {patch.Name}\n{e}");
+                }
+            }
+        }
+
+        public static void NetcodePatch(ManualLogSource logSource, params Type[] types)
+        {
+            foreach (Type type in types)
             {
                 try
                 {

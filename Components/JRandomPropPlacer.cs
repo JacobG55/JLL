@@ -9,7 +9,12 @@ using UnityEngine.AI;
 
 namespace JLL.Components
 {
-    public class JRandomPropPlacer : MonoBehaviour
+    public interface IDungeonLoadListener
+    {
+        public abstract void PostDungeonGeneration();
+    }
+
+    public class JRandomPropPlacer : MonoBehaviour, IDungeonLoadListener
     {
         public SpawnNodes spawnNodeSelection = SpawnNodes.Children;
         [Tooltip("When left empty will default to this gameobject.")]
@@ -25,11 +30,27 @@ namespace JLL.Components
         {
             public GameObject prefabToSpawn;
             public AnimationCurve randomAmount = new AnimationCurve();
+            public float prefabWidth = 2f;
             public SpawnRotation spawnRotation = SpawnRotation.Random;
             public bool spawnFlushAgainstWall = false;
             public float distanceFromEntrances = 10f;
             public float distanceBetweenSpawns = 5f;
             public float randomSpawnRange = 10f;
+
+            public Vector3 PositionEdgeCheck(Vector3 position)
+            {
+                if (NavMesh.FindClosestEdge(position, out NavMeshHit navHit, -1) && navHit.distance < prefabWidth)
+                {
+                    Vector3 position2 = navHit.position;
+                    if (NavMesh.SamplePosition(new Ray(position2, position - position2).GetPoint(prefabWidth + 0.5f), out navHit, 10f, -1))
+                    {
+                        position = navHit.position;
+                        return position;
+                    }
+                    return Vector3.zero;
+                }
+                return position;
+            }
         }
 
         public enum SpawnRotation
@@ -52,7 +73,7 @@ namespace JLL.Components
         {
             None,
             Exterior,
-            Custom
+            Custom = -1
         }
 
         void Start()
@@ -169,25 +190,38 @@ namespace JLL.Components
                     {
                         SpawnRotation.FacingAwayFromWall => new Vector3(0f, RoundManager.Instance.YRotationThatFacesTheFarthestFromPosition(position + Vector3.up * 0.2f), 0f),
                         SpawnRotation.FacingWall => new Vector3(0f, RoundManager.Instance.YRotationThatFacesTheNearestFromPosition(position + Vector3.up * 0.2f), 0f),
-                        SpawnRotation.BackToWall => SpawnBackToWall(spawnableProp.prefabToSpawn, spawnableProp, random),
-                        SpawnRotation.Random => new Vector3(spawnableProp.prefabToSpawn.transform.eulerAngles.x, random.Next(0, 360), spawnableProp.prefabToSpawn.transform.eulerAngles.z),
+                        SpawnRotation.BackToWall => RandomEulers(spawnableProp.prefabToSpawn.transform.eulerAngles, random),
+                        SpawnRotation.Random => RandomEulers(spawnableProp.prefabToSpawn.transform.eulerAngles, random),
                         _ => new Vector3(spawnableProp.prefabToSpawn.transform.eulerAngles.x, 0, spawnableProp.prefabToSpawn.transform.eulerAngles.z),
                     };
 
+                    Vector3 spawnPos = spawnableProp.PositionEdgeCheck(position);
+                    spawnedPositions.Add(spawnPos);
+
                     if (skipOnClient) continue;
 
-                    // Spawn Prop in world.
+                    // Spawn Prop in world. 
 
-                    GameObject gameObject = Instantiate(spawnableProp.prefabToSpawn, position, Quaternion.identity, PropContainer);
+                    GameObject spawned = Instantiate(spawnableProp.prefabToSpawn, spawnPos, Quaternion.identity, PropContainer);
 
                     // Rotate Prop
-                    gameObject.transform.eulerAngles = eulerAngles;
+                    spawned.transform.eulerAngles = eulerAngles;
 
-                    if (gameObject.TryGetComponent(out NetworkObject netObj))
+                    if (spawnableProp.spawnRotation == SpawnRotation.BackToWall && Physics.Raycast(spawned.transform.position, -spawned.transform.forward, out var hitInfo, 100f, StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
+                    {
+                        spawned.transform.position = hitInfo.point;
+                        if (spawnableProp.spawnFlushAgainstWall)
+                        {
+                            spawned.transform.forward = hitInfo.normal;
+                            spawned.transform.eulerAngles = new Vector3(0f, spawned.transform.eulerAngles.y, 0f);
+                        }
+                    }
+
+                    if (spawned.TryGetComponent(out NetworkObject netObj))
                     {
                         netObj.Spawn(destroyWithScene: true);
                     }
-                    JLogHelper.LogInfo($"{name} spawned {gameObject.name} at {position}", JLogLevel.Wesley);
+                    JLogHelper.LogInfo($"{name} spawned {spawned.name} at {spawned.transform.position}", JLogLevel.Wesley);
                     spawnedSuccessfully++;
                 }
             }
@@ -198,7 +232,7 @@ namespace JLL.Components
                 switch (rebakeNavMesh)
                 {
                     case NavMeshToRebake.Exterior:
-                        GameObject.FindGameObjectWithTag("OutsideLevelNavMesh")?.GetComponent<NavMeshSurface>().BuildNavMesh();
+                        GameObject.FindGameObjectWithTag("OutsideLevelNavMesh")?.GetComponent<NavMeshSurface>()?.BuildNavMesh();
                         break;
                     case NavMeshToRebake.Custom:
                         for (int i = 0; i < rebakeSurfaces.Length; i++)
@@ -211,18 +245,9 @@ namespace JLL.Components
             }
         }
 
-        private Vector3 SpawnBackToWall(GameObject prop, SpawnableProp spawnableProp, System.Random random)
+        private Vector3 RandomEulers(Vector3 original, System.Random random)
         {
-            if (Physics.Raycast(prop.transform.position, -prop.transform.forward, out var hitInfo, 100f, StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
-            {
-                prop.transform.position = hitInfo.point;
-                if (spawnableProp.spawnFlushAgainstWall)
-                {
-                    prop.transform.forward = hitInfo.normal;
-                    return new Vector3(0f, prop.transform.eulerAngles.y, 0f);
-                }
-            }
-            return new Vector3(gameObject.transform.eulerAngles.x, random.Next(0, 360), gameObject.transform.eulerAngles.z);
+            return new Vector3(original.x, random.Next(0, 360), original.z);
         }
     }
 }

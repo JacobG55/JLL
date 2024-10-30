@@ -15,20 +15,10 @@ namespace JLL.Components.Filters
 
         public override void Filter(EnemyAI enemy)
         {
-            if (enemyType.shouldCheck && !enemyType.CheckValue(enemy.enemyType.enemyName))
-            {
-                goto Failed;
-            }
+            if (!enemyType.Check(enemy.enemyType.enemyName)) goto Failed;
+            if (!isInvulnerable.Check(!enemy.enemyType.canDie)) goto Failed;
 
-            if (isInvulnerable.shouldCheck && !isInvulnerable.CheckValue(!enemy.enemyType.canDie))
-            {
-                goto Failed;
-            }
-
-            if (healthCheck.shouldCheck && !healthCheck.CheckValue(enemy.enemyHP))
-            {
-                goto Failed;
-            }
+            if (!healthCheck.Check(enemy.enemyHP)) goto Failed;
 
             Result(enemy, true);
             return;

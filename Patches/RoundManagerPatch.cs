@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
-using JLL.API;
 using JLL.API.LevelProperties;
 using JLL.Components;
+using System.Linq;
 using UnityEngine;
 
 namespace JLL.Patches
@@ -31,13 +31,12 @@ namespace JLL.Patches
             {
                 JLevelPropertyRegistry.ApplyLevelOverrides();
 
-                JRandomPropPlacer[] randomPropPlacer = GameObject.FindObjectsOfType<JRandomPropPlacer>();
-                if (randomPropPlacer.Length > 0)
+                IDungeonLoadListener[] dungeonLoadListener = GameObject.FindObjectsOfType<MonoBehaviour>().OfType<IDungeonLoadListener>().ToArray();
+                if (dungeonLoadListener.Length > 0)
                 {
-                    JLogHelper.LogInfo($"Found {randomPropPlacer.Length} JRandomPropPlacer(s).");
-                    for (int i = 0; i < randomPropPlacer.Length; i++)
+                    for (int i = 0; i < dungeonLoadListener.Length; i++)
                     {
-                        randomPropPlacer[i].PostDungeonGeneration();
+                        dungeonLoadListener[i].PostDungeonGeneration();
                     }
                 }
             }

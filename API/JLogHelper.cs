@@ -27,21 +27,28 @@ namespace JLL.API
         {
             if (AcceptableLogLevel(level))
             {
-                GetSource().LogInfo(message);
+                GetSource().LogInfo("[" + level + "] " + message);
             }
         }
         public static void LogWarning(string message, JLogLevel level = JLogLevel.User)
         {
             if (AcceptableLogLevel(level))
             {
-                GetSource().LogWarning(message);
+                GetSource().LogWarning("[" + level + "] " + message);
+            }
+        }
+        public static void LogError(string message, JLogLevel level = JLogLevel.User)
+        {
+            if (AcceptableLogLevel(level))
+            {
+                GetSource().LogError("[" + level + "] " + message);
             }
         }
         public static void LogFatal(string message, JLogLevel level = JLogLevel.ImportantOnly)
         {
             if (AcceptableLogLevel(level))
             {
-                GetSource().LogFatal(message);
+                GetSource().LogFatal("[" + level + "] " + message);
             }
         }
     }

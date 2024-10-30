@@ -30,10 +30,7 @@ namespace JLL.Components
             foreach (WeatherEffect effect in overrideEffects)
             {
                 effect.effectEnabled = false;
-                if (effect.effectPermanentObject != null)
-                {
-                    effect.effectPermanentObject.SetActive(false);
-                }
+                effect.effectPermanentObject?.SetActive(false);
             }
 
             if (TimeOfDay.Instance.currentLevelWeather == LevelWeatherType.Foggy)

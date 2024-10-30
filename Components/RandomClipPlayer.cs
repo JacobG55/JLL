@@ -20,6 +20,8 @@ namespace JLL.Components
         public bool walkieCanHear = true;
         public float walkieVolumeMultiplier = 0.85f;
         public bool creaturesCanHear = true;
+        public float creatureVolumeMultiplier = 0.5f;
+        public float creatureRangeMultiplier = 4f;
 
         [Serializable]
         public class WeightedAudioClip : IWeightedItem
@@ -57,7 +59,7 @@ namespace JLL.Components
                     }
                     if (creaturesCanHear)
                     {
-                        RoundManager.Instance.PlayAudibleNoise(audioSource.transform.position, 4f * volume, volume / 2f, 0);
+                        RoundManager.Instance.PlayAudibleNoise(audioSource.transform.position, creatureRangeMultiplier * volume, volume * creatureVolumeMultiplier, 0);
                     }
                 }
             }

@@ -76,7 +76,7 @@ namespace JLL.API
         private CustomConfigEntry(JLLMod mod)
         {
             ScriptableObject = mod;
-            GUID = $"{mod.modAuthor}.{mod.modName}";
+            GUID = mod.GUID();
             Config = new ConfigFile(Path.Combine(Paths.ConfigPath, "JLL", $"{GUID}.cfg"), true);
             Logger = BepInEx.Logging.Logger.CreateLogSource($"JLL.{GUID}");
         }

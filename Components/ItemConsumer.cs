@@ -11,6 +11,7 @@ namespace JLL.Components
         public ItemFilter.Properties[] validItemFilters = new ItemFilter.Properties[0];
 
         public InteractEvent OnSuccess = new InteractEvent();
+        public bool runEventOnAllClients = true;
 
         public void CheckHeldItem(PlayerControllerB player)
         {
@@ -57,7 +58,11 @@ namespace JLL.Components
             PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerWhoSent];
 
             if (player.IsOwner) player.DestroyItemInSlotAndSync(player.currentItemSlot);
-            OnSuccess.Invoke(player);
+
+            if (runEventOnAllClients || player.IsOwner)
+            {
+                OnSuccess.Invoke(player);
+            }
         }
     }
 }

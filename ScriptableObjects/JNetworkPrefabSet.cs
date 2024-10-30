@@ -1,6 +1,5 @@
 ﻿using JLL.API;
 using JLL.Components;
-using LethalLib.Modules;
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;

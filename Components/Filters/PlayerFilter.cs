@@ -1,8 +1,11 @@
 ﻿using GameNetcodeStuff;
+using HarmonyLib;
 using JLL.API;
 using JLL.API.Compatability;
 using System;
+using System.Linq.Expressions;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI.Table;
 
 namespace JLL.Components.Filters
 {
@@ -26,21 +29,27 @@ namespace JLL.Components.Filters
         public NameFilter username = new NameFilter() { value = "Player" };
         public CheckFilter isLocalPlayer = new CheckFilter() { value = true };
 
+        [Header("Player Actions")]
+        public CheckFilter isWalking = new CheckFilter() { value = true };
+        public CheckFilter isSprinting = new CheckFilter() { value = true };
+        public CheckFilter isCrouching = new CheckFilter() { value = true };
+        public CheckFilter isExhausted = new CheckFilter() { value = true };
+        public CheckFilter isUnderwater = new CheckFilter() { value = true };
+        public CheckFilter isSinking = new CheckFilter() { value = true };
+        public CheckFilter isClimbing = new CheckFilter() { value = true };
+        public CheckFilter isInVehicle = new CheckFilter() { value = true };
+        public CheckFilter isBleeding = new CheckFilter() { value = true };
+        public CheckFilter isAlone = new CheckFilter() { value = true };
+        public CheckFilter isEmoting = new CheckFilter() { value = true };
+        public CheckFilter isInSpecialAnim = new CheckFilter() { value = true };
+
         [Header("Legacy (May be removed in the future)")]
         public HeldItemFilter heldItem = new HeldItemFilter();
 
         public override void Filter(PlayerControllerB player)
         {
-            if (heldItemFilter.shouldCheck && !heldItemFilter.CheckValue(player.currentlyHeldObjectServer))
-            {
-                goto Failed;
-            }
-
-            if (heldItem.shouldCheck && !heldItem.CheckValue(player))
-            {
-                goto Failed;
-            }
-
+            if (!heldItemFilter.Check(player.currentlyHeldObjectServer)) goto Failed;
+            if (heldItem.shouldCheck && !heldItem.CheckValue(player)) goto Failed;
             if (inventoryContents.Length > 0)
             {
                 int foundItems = 0;
@@ -56,41 +65,42 @@ namespace JLL.Components.Filters
                         }
                     }
                 }
-                if (foundItems != inventoryContents.Length)
+                if (foundItems != inventoryContents.Length) goto Failed;
+            }
+            if (!healthCheck.Check(player.health)) goto Failed;
+            if (!staminaCheck.Check(player.sprintMeter)) goto Failed;
+            if (!weightCheck.Check(player.carryWeight)) goto Failed;
+            if (!inFacility.Check(player.isInsideFactory)) goto Failed;
+            if (!isLocalPlayer.Check(player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)) goto Failed;
+            if (!username.Check(player.playerUsername)) goto Failed;
+
+            if (isWalking.shouldCheck)
+            {
+                try
                 {
-                    goto Failed;
+                    Traverse playerTraverse = Traverse.Create(player);
+                    if (!isWalking.Check(playerTraverse.Field("isWalking").GetValue<bool>()))
+                    {
+                        goto Failed;
+                    }
+                }
+                catch
+                {
+                    // This is fine.
+                    JLogHelper.LogInfo($"{name} isWalking check failed on {player.playerUsername}.", JLogLevel.Wesley);
                 }
             }
-
-            if (healthCheck.shouldCheck && !healthCheck.CheckValue(player.health))
-            {
-                goto Failed;
-            }
-
-            if (staminaCheck.shouldCheck && !staminaCheck.CheckValue(player.sprintMeter))
-            {
-                goto Failed;
-            }
-
-            if (weightCheck.shouldCheck && !weightCheck.CheckValue(player.carryWeight))
-            {
-                goto Failed;
-            }
-
-            if (inFacility.shouldCheck && !inFacility.CheckValue(player.isInsideFactory))
-            {
-                goto Failed;
-            }
-
-            if (isLocalPlayer.shouldCheck && !isLocalPlayer.CheckValue(player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId))
-            {
-                goto Failed;
-            }
-
-            if (username.shouldCheck && !username.CheckValue(player.playerUsername))
-            {
-                goto Failed;
-            }
+            if (!isSprinting.Check(player.isSprinting)) goto Failed;
+            if (!isCrouching.Check(player.isCrouching)) goto Failed;
+            if (!isExhausted.Check(player.isExhausted)) goto Failed;
+            if (!isUnderwater.Check(player.isUnderwater)) goto Failed;
+            if (!isSinking.Check(player.isSinking)) goto Failed;
+            if (!isClimbing.Check(player.isClimbingLadder)) goto Failed;
+            if (!isInVehicle.Check(player.inVehicleAnimation)) goto Failed;
+            if (!isBleeding.Check(player.bleedingHeavily)) goto Failed;
+            if (!isAlone.Check(player.isPlayerAlone)) goto Failed;
+            if (!isEmoting.Check(player.performingEmote)) goto Failed;
+            if (!isInSpecialAnim.Check(player.inSpecialInteractAnimation)) goto Failed;
 
             Result(player, true);
             return;

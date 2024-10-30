@@ -1,4 +1,5 @@
-﻿using JLL.Components.Filters;
+﻿using DunGen.Graph;
+using JLL.Components.Filters;
 using LethalLevelLoader;
 using System.Collections.Generic;
 
@@ -38,6 +39,18 @@ namespace JLL.API.Compatability
                 if (PatchedContent.ExtendedLevels[i].SelectableLevel.sceneName == sceneName)
                 {
                     return PatchedContent.ExtendedLevels[i];
+                }
+            }
+            return null;
+        }
+
+        public static ExtendedDungeonFlow? GetDungeon(DungeonFlow flow)
+        {
+            for (int i = 0; i < PatchedContent.ExtendedDungeonFlows.Count; i++)
+            {
+                if (PatchedContent.ExtendedDungeonFlows[i].DungeonFlow == flow)
+                {
+                    return PatchedContent.ExtendedDungeonFlows[i];
                 }
             }
             return null;
@@ -111,37 +124,46 @@ namespace JLL.API.Compatability
 
             if (extendedLevel != null)
             {
-                if (levelFilter.contentTags.Length > 0 && !CheckTags(extendedLevel, levelFilter.contentTags, levelFilter.mustHaveAllTags))
-                {
-                    return false;
-                }
-
-                if (levelFilter.routePrice.shouldCheck && !levelFilter.routePrice.CheckValue(extendedLevel.RoutePrice))
-                {
-                    return false;
-                }
-
-                if (levelFilter.calculatedDifficulty.shouldCheck && !levelFilter.calculatedDifficulty.CheckValue(extendedLevel.CalculatedDifficultyRating))
-                {
-                    return false;
-                }
+                if (levelFilter.contentTags.Length > 0 && !CheckTags(extendedLevel, levelFilter.contentTags, levelFilter.mustHaveAllTags)) return false;
+                if (!levelFilter.routePrice.Check(extendedLevel.RoutePrice)) return false;
+                if (!levelFilter.calculatedDifficulty.Check(extendedLevel.CalculatedDifficultyRating)) return false;
             }
+            return true;
+        }
 
+        internal static bool ExtendedDungeonFilters(DungeonFilter dungeonFilter, DungeonFlow flow)
+        {
+            ExtendedDungeonFlow? extendedDungeon = GetDungeon(flow);
+
+            if (extendedDungeon != null)
+            {
+                if (!dungeonFilter.dungeonName.Check(extendedDungeon.DungeonName)) return false;
+                if (dungeonFilter.dungeonContentTags.Length > 0 && !CheckTags(extendedDungeon, dungeonFilter.dungeonContentTags, dungeonFilter.mustHaveAllDungeonTags)) return false;
+            }
+            else
+            {
+                JLogHelper.LogInfo($"({dungeonFilter.name}) Couldn't find ExtendedDungeonFlow");
+            }
             return true;
         }
 
         internal static bool ItemTagFilter(Item item, string[] contentTags, bool mustHaveAllTags)
         {
-            ExtendedItem? extendedLevel = GetItem(item);
+            ExtendedItem? extendedItem = GetItem(item);
 
-            if (extendedLevel != null)
+            if (extendedItem != null)
             {
-                if (!CheckTags(extendedLevel, contentTags, mustHaveAllTags))
+                if (!CheckTags(extendedItem, contentTags, mustHaveAllTags))
                 {
                     return false;
                 }
+                return true;
             }
-            return true;
+            else
+            {
+                JLogHelper.LogInfo($"Extended Item couldn't be found for: {item.itemName}", JLogLevel.Wesley);
+            }
+            return false;
         }
 
         private static bool CheckTags(ExtendedContent content, string[] contentTags, bool mustHaveAllTags)
@@ -155,10 +177,7 @@ namespace JLL.API.Compatability
                 {
                     if (levelTags[i].ToLower().Equals(contentTags[j].ToLower()))
                     {
-                        if (!mustHaveAllTags)
-                        {
-                            return true;
-                        }
+                        if (!mustHaveAllTags) return true;
                         foundItems++;
                         break;
                     }

@@ -113,25 +113,10 @@ namespace JLL.Components.Filters
                 int filtered = 0;
                 for (int i = 0; i < DateFilters.Length; i++)
                 {
-                    if (DateFilters[i].dayOfWeek.shouldCheck && !DateFilters[i].dayOfWeek.CheckValue(date.DayOfWeek))
-                    {
-                        continue;
-                    }
-
-                    if (DateFilters[i].day.shouldCheck && !DateFilters[i].day.CheckValue(date.Day))
-                    {
-                        continue;
-                    }
-
-                    if (DateFilters[i].month.shouldCheck && !DateFilters[i].month.CheckValue(GetMonth(date.Month)))
-                    {
-                        continue;
-                    }
-
-                    if (DateFilters[i].year.shouldCheck && !DateFilters[i].year.CheckValue(date.Year))
-                    {
-                        continue;
-                    }
+                    if (!DateFilters[i].dayOfWeek.Check(date.DayOfWeek)) continue;
+                    if (!DateFilters[i].day.Check(date.Day)) continue;
+                    if (!DateFilters[i].month.Check(GetMonth(date.Month))) continue;
+                    if (!DateFilters[i].year.Check(date.Year)) continue;
 
                     filtered++;
                 }
@@ -141,20 +126,10 @@ namespace JLL.Components.Filters
                 }
             }
 
-            if (checkDateWithinRange && !dateRange.IsBetweenDates(date))
-            {
-                goto Failed;
-            }
+            if (checkDateWithinRange && !dateRange.IsBetweenDates(date)) goto Failed;
 
-            if (hour.shouldCheck && !hour.CheckValue(date.Hour))
-            {
-                goto Failed;
-            }
-
-            if (minute.shouldCheck && !minute.CheckValue(date.Minute))
-            {
-                goto Failed;
-            }
+            if (!hour.Check(date.Hour)) goto Failed;
+            if (!minute.Check(date.Minute)) goto Failed;
 
             Result(date, true);
             return;

@@ -177,12 +177,12 @@ namespace JLL.Components
             {
                 GrabbableObject grabbable = Instantiate(item.spawnPrefab, pos, Quaternion.Euler(new Vector3(0, parent == null ? 0 : GetRot(rotation, parent), 0)), parent).GetComponent<GrabbableObject>();
                 grabbable.fallTime = 0f;
-                OverrideScrapValue(ref grabbable, overrideValue);
                 if (spawnOnNetwork)
                 {
                     JLogHelper.LogInfo("Spawning item on network.", JLogLevel.Wesley);
                     grabbable.NetworkObject.Spawn();
                 }
+                OverrideScrapValue(ref grabbable, overrideValue);
                 return grabbable;
             }
             return null;
@@ -192,11 +192,11 @@ namespace JLL.Components
         {
             if (overrideValue >= 0)
             {
-                grabbable.SetScrapValue(overrideValue);
+                JLLNetworkManager.Instance.UpdateScanNodeServerRpc(grabbable.NetworkObject, overrideValue);
             }
             else
             {
-                grabbable.SetScrapValue(Mathf.RoundToInt(UnityEngine.Random.Range(grabbable.itemProperties.minValue, grabbable.itemProperties.maxValue) * RoundManager.Instance.scrapValueMultiplier));
+                JLLNetworkManager.Instance.UpdateScanNodeServerRpc(grabbable.NetworkObject, Mathf.RoundToInt(UnityEngine.Random.Range(grabbable.itemProperties.minValue, grabbable.itemProperties.maxValue) * RoundManager.Instance.scrapValueMultiplier));
             }
         }
     }

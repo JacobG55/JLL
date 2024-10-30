@@ -2,7 +2,6 @@
 using JLL.API;
 using JLL.Patches;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -16,14 +15,19 @@ namespace JLL.Components
         public CauseOfDeath damageSource = CauseOfDeath.Unknown;
         public Vector3 hitDir = Vector3.zero;
         public RotationType hitRotation = RotationType.ObjectRotation;
-        [Tooltip("Check RoundManager in the Ship Scene for corpse IDs\nA negative copseType will result in no corpse spawning")]
+        [Tooltip("Check RoundManager in the Ship Scene for corpse IDs\nA negative copseType will result in no corpse spawning.")]
         public int corpseType = 0;
         public Mesh OverrideCorpseMesh;
         public bool attachCorpseToPoint = false;
         public Transform corpseAttachPoint;
+        public PlayerBone connectedBone = PlayerBone.Base;
         public bool matchPointExactly = false;
         [Tooltip("Negative number will stay stuck to a point indefinately.")]
         public float corpseStickTime = 2f;
+
+        [Header("NetworkHelper")]
+        [Tooltip("This is only required to trigger some network related events.")]
+        public DamageTriggerNetworking? DamageTriggerNetworking;
 
         [Header("Conditions")]
         [Tooltip("Damage when something enters a trigger collider")]
@@ -70,7 +74,6 @@ namespace JLL.Components
             public bool applyDamageMultiplier = true;
             public bool playCustomSounds = true;
             public UnityEvent<T> hitEvent = new UnityEvent<T>();
-            public UnityEvent killEvent = new UnityEvent();
 
             public int GetTotalDamage(float multiplier = 1)
             {
@@ -93,6 +96,29 @@ namespace JLL.Components
             Enemy = 1,
             Vehicle = 2,
             Object = 3
+        }
+
+        public enum PlayerBone
+        {
+            Base = 6,
+            Neck = 0,
+            Spine = 5,
+            RightArmUpper = 9,
+            LeftArmUpper = 10,
+            RightArmLower = 1,
+            LeftArmLower = 2,
+            RightThigh = 7,
+            LeftThigh = 8,
+            RightShin = 3,
+            LeftShin = 4,
+        }
+
+        void Start()
+        {
+            if (DamageTriggerNetworking != null && DamageTriggerNetworking.DamageTrigger == null)
+            {
+                DamageTriggerNetworking.DamageTrigger = this;
+            }
         }
 
         public void OnTriggerStay(Collider collider)
@@ -119,26 +145,6 @@ namespace JLL.Components
             }
             foundInside.Clear();
         }
-
-        /*
-        public void OnTriggerEnter(Collider collider)
-        {
-            int type = IdentifyCollider(collider.gameObject);
-            if (type != -1)
-            {
-                if (damageOnEnter) DamageType(collider.gameObject, type);
-                collidersInside.Add(collider.gameObject, type);
-            }
-        }
-
-        public void OnTriggerExit(Collider collider)
-        {
-            if (collidersInside.TryGetValue(collider.gameObject, out int type)) {
-                if (damageOnExit) DamageType(collider.gameObject, type);
-                markedForRemoval.Add(collider.gameObject);
-            }
-        }
-        */
 
         public void OnDisable()
         {
@@ -316,7 +322,14 @@ namespace JLL.Components
 
             if (player.isPlayerDead)
             {
-                JLLNetworkManager.Instance.DamageTriggerKilledPlayerServerRpc(JLLNetworkManager.GetPath(transform), (int)player.actualClientId);
+                if (DamageTriggerNetworking != null)
+                {
+                    DamageTriggerNetworking.DamageTriggerKilledPlayerServerRpc((int)player.actualClientId);
+                }
+                else if (corpseType < 0)
+                {
+                    JLLNetworkManager.Instance.DestroyPlayerCorpse(player);
+                }
             }
 
             if (playerTargets.playCustomSounds)
@@ -327,50 +340,6 @@ namespace JLL.Components
         public void SetPlayerDamage(int damage)
         {
             playerTargets.damage = damage;
-        }
-
-        public void OnPlayerKilled(int playerId)
-        {
-            StartCoroutine(ModifyPlayerCorpse(playerId));
-        }
-
-        private IEnumerator ModifyPlayerCorpse(int playerKilled)
-        {
-            yield return null;
-            PlayerControllerB playerScript = StartOfRound.Instance.allPlayerScripts[playerKilled];
-            float startTime = Time.realtimeSinceStartup;
-            yield return new WaitUntil(() => playerScript.deadBody != null || Time.realtimeSinceStartup - startTime > 2f);
-            if (playerScript.deadBody == null)
-            {
-                JLogHelper.LogInfo("Player Corpse could not be found after two seconds!");
-                yield break;
-            }
-
-            if (corpseType < 0)
-            {
-                Destroy(playerScript.deadBody.gameObject);
-                playerScript.deadBody = null;
-            }
-            else
-            {
-                if (OverrideCorpseMesh != null)
-                {
-                    playerScript.deadBody.ChangeMesh(OverrideCorpseMesh);
-                }
-
-                if (attachCorpseToPoint && corpseAttachPoint != null)
-                {
-                    playerScript.deadBody.attachedLimb = playerScript.deadBody.bodyParts[6];
-                    playerScript.deadBody.attachedTo = corpseAttachPoint;
-                    playerScript.deadBody.matchPositionExactly = matchPointExactly;
-
-                    if (corpseStickTime >= 0)
-                    {
-                        yield return new WaitForSeconds(corpseStickTime);
-                        playerScript.deadBody.attachedTo = null;
-                    }
-                }
-            }
         }
 
         public void DamageEnemy(EnemyAI enemy)
@@ -384,9 +353,9 @@ namespace JLL.Components
             enemy.HitEnemyOnLocalClient(enemyTargets.GetTotalDamage(damageMultiplier), CalcHitDir(enemy.transform), playHitSFX: playNormalDamageSFX);
             enemyTargets.hitEvent.Invoke(enemy);
 
-            if ((RoundManager.Instance.IsHost || RoundManager.Instance.IsServer) && enemy.isEnemyDead)
+            if ((RoundManager.Instance.IsHost || RoundManager.Instance.IsServer) && enemy.isEnemyDead && DamageTriggerNetworking != null)
             {
-                JLLNetworkManager.Instance.DamageTriggerKilledServerRpc(JLLNetworkManager.GetPath(transform), (int)ColliderType.Enemy);
+                DamageTriggerNetworking.DamageTriggerKilledServerRpc((int)ColliderType.Enemy);
             }
 
             if (enemyTargets.playCustomSounds)
@@ -410,9 +379,9 @@ namespace JLL.Components
             VehicleControllerPatch.DealPermanentDamage(vehicle, vehicleTargets.GetTotalDamage(damageMultiplier), CalcHitDir(vehicle.transform));
             vehicleTargets.hitEvent.Invoke(vehicle);
 
-            if (vehicle.IsOwner && vehicle.carDestroyed)
+            if (vehicle.IsOwner && vehicle.carDestroyed && DamageTriggerNetworking != null)
             {
-                JLLNetworkManager.Instance.DamageTriggerKilledServerRpc(JLLNetworkManager.GetPath(transform), (int)ColliderType.Vehicle);
+                DamageTriggerNetworking.DamageTriggerKilledServerRpc((int)ColliderType.Vehicle);
             }
 
             if (vehicleTargets.playCustomSounds)

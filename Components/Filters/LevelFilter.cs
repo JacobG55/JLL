@@ -30,26 +30,10 @@ namespace JLL.Components.Filters
 
         public override void Filter(SelectableLevel level)
         {
-            if (sceneName.shouldCheck && !sceneName.CheckValue(level.sceneName))
-            {
-                goto Failed;
-            }
-
-            if (planetName.shouldCheck && !planetName.CheckValue(level.PlanetName))
-            {
-                goto Failed;
-            }
-
-            if (scrapInside.shouldCheck && !scrapInside.CheckValue(RoundManager.Instance.totalScrapValueInLevel))
-            {
-                goto Failed;
-            }
-
-            if (moldIterations.shouldCheck && !moldIterations.CheckValue(level.moldSpreadIterations))
-            {
-                goto Failed;
-            }
-
+            if (!sceneName.Check(level.sceneName)) goto Failed;
+            if (!planetName.Check(level.PlanetName)) goto Failed;
+            if (!scrapInside.Check(RoundManager.Instance.totalScrapValueInLevel)) goto Failed;
+            if (!moldIterations.Check(level.moldSpreadIterations)) goto Failed;
             if (JCompatabilityHelper.IsModLoaded.LLL)
             {
                 if (!LLLHelper.ExtendedLevelFilters(this, level))

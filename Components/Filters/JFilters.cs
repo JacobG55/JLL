@@ -6,14 +6,11 @@ using UnityEngine.Events;
 
 namespace JLL.Components.Filters
 {
-    public abstract class JFilter<T> : MonoBehaviour, IJFilter
+    public abstract class JFilter<T> : JFilter
     {
         [Header("JFilter")]
         public UnityEvent<T> filteredEvent = new UnityEvent<T>();
         public UnityEvent<T> failedEvent = new UnityEvent<T>();
-
-        [HideInInspector]
-        private UnityEvent<bool> FilteredResult = new UnityEvent<bool>();
 
         public abstract void Filter(T input);
 
@@ -30,21 +27,17 @@ namespace JLL.Components.Filters
             FilteredResult.Invoke(success);
         }
 
-        public virtual void FilterDefault()
+        public override void FilterDefault()
         {
 
-        }
-
-        public ref UnityEvent<bool> GetResultEvent()
-        {
-            return ref FilteredResult;
         }
     }
 
-    public interface IJFilter
+    public abstract class JFilter : MonoBehaviour
     {
+        [HideInInspector]
+        public UnityEvent<bool> FilteredResult = new UnityEvent<bool>();
         public abstract void FilterDefault();
-        public abstract ref UnityEvent<bool> GetResultEvent();
     }
 
 
@@ -53,6 +46,12 @@ namespace JLL.Components.Filters
     {
         public bool shouldCheck = false;
         public F value;
+
+        public bool Check(T val)
+        {
+            if (shouldCheck && !CheckValue(val)) return false;
+            return true;
+        }
 
         public abstract bool CheckValue(T val);
     }

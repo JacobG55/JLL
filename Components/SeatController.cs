@@ -8,6 +8,7 @@ namespace JLL.Components
     {
         public InteractTrigger seatTrigger;
         public InteractTrigger exitTrigger;
+        private Collider[] exitColliders = new Collider[0];
 
         public Transform[] exitPoints = new Transform[0];
         public bool disableExitTrigger = true;
@@ -21,7 +22,16 @@ namespace JLL.Components
 
         public void Start()
         {
-            exitTrigger.gameObject.SetActive(!disableExitTrigger);
+            exitColliders = exitTrigger.gameObject.GetComponents<Collider>();
+            ToggleExitColliders(!disableExitTrigger);
+        }
+
+        private void ToggleExitColliders(bool enabled)
+        {
+            for (int i = 0; i < exitColliders.Length; i++)
+            {
+                exitColliders[i].enabled = enabled;
+            }
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -48,21 +58,24 @@ namespace JLL.Components
 
         public void SetPlayerInSeat(PlayerControllerB player)
         {
-            if (sitDown != null)
+            if (player != null)
             {
-                player.movementAudio.PlayOneShot(sitDown);
-            }
-            if (player == GameNetworkManager.Instance.localPlayerController)
-            {
-                localPlayerInSeat = true;
-                if (disableExitTrigger)
+                if (sitDown != null)
                 {
-                    exitTrigger.gameObject.SetActive(true);
+                    player.movementAudio.PlayOneShot(sitDown);
                 }
-            }
-            else
-            {
-                seatTrigger.interactable = false;
+                if (player == GameNetworkManager.Instance.localPlayerController)
+                {
+                    localPlayerInSeat = true;
+                    if (disableExitTrigger)
+                    {
+                        ToggleExitColliders(true);
+                    }
+                }
+                else
+                {
+                    seatTrigger.interactable = false;
+                }
             }
             currentPassenger = player;
         }
@@ -94,7 +107,7 @@ namespace JLL.Components
             {
                 if (disableExitTrigger)
                 {
-                    exitTrigger.gameObject.SetActive(false);
+                    ToggleExitColliders(false);
                 }
                 int pos = GetExitPos();
                 if (pos != -1)

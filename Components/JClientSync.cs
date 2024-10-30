@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using JLL.Components.Filters;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,14 +8,12 @@ namespace JLL.Components
 {
     public class JClientSync : NetworkBehaviour
     {
-        /*
         [Header("Synced Filter")]
-        [SerializeField, SerializeReference]
-        public IJFilter hostFilter;
+        [SerializeField]
+        public JFilter hostFilter;
         public bool runFilterOnStart = false;
         public UnityEvent SyncedFilterSuccess = new UnityEvent();
         public UnityEvent SyncedFilterFailure = new UnityEvent();
-        */
 
         [Header("Host Only")]
         public bool runHostEventOnStart = false;
@@ -26,24 +25,27 @@ namespace JLL.Components
         public UnityEvent syncedEvent = new UnityEvent();
         public InteractEvent syncedPlayerEvent = new InteractEvent();
 
-        public void Start()
+        void Start()
         {
             if (IsHost || IsServer)
             {
-                /*
                 if (hostFilter != null)
                 {
-                    hostFilter.GetResultEvent().AddListener(FilterResultServerRpc);
+                    hostFilter.FilteredResult.AddListener(FilterResultServerRpc);
                     if (runFilterOnStart) hostFilter.FilterDefault();
                 }
-                */
                 if (runHostEventOnStart) TriggerOnHost();
                 if (runSyncedEventOnStart) TriggerSyncedEvent();
             }
         }
 
-        /*
-        public void SendFilterRequest()
+        public void FilterOnHost()
+        {
+            RunFilterOnHostServerRpc();
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void RunFilterOnHostServerRpc()
         {
             hostFilter?.FilterDefault();
         }
@@ -66,7 +68,6 @@ namespace JLL.Components
                 SyncedFilterFailure.Invoke();
             }
         }
-        */
 
         public void TriggerOnHost()
         {

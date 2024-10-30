@@ -6,9 +6,9 @@ namespace JLL.Components
 {
     public class ExplosiveEmitter : MonoBehaviour
     {
+        [Header("Explosion Size")]
         [FormerlySerializedAs("explodeOnAwake")]
         public bool explodeOnEnabled = false;
-        [Header("Explosion Size")]
         public float killDistance = 5.7f;
         public float damageRange = 6f;
 

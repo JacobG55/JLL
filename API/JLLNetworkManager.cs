@@ -1,11 +1,9 @@
 ﻿using GameNetcodeStuff;
 using JLL.Components;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
-using static JLL.Components.DamageTrigger;
 
 namespace JLL.API
 {
@@ -77,6 +75,27 @@ namespace JLL.API
                 DestroyTerrainObstacleAtPosition(pos, damage);
             }
         }
+        public void DestroyPlayerCorpse(PlayerControllerB player)
+        {
+            DestroyPlayerCorpseServerRpc((int)player.actualClientId);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void DestroyPlayerCorpseServerRpc(int playerTarget)
+        {
+            DestroyPlayerCorpseClientRpc(playerTarget);
+        }
+
+        [ClientRpc]
+        private void DestroyPlayerCorpseClientRpc(int playerTarget)
+        {
+            PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerTarget];
+            if (player.isPlayerDead && player.deadBody != null)
+            {
+                Destroy(player.deadBody.gameObject);
+                player.deadBody = null;
+            }
+        }
 
         [ServerRpc(RequireOwnership = false)]
         public void RandomTeleportServerRpc(int playerTarget, int selection, bool withRotation = false, float rotation = 0, float range = 10f)
@@ -119,52 +138,25 @@ namespace JLL.API
             RoundManager.Instance.playersManager.allPlayerScripts[playerTarget].TeleportPlayer(pos, withRotation, rotation);
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        public void DamageTriggerKilledPlayerServerRpc(string objectPath, int playerTarget)
-        {
-            DamageTriggerKilledClientRpc(objectPath, (int)ColliderType.Player, playerTarget);
-        }
-
-        [ServerRpc(RequireOwnership = true)]
-        public void DamageTriggerKilledServerRpc(string objectPath, int type)
-        {
-            DamageTriggerKilledClientRpc(objectPath, type);
-        }
-
-        [ClientRpc]
-        private void DamageTriggerKilledClientRpc(string objectPath, int type, int playerTarget = -1)
-        {
-            GameObject obj = GameObject.Find(objectPath);
-
-            if (obj && obj.TryGetComponent(out DamageTrigger damageTrigger))
-            {
-                switch (type)
-                {
-                    case (int)ColliderType.Player:
-                        if (playerTarget >= 0 && playerTarget < RoundManager.Instance.playersManager.allPlayerScripts.Length)
-                        {
-                            if (RoundManager.Instance.playersManager.allPlayerScripts[playerTarget].isPlayerDead)
-                            {
-                                damageTrigger.OnPlayerKilled(playerTarget);
-                                damageTrigger.playerTargets.killEvent.Invoke();
-                            }
-                        }
-                        break;
-                    case (int)ColliderType.Enemy:
-                        damageTrigger.enemyTargets.killEvent.Invoke();
-                        break;
-                    case (int)ColliderType.Vehicle:
-                        damageTrigger.vehicleTargets.killEvent.Invoke();
-                        break;
-                    default: break;
-                }
-            }
-        }
-
         public static string GetPath(Transform current)
         {
             if (current.parent == null) return "/" + current.name;
             return GetPath(current.parent) + "/" + current.name;
+        }
+
+        [ServerRpc(RequireOwnership = true)]
+        public void UpdateScanNodeServerRpc(NetworkObjectReference target, int value)
+        {
+            UpdateScanNodeClientRpc(target, value);
+        }
+
+        [ClientRpc]
+        private void UpdateScanNodeClientRpc(NetworkObjectReference target, int value)
+        {
+            if (target.TryGet(out NetworkObject netObj) && netObj.gameObject.TryGetComponent(out GrabbableObject item))
+            {
+                item.SetScrapValue(value);
+            }
         }
     }
 }
