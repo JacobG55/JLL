@@ -1,5 +1,6 @@
 ﻿using JLL.API.Events;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace JLLItemsModule.Components
 {
@@ -9,15 +10,10 @@ namespace JLLItemsModule.Components
         public GameObject chargedEffects;
         public GameObject[] hideWhenPocketed = new GameObject[0];
 
+        public UnityEvent OnEquip = new UnityEvent();
+        public UnityEvent OnPocketed = new UnityEvent();
         public BoolEvent OnSetInShip = new BoolEvent();
-
-        private bool pocketedLastFrame;
-
-        public override void Start()
-        {
-            base.Start();
-            pocketedLastFrame = isPocketed;
-        }
+        public UnityEvent OnPlacedOnDepositDesk = new UnityEvent();
 
         public override void ItemInteractLeftRight(bool right)
         {
@@ -34,18 +30,19 @@ namespace JLLItemsModule.Components
             }
         }
 
-        public override void LateUpdate()
+        public override void EquipItem()
         {
-            base.LateUpdate();
-
-            if (pocketedLastFrame != isPocketed)
+            base.EquipItem();
+            OnEquip.Invoke();
+        }
+        public override void PocketItem()
+        {
+            base.PocketItem();
+            foreach (GameObject obj in hideWhenPocketed)
             {
-                foreach (GameObject obj in hideWhenPocketed)
-                {
-                    obj.SetActive(!isPocketed);
-                }
-                pocketedLastFrame = isPocketed;
+                obj.SetActive(!isPocketed);
             }
+            OnPocketed.Invoke();
         }
 
         public virtual void HeldUpdate()
@@ -54,6 +51,11 @@ namespace JLLItemsModule.Components
         }
 
         public virtual void OnSetInsideShip(bool isEntering)
+        {
+
+        }
+
+        public virtual void PlacedOnDepositDesk()
         {
 
         }

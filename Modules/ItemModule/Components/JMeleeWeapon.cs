@@ -35,6 +35,7 @@ namespace JLLItemsModule.Components
         public bool isHeavyWeapon = true;
         [Tooltip("Shovel Default: 0.35")]
         public float reelingTime = 0.35f;
+        private float reelingAnimSpeed = 1f;
         [Tooltip("Shovel Default: 0.13")]
         public float swingTime = 0.13f;
 
@@ -88,6 +89,7 @@ namespace JLLItemsModule.Components
                     previousPlayerHeldBy = playerHeldBy;
                     if (reelingUpCoroutine != null)
                     {
+                        if (playerHeldBy.IsOwner) playerHeldBy.playerBodyAnimator.speed = 1f;
                         StopCoroutine(reelingUpCoroutine);
                     }
 
@@ -120,10 +122,16 @@ namespace JLLItemsModule.Components
             playerHeldBy.twoHanded = true;
             playerHeldBy.playerBodyAnimator.ResetTrigger("shovelHit");
             playerHeldBy.playerBodyAnimator.SetBool("reelingUp", value: true);
+            if (playerHeldBy.IsOwner)
+            {
+                reelingAnimSpeed = 0.35f / reelingTime;
+                playerHeldBy.playerBodyAnimator.speed = reelingAnimSpeed;
+            }
             PlayRandomSFX(reelUpSFX);
             ReelUpSFXServerRpc();
             yield return new WaitForSeconds(reelingTime);
             yield return new WaitUntil(() => !isHoldingButton || !isHeld);
+            if (playerHeldBy.IsOwner) playerHeldBy.playerBodyAnimator.speed = 1f;
             SwingHeavyWeapon(!isHeld);
             yield return new WaitForSeconds(swingTime);
             yield return new WaitForEndOfFrame();
@@ -150,6 +158,7 @@ namespace JLLItemsModule.Components
             if (playerHeldBy != null)
             {
                 playerHeldBy.activatingItem = false;
+                if (playerHeldBy.IsOwner) playerHeldBy.playerBodyAnimator.speed = 1f;
             }
 
             base.DiscardItem();

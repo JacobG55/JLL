@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Logging;
 using HarmonyLib;
 using JLL.API;
 using JLLItemsModule.Patches;
@@ -17,40 +16,15 @@ namespace JLLItemsModule
     {
         private const string modGUID = "JacobG5.JLLItemModule";
         private const string modName = "JLLItemModule";
-        private const string modVersion = "1.1.0";
+        private const string modVersion = "1.2.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
         public void Awake()
         {
-            NetcodeRequired(JLogHelper.GetSource());
+            JLL.JLL.NetcodePatch(JLogHelper.GetSource(), Assembly.GetExecutingAssembly().GetTypes());
             //RegisterTestItems();
-            harmony.PatchAll(typeof(PlayerPatch));
-        }
-
-        private static void NetcodeRequired(ManualLogSource logSource)
-        {
-            var types = Assembly.GetExecutingAssembly().GetTypes();
-            foreach (var type in types)
-            {
-                try
-                {
-                    var methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-                    foreach (var method in methods)
-                    {
-                        var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
-                        if (attributes.Length > 0)
-                        {
-                            method.Invoke(null, null);
-                        }
-                    }
-                }
-                catch
-                {
-                    logSource.LogInfo("Item Module: Skipping Netcode Class");
-                }
-            }
-            logSource.LogInfo("Item Module: Netcode Successfully Patched!");
+            JLL.JLL.HarmonyPatch(harmony, JLogHelper.GetSource(), typeof(PlayerPatch), typeof(DepositItemsDeskPatch));
         }
 
         private void RegisterTestItems()

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 using static JLL.Components.ItemSpawner;
 
 namespace JLLItemsModule.Components
@@ -27,7 +28,9 @@ namespace JLLItemsModule.Components
         public GameObject? explosionPrefab;
 
         public bool hasExploded = false;
+        [Tooltip("Random chance is rolled on impact. If interaction is required then explosion chance will only be rolled on collisions after the interaction has been performed")]
         public float chanceToExplodeOnThrow = 100f;
+        [Tooltip("Random chance is rolled on impact. If interaction is required then explosion chance will only be rolled on collisions after the interaction has been performed")]
         public float chanceToExplodeOnDropped = 100f;
         public bool destroyOnExplode = false;
 
@@ -42,7 +45,8 @@ namespace JLLItemsModule.Components
 
         public bool interactionStartsTimer = false;
         [Tooltip("Waits timeToExplode before exploding. If interactionStartsTimer is checked the timer will have to run twice for the explosion to occur.")]
-        public bool explodeOnTimer = false;
+        [FormerlySerializedAs("explodeOnTimer")]
+        public bool explosionStartsTimer = false;
         private bool markedToExplode = false;
         public float timeToExplode = 2.25f;
         private float explodeTimer = 0;
@@ -70,6 +74,7 @@ namespace JLLItemsModule.Components
 
         [Header("Events")]
         public UnityEvent ExplodeEvent = new UnityEvent();
+        public InteractEvent ThrowEvent = new InteractEvent();
         public InteractEvent InteractionEvent = new InteractEvent();
         public InteractEvent CollisionEvent = new InteractEvent();
 
@@ -106,10 +111,16 @@ namespace JLLItemsModule.Components
             {
                 if (throwable)
                 {
-                    wasThrown = true;
-                    playerHeldBy.DiscardHeldObject(placeObject: true, null, GetThrowDestination());
+                    ThrowItem();
                 }
             }
+        }
+
+        public virtual void ThrowItem()
+        {
+            wasThrown = true;
+            ThrowEvent.Invoke(playerHeldBy);
+            playerHeldBy.DiscardHeldObject(placeObject: true, null, GetThrowDestination());
         }
 
         public override void DiscardItem()
@@ -166,7 +177,7 @@ namespace JLLItemsModule.Components
         {
             List<string> tips = new List<string>();
             tips.AddRange(itemProperties.toolTips);
-            if (interactedWith)
+            if (hasInteraction && !interactedWith)
             {
                 tips.Add(interactString);
             }
@@ -233,12 +244,12 @@ namespace JLLItemsModule.Components
         public override void Update()
         {
             base.Update();
-            if (((interactionStartsTimer && interactedWith) || (explodeOnTimer && markedToExplode)) && !hasExploded)
+            if (((interactionStartsTimer && interactedWith) || (explosionStartsTimer && markedToExplode)) && !hasExploded)
             {
                 explodeTimer += Time.deltaTime;
                 if (explodeTimer > timeToExplode)
                 {
-                    if (interactionStartsTimer && explodeOnTimer && !markedToExplode)
+                    if (interactionStartsTimer && explosionStartsTimer && !markedToExplode)
                     {
                         markedToExplode = true;
                         explodeTimer = 0;
@@ -297,7 +308,7 @@ namespace JLLItemsModule.Components
 
             itemAnimator?.SetTrigger("explode");
 
-            if (explodeOnTimer && !markedToExplode)
+            if (explosionStartsTimer && !markedToExplode)
             {
                 markedToExplode = true;
                 return;
