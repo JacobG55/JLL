@@ -58,7 +58,7 @@ namespace JLLEditorModule.EditorScripts
 
             SerializedProperty overrideValue = item.FindPropertyRelative("spawnRotation");
             EditorGUI.PropertyField(JLLEditor.GetElementRect(rect, i++), overrideValue);
-            if (overrideValue.enumValueFlag == (int)JRandomPropPlacer.SpawnRotation.BackToWall)
+            if (overrideValue.enumValueFlag == (int)SpawnRotation.BackToWall)
             {
                 EditorGUI.PropertyField(JLLEditor.GetElementRect(rect, i++), item.FindPropertyRelative("spawnFlushAgainstWall"));
             }

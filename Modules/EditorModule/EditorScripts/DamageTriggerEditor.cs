@@ -38,9 +38,13 @@ namespace JLLEditorModule.EditorScripts
 
         public override bool DisplayProperty(SerializedProperty property)
         {
-            if (!Component.attachCorpseToPoint)
+            if (Component.DamageTriggerNetworking == null && (property.name == "attachCorpseToPoint" || property.name == "OverrideCorpseMesh"))
             {
-                if (property.name == "corpseAttachPoint" || property.name == "matchPointExactly" || property.name == "corpseStickTime")
+                return false;
+            }
+            if (!Component.attachCorpseToPoint || Component.DamageTriggerNetworking == null)
+            {
+                if (property.name == "corpseAttachPoint" || property.name == "matchPointExactly" || property.name == "corpseStickTime" || property.name == "connectedBone")
                 {
                     return false;
                 }

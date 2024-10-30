@@ -21,9 +21,32 @@ namespace JLLEditorModule.EditorScripts
 
         public override bool DisplayProperty(SerializedProperty property)
         {
+            if (!Component.damageOnExplode)
+            {
+                if (property.name == "killDistance" || property.name == "damageRange" || property.name == "nonLethalDamage" || property.name == "pushForce" || property.name == "goThroughCar")
+                {
+                    return false;
+                }
+            }
+
+            if (!Component.stunOnExplode)
+            {
+                if (property.name == "affectAudio" || property.name == "flashSeverityMultiplier" || property.name == "enemyStunTime" || property.name == "flashSeverityDistanceRolloff")
+                {
+                    return false;
+                }
+            }
+
+            if (!Component.spawnItemsOnExplode)
+            {
+                if (property.name == "numberToSpawn"|| property.name == "SourcePool" || property.name == "SpawnOffsets")
+                {
+                    return false;
+                }
+            }
             if (property.name == "CustomList")
             {
-                if (Component.SourcePool == SpawnPoolSource.CustomList)
+                if (Component.spawnItemsOnExplode && Component.SourcePool == SpawnPoolSource.CustomList)
                 {
                     weightedProperties.DoLayoutList();
                 }
