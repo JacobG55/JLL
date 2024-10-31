@@ -1,9 +1,10 @@
 ﻿using GameNetcodeStuff;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace JLL.Components
 {
-    public class EventLimiter
+    public class EventLimiter : MonoBehaviour
     {
         public int maxTriggers = 1;
 
