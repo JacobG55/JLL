@@ -67,7 +67,7 @@ namespace JLL.Components
         
         public void Start()
         {
-            if (triggerOnStart)
+            if (triggerOnStart && !(isNetworkSynced && !(IsHost || IsServer)))
             {
                 RollEvent();
             }
