@@ -102,6 +102,12 @@ namespace JLLItemsModule.Components
 
         public virtual void SpawnItemsOnServer(int amount)
         {
+            SpawnItemsServerRpc(amount);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void SpawnItemsServerRpc(int amount)
+        {
             Vector3 spawnPos = transform.position + Vector3.up * 0.25f;
             Transform parent = (((!(playerHeldBy != null) || !playerHeldBy.isInElevator) && !StartOfRound.Instance.inShipPhase) || !(RoundManager.Instance.spawnedScrapContainer != null)) ? StartOfRound.Instance.elevatorTransform : RoundManager.Instance.spawnedScrapContainer;
             List<GrabbableObject> spawned = SpawnRandomItems(SourcePool, spawnPos, parent, CustomList, count: amount, spawnOnNetwork: false);
