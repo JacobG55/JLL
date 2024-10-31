@@ -141,10 +141,10 @@ namespace JLL.Components
             SpawnRandomItems(SourcePool, pos, RoundManager.Instance.spawnedScrapContainer, CustomList, count: 1, rotation: spawnRotation);
         }
 
-        // Returned list contains spawned items on server and is empty on client.
-        public static List<GrabbableObject> SpawnRandomItems(SpawnPoolSource sourcePool, Vector3 position, Transform parent, WeightedItemRefrence[]? customList = null, Vector3[]? offsets = null, int count = 1, bool spawnOnNetwork = true, RotationType rotation = RotationType.NoRotation)
+        // Returned list contains spawned items and override values on server and is empty on client.
+        public static List<KeyValuePair<GrabbableObject, int>> SpawnRandomItems(SpawnPoolSource sourcePool, Vector3 position, Transform parent, WeightedItemRefrence[]? customList = null, Vector3[]? offsets = null, int count = 1, bool spawnOnNetwork = true, RotationType rotation = RotationType.NoRotation)
         {
-            List<GrabbableObject> grabbableObjects = new List<GrabbableObject>();
+            List<KeyValuePair<GrabbableObject, int>> grabbableObjects = new List<KeyValuePair<GrabbableObject, int>>();
             if (RoundManager.Instance.IsServer || RoundManager.Instance.IsHost)
             {
                 customList ??= new WeightedItemRefrence[0];
@@ -162,7 +162,7 @@ namespace JLL.Components
                         GrabbableObject? spawned = SpawnItem(itemToSpawn, position + offset, parent, overrideValue, spawnOnNetwork, rotation: rotation);
                         if (spawned != null)
                         {
-                            grabbableObjects.Add(spawned);
+                            grabbableObjects.Add(new KeyValuePair<GrabbableObject, int>(spawned, overrideValue));
                         }
                     }
                 }
@@ -181,14 +181,14 @@ namespace JLL.Components
                 {
                     JLogHelper.LogInfo("Spawning item on network.", JLogLevel.Wesley);
                     grabbable.NetworkObject.Spawn();
+                    OverrideScrapValue(grabbable, overrideValue);
                 }
-                OverrideScrapValue(ref grabbable, overrideValue);
                 return grabbable;
             }
             return null;
         }
 
-        public static void OverrideScrapValue(ref GrabbableObject grabbable, int overrideValue = -1)
+        public static void OverrideScrapValue(GrabbableObject grabbable, int overrideValue = -1)
         {
             if (overrideValue >= 0)
             {
