@@ -70,10 +70,12 @@ namespace JLLItemsModule.Components
             }
             if (playerHeldBy != null && boxUses > 0 && Time.realtimeSinceStartup - lastUsedTime > openCooldown)
             {
-                boxUses--;
                 lastUsedTime = Time.realtimeSinceStartup;
                 playerHeldBy.activatingItem = true;
-                OpenGiftBoxServerRpc();
+                if (IsOwner)
+                {
+                    OpenGiftBoxServerRpc();
+                }
             }
         }
 
@@ -86,7 +88,7 @@ namespace JLLItemsModule.Components
         [ServerRpc(RequireOwnership = false)]
         public void OpenGiftBoxServerRpc()
         {
-            if (spawnItemsOnOpen) SpawnItemsOnServer(numberToSpawn);
+            boxUses--;
             int random = -1;
             if (RandomOpenEvent.Length > 0)
             {
@@ -97,7 +99,8 @@ namespace JLLItemsModule.Components
                     random = -1;
                 }
             }
-            OpenBoxClientRpc(random, destroyWhenEmpty && boxUses <= 0);
+            if (spawnItemsOnOpen) SpawnItemsOnServer(numberToSpawn);
+            OpenBoxClientRpc(random, boxUses);
         }
 
         public virtual void SpawnItemsOnServer(int amount)
@@ -110,18 +113,19 @@ namespace JLLItemsModule.Components
         {
             Vector3 spawnPos = transform.position + Vector3.up * 0.25f;
             Transform parent = (((!(playerHeldBy != null) || !playerHeldBy.isInElevator) && !StartOfRound.Instance.inShipPhase) || !(RoundManager.Instance.spawnedScrapContainer != null)) ? StartOfRound.Instance.elevatorTransform : RoundManager.Instance.spawnedScrapContainer;
-            List<GrabbableObject> spawned = SpawnRandomItems(SourcePool, spawnPos, parent, CustomList, count: amount, spawnOnNetwork: false);
+            List<KeyValuePair<GrabbableObject, int>> spawned = SpawnRandomItems(SourcePool, spawnPos, parent, CustomList, count: amount, spawnOnNetwork: false);
 
             foreach (var spawnedItem in spawned)
             {
-                spawnedItem.startFallingPosition = spawnPos;
-                StartCoroutine(SetObjectToHitGroundSFX(spawnedItem));
-                spawnedItem.targetFloorPosition = spawnedItem.GetItemFloorPosition(transform.position);
+                spawnedItem.Key.startFallingPosition = spawnPos;
+                StartCoroutine(SetObjectToHitGroundSFX(spawnedItem.Key));
+                spawnedItem.Key.targetFloorPosition = spawnedItem.Key.GetItemFloorPosition(transform.position);
                 if (previousPlayerHeldBy != null && previousPlayerHeldBy.isInHangarShipRoom)
                 {
-                    previousPlayerHeldBy.SetItemInElevator(droppedInShipRoom: true, droppedInElevator: true, spawnedItem);
+                    previousPlayerHeldBy.SetItemInElevator(droppedInShipRoom: true, droppedInElevator: true, spawnedItem.Key);
                 }
-                spawnedItem.NetworkObject.Spawn();
+                spawnedItem.Key.NetworkObject.Spawn();
+                OverrideScrapValue(spawnedItem.Key, spawnedItem.Value);
             }
         }
 
@@ -135,22 +139,26 @@ namespace JLLItemsModule.Components
         }
 
         [ClientRpc]
-        public void OpenBoxClientRpc(int weightedEvent, bool shouldDestroy)
+        private void OpenBoxClientRpc(int weightedEvent, int usesLeft)
         {
-            PoofParticle?.Play();
+            if (PoofParticle != null)
+            {
+                PoofParticle.Play();
+            }
             if (BoxAudio != null && OpenBoxClip != null)
             {
                 BoxAudio.PlayOneShot(OpenBoxClip);
                 WalkieTalkie.TransmitOneShotAudio(BoxAudio, OpenBoxClip);
                 RoundManager.Instance.PlayAudibleNoise(BoxAudio.transform.position, 8f, 0.5f, 0, isInShipRoom && StartOfRound.Instance.hangarDoorsClosed);
             }
+            boxUses = usesLeft;
             OnBoxOpen();
             InvokeRandomEvent(weightedEvent);
             if (playerHeldBy != null)
             {
                 OpenEvent.Invoke(playerHeldBy);
                 playerHeldBy.activatingItem = false;
-                if (shouldDestroy)
+                if (destroyWhenEmpty && boxUses <= 0)
                 {
                     DestroyObjectInHand(playerHeldBy);
                 }
