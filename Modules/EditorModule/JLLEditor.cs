@@ -25,24 +25,6 @@ namespace JLLEditorModule
             }
         }
 
-        public static void WeightedItemProperty(SerializedProperty item, Rect rect)
-        {
-            int i = 0;
-            EditorGUI.PropertyField(GetElementRect(rect, i++), item.FindPropertyRelative("Item"));
-            EditorGUI.PropertyField(GetElementRect(rect, i++), item.FindPropertyRelative("Weight"));
-            EditorGUI.PropertyField(GetElementRect(rect, i++), item.FindPropertyRelative("FindRegisteredItem"));
-
-            SerializedProperty overrideValue = item.FindPropertyRelative("OverrideValue");
-            EditorGUI.PropertyField(GetElementRect(rect, 2, new Vector2Int(0, i)), overrideValue);
-            if (overrideValue.boolValue)
-            {
-                EditorGUI.PropertyField(GetElementRect(rect, 2, new Vector2Int(1, i)), item.FindPropertyRelative("ScrapValue"), GUIContent.none);
-            }
-            i++;
-
-            EditorGUI.PropertyField(GetElementRect(rect, i++), item.FindPropertyRelative("SpawnOffset"));
-        }
-
         public static Rect GetElementRect(Rect rect, int index, float seperation = 5f)
         {
             return new Rect(rect.x, rect.y + GetElementRectHeight(index, seperation) + seperation, rect.width, EditorGUIUtility.singleLineHeight);
@@ -65,13 +47,64 @@ namespace JLLEditorModule
                 => WeightedItemProperty(weightedProperties.serializedProperty.GetArrayElementAtIndex(index), rect);
             weightedProperties.elementHeightCallback = (int index) =>
             {
-                return GetElementRectHeight(5) + 5f;
+                return GetElementRectHeight(weightedProperties.serializedProperty.GetArrayElementAtIndex(index).FindPropertyRelative("ItemName").stringValue == "" ? 6 : 4) + 5f;
             };
             weightedProperties.drawHeaderCallback = (Rect rect) =>
             {
                 EditorGUI.LabelField(rect, new GUIContent("Custom Item List"));
             };
             return weightedProperties;
+        }
+
+        public static void WeightedItemProperty(SerializedProperty item, Rect rect)
+        {
+            int i = 0;
+            SerializedProperty itemName = item.FindPropertyRelative("ItemName");
+            EditorGUI.PropertyField(GetElementRect(rect, i++), itemName);
+            if (itemName.stringValue == "")
+            {
+                EditorGUI.PropertyField(GetElementRect(rect, i++), item.FindPropertyRelative("Item"));
+                EditorGUI.PropertyField(GetElementRect(rect, i++), item.FindPropertyRelative("FindRegisteredItem"));
+            }
+            EditorGUI.PropertyField(GetElementRect(rect, i++), item.FindPropertyRelative("Weight"));
+
+            SerializedProperty overrideValue = item.FindPropertyRelative("OverrideValue");
+            EditorGUI.PropertyField(GetElementRect(rect, 2, new Vector2Int(0, i)), overrideValue);
+            if (overrideValue.boolValue)
+            {
+                EditorGUI.PropertyField(GetElementRect(rect, 2, new Vector2Int(1, i)), item.FindPropertyRelative("ScrapValue"), GUIContent.none);
+            }
+            i++;
+
+            EditorGUI.PropertyField(GetElementRect(rect, i++), item.FindPropertyRelative("SpawnOffset"));
+        }
+
+        public static ReorderableList CreateWeightedEnemySpawnProperties(SerializedObject obj, SerializedProperty CustomList)
+        {
+            ReorderableList weightedProperties = new ReorderableList(obj, CustomList);
+            weightedProperties.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused)
+                => WeightedEnemyProperty(weightedProperties.serializedProperty.GetArrayElementAtIndex(index), rect);
+            weightedProperties.elementHeightCallback = (int index) =>
+            {
+                return GetElementRectHeight(weightedProperties.serializedProperty.GetArrayElementAtIndex(index).FindPropertyRelative("enemyName").stringValue == "" ? 3 : 2) + 5f;
+            };
+            weightedProperties.drawHeaderCallback = (Rect rect) =>
+            {
+                EditorGUI.LabelField(rect, new GUIContent("Custom Enemy List"));
+            };
+            return weightedProperties;
+        }
+
+        public static void WeightedEnemyProperty(SerializedProperty enemy, Rect rect)
+        {
+            int i = 0;
+            SerializedProperty enemyName = enemy.FindPropertyRelative("enemyName");
+            EditorGUI.PropertyField(GetElementRect(rect, i++), enemyName);
+            if (string.IsNullOrEmpty(enemyName.stringValue))
+            {
+                EditorGUI.PropertyField(GetElementRect(rect, i++), enemy.FindPropertyRelative("enemyType"));
+            }
+            EditorGUI.PropertyField(GetElementRect(rect, i++), enemy.FindPropertyRelative("rarity"));
         }
 
         public static bool ObjectIsParent(GameObject target, Transform search)

@@ -19,6 +19,18 @@ namespace JLLEditorModule.EditorScripts
             weightedProperties = JLLEditor.CreateWeightedItemSpawnProperties(serializedObject, CustomList);
         }
 
+        public override void AtHeader()
+        {
+            base.AtHeader();
+            foreach (var itemWeight in Component.CustomList)
+            {
+                if (itemWeight.ItemName != "")
+                {
+                    itemWeight.Item = null;
+                }
+            }
+        }
+
         public override bool DisplayProperty(SerializedProperty property)
         {
             if (!Component.damageOnExplode)
