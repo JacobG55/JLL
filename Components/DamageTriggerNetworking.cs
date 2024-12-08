@@ -12,7 +12,8 @@ namespace JLL.Components
     {
         public DamageTrigger DamageTrigger;
 
-        public UnityEvent PlayerKilled = new UnityEvent();
+        [Tooltip("Warning!\nThe player will be dead at the time of this event. Be careful what you do when passing a player to another method that you don't break anything.")]
+        public InteractEvent PlayerKilled = new InteractEvent();
         public UnityEvent EnemyKilled = new UnityEvent();
         public UnityEvent VehicleKilled = new UnityEvent();
 
@@ -24,49 +25,49 @@ namespace JLL.Components
             public PlayerControllerB player;
             public float startTime;
             public float stickTime = 0;
+            public bool permaStuck = false;
             private bool stuck = false;
+
+            public bool Start(DamageTrigger trigger)
+            {
+                if (trigger.corpseType < 0)
+                {
+                    Destroy(player.deadBody.gameObject);
+                    player.deadBody = null;
+                    return false;
+                }
+                if (permaStuck)
+                {
+                    OverrideModel(trigger);
+                }
+                if (trigger.attachCorpseToPoint && trigger.corpseAttachPoint != null)
+                {
+                    JLogHelper.LogInfo($"Attatching {player.playerUsername}'s corpse to {trigger.corpseAttachPoint.name}");
+                    player.deadBody.matchPositionExactly = trigger.matchPointExactly;
+                    player.deadBody.attachedTo = trigger.corpseAttachPoint;
+                    player.deadBody.attachedLimb = player.deadBody.bodyParts[(int)trigger.connectedBone];
+                    stuck = true;
+                }
+                return true;
+            }
 
             public bool Update(DamageTrigger trigger)
             {
+                if (permaStuck) return true;
                 if (player.deadBody != null)
                 {
-                    if (trigger.corpseType < 0)
-                    {
-                        Destroy(player.deadBody.gameObject);
-                        player.deadBody = null;
-                        return false;
-                    }
-
                     if (stickTime > 0)
                     {
                         if (stuck)
                         {
                             stickTime -= Time.deltaTime;
                         }
-                        else if (trigger.attachCorpseToPoint && trigger.corpseAttachPoint != null)
-                        {
-                            JLogHelper.LogInfo($"Attatching {player.playerUsername}'s corpse to {trigger.corpseAttachPoint.name}");
-                            player.deadBody.matchPositionExactly = trigger.matchPointExactly;
-                            player.deadBody.attachedTo = trigger.corpseAttachPoint;
-                            player.deadBody.attachedLimb = player.deadBody.bodyParts[(int)trigger.connectedBone];
-                            stuck = true;
-                        }
 
-                        if (stickTime <= 0)
-                        {
-                            JLogHelper.LogInfo($"Releasing {player.playerUsername}'s corpse");
-                            player.deadBody.matchPositionExactly = false;
-                            player.deadBody.attachedTo = null;
-                            player.deadBody.attachedLimb = null;
-                            stuck = false;
-                        }
+                        if (stickTime <= 0) DetachCorpse();
                     }
                     else
                     {
-                        if (trigger.OverrideCorpseMesh != null)
-                        {
-                            player.deadBody.ChangeMesh(trigger.OverrideCorpseMesh);
-                        }
+                        OverrideModel(trigger);
                         return false;
                     }
                 }
@@ -77,6 +78,25 @@ namespace JLL.Components
                 }
 
                 return true;
+            }
+
+            public void OverrideModel(DamageTrigger trigger)
+            {
+                if (trigger.OverrideCorpseMesh != null)
+                {
+                    player.deadBody.ChangeMesh(trigger.OverrideCorpseMesh);
+                }
+            }
+
+            public void DetachCorpse()
+            {
+                JLogHelper.LogInfo($"Releasing {player.playerUsername}'s corpse");
+                player.deadBody.matchPositionExactly = false;
+                player.deadBody.attachedTo = null;
+                player.deadBody.attachedLimb = null;
+                stuck = false;
+                permaStuck = false;
+                stickTime = 0;
             }
         }
 
@@ -116,37 +136,35 @@ namespace JLL.Components
         [ClientRpc]
         private void DamageTriggerKilledClientRpc(int type, int playerTarget = -1)
         {
-            if (DamageTrigger != null)
-            {
-                switch (type)
-                {
-                    case (int)ColliderType.Player:
-                        if (playerTarget >= 0 && playerTarget < RoundManager.Instance.playersManager.allPlayerScripts.Length)
-                        {
-                            if (RoundManager.Instance.playersManager.allPlayerScripts[playerTarget].isPlayerDead)
-                            {
-                                playerCorpses.Add(new PlayerCorpse
-                                {
-                                    player = StartOfRound.Instance.allPlayerScripts[playerTarget],
-                                    startTime = Time.realtimeSinceStartup,
-                                    stickTime = DamageTrigger.corpseStickTime
-                                });
-                                PlayerKilled.Invoke();
-                            }
-                        }
-                        break;
-                    case (int)ColliderType.Enemy:
-                        EnemyKilled.Invoke();
-                        break;
-                    case (int)ColliderType.Vehicle:
-                        VehicleKilled.Invoke();
-                        break;
-                    default: break;
-                }
-            }
-            else
+            if (DamageTrigger == null)
             {
                 JLogHelper.LogWarning($"{name} DamageTriggerNetworking is missing a linked DamageTrigger!");
+                return;
+            }
+            switch (type)
+            {
+                case (int)ColliderType.Player:
+                    if (playerTarget >= 0 && playerTarget < RoundManager.Instance.playersManager.allPlayerScripts.Length)
+                    {
+                        PlayerCorpse corpse = new PlayerCorpse
+                        {
+                            player = StartOfRound.Instance.allPlayerScripts[playerTarget],
+                            startTime = Time.realtimeSinceStartup,
+                            stickTime = Mathf.Abs(DamageTrigger.corpseStickTime),
+                            permaStuck = DamageTrigger.corpseStickTime < 0
+                        };
+                        if (corpse.Start(DamageTrigger))
+                            playerCorpses.Add(corpse);
+                        PlayerKilled.Invoke(corpse.player);
+                    }
+                    break;
+                case (int)ColliderType.Enemy:
+                    EnemyKilled.Invoke();
+                    break;
+                case (int)ColliderType.Vehicle:
+                    VehicleKilled.Invoke();
+                    break;
+                default: break;
             }
         }
     }

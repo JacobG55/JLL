@@ -10,6 +10,11 @@ namespace JLL.API.Compatability
         {
             LethalConfigManager.AddConfigItem(new EnumDropDownConfigItem<JLogLevel>(JLL.loggingLevel, false));
             LethalConfigManager.AddConfigItem(new BoolCheckBoxConfigItem(JLL.purgeWesley, false));
+
+            if (JCompatabilityHelper.IsModLoaded.Diversity.Cutscene)
+            {
+                LethalConfigManager.AddConfigItem(new BoolCheckBoxConfigItem(JLL.disableCutscenes, false));
+            }
         }
 
         public static void CreateJsonModConfigs(CustomConfigEntry jsonMod)

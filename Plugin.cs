@@ -6,15 +6,16 @@ using JLL.API;
 using JLL.API.Compatability;
 using JLL.Patches;
 using JLL.ScriptableObjects;
-using LethalLib.Modules;
 using System;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace JLL
 {
     [BepInPlugin(modGUID, modName, modVersion)]
-    [BepInDependency("evaisa.lethallib")]
     [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("imabatby.lethallevelloader", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("ainavt.lc.lethalconfig", BepInDependency.DependencyFlags.SoftDependency)]
@@ -22,7 +23,7 @@ namespace JLL
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.7.7";
+        private const string modVersion = "1.8.0";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -32,39 +33,49 @@ namespace JLL
         internal ManualLogSource wesley;
 
         public GameObject networkObject;
+        public JNetworkPrefabSet JLLNetworkPrefabs;
 
         public static ConfigEntry<JLogLevel> loggingLevel;
         public static ConfigEntry<bool> purgeWesley;
 
+        // Diversity
+        public static ConfigEntry<bool> disableCutscenes;
+
         void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
+            if (Instance == null) Instance = this;
 
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             wesley = BepInEx.Logging.Logger.CreateLogSource("Wesley");
+
+            NetcodePatch(mls, Assembly.GetExecutingAssembly().GetTypes());
+
+            JLLNetworkPrefabs = ScriptableObject.CreateInstance<JNetworkPrefabSet>();
+            JLLNetworkPrefabs.SetName = modName;
+            JLLNetworkPrefabs.AddPrefabs(
+                new JNetworkPrefabSet.JIdentifiablePrefab { name = modName, prefab = networkObject = CreateNetworkPrefab(modName) },
+                new JNetworkPrefabSet.JIdentifiablePrefab { name = "EmptyPrefab", prefab = JNetworkPrefabSet.EmptyNetworkObject = CreateNetworkPrefab("EmptyPrefab") }
+            );
+            networkObject.AddComponent<JLLNetworkManager>();
+            JNetworkPrefabSet.NetworkPrefabSets.Add(JLLNetworkPrefabs);
+
+            JCompatabilityHelper.Init();
 
             loggingLevel = Config.Bind("Logging", "LoggingLevel", JLogLevel.User, "Changes the amount of logging JLL performs in it's scripts.");
             loggingLevel.SettingChanged += (obj, args) => JLogHelper.UpdateLogLevel();
             purgeWesley = Config.Bind("Logging", "PurgeWesley", false, "Destroys him.");
 
-            JLogHelper.UpdateLogLevel();
+            if (JCompatabilityHelper.IsModLoaded.Diversity.Cutscene)
+            {
+                disableCutscenes = Config.Bind("LCCutscene", "DisableJLLCutscenes", false, "A global shutoff for all cutscenes triggered by JLL using LCCutscene.");
+            }
 
-            NetcodePatch(mls, Assembly.GetExecutingAssembly().GetTypes());
-
-            networkObject = NetworkPrefabs.CreateNetworkPrefab("JLL");
-            networkObject.AddComponent<JLLNetworkManager>();
-            networkObject.name = "JLL";
-
-            JNetworkPrefabSet.EmptyNetworkObject = NetworkPrefabs.CreateNetworkPrefab("EmptyPrefab");
-
-            JCompatabilityHelper.Init();
             if (JCompatabilityHelper.IsModLoaded.LethalConfig)
             {
                 LethalConfigHelper.CreateJLLModConfig();
             }
+
+            JLogHelper.UpdateLogLevel();
 
             HarmonyPatch(harmony, mls,
                 typeof(ItemChargerPatch),
@@ -83,6 +94,18 @@ namespace JLL
             JFileHelper.LoadFilesInPlugins();
         }
 
+        public static GameObject CreateNetworkPrefab(string name)
+        {
+            GameObject networkObject = new GameObject("JLL")
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            byte[] value = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(Assembly.GetCallingAssembly().GetName().Name + name));
+            Traverse.Create(networkObject.AddComponent<NetworkObject>()).Field("GlobalObjectIdHash")
+                .SetValue(BitConverter.ToUInt32(value, 0));
+            return networkObject;
+        }
+
         public static void HarmonyPatch(Harmony harmony, ManualLogSource logSource, params Type[] patches)
         {
             foreach (Type patch in patches)
@@ -98,6 +121,7 @@ namespace JLL
             }
         }
 
+        public static void NetcodePatch(ManualLogSource logSource) => NetcodePatch(logSource, Assembly.GetCallingAssembly().GetTypes());
         public static void NetcodePatch(ManualLogSource logSource, params Type[] types)
         {
             foreach (Type type in types)

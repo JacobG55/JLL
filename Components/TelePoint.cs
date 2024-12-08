@@ -1,6 +1,5 @@
 ﻿using GameNetcodeStuff;
 using JLL.API;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,20 +13,26 @@ namespace JLL.Components
         Nearby,
         RandomPlayer,
     }
+    public enum Region
+    {
+        None,
+        Outdoor,
+        Indoor,
+    }
 
     public class TelePoint : MonoBehaviour
     {
         public bool rotateObjects = true;
         
         [Header("Players")]
+        [Tooltip("Used to set the player as inside or outside the facility.\n'None' will leave the player in whatever state they were before teleporting.")]
+        public Region region = Region.None;
         public bool rotatePlayer = false;
-        [Tooltip("Ship teleporters have a delay of 1.\nParticle effects are predetermined to last this amount of time.\nTeleport delay is not applied to teleporting game objects currently.")]
+        [Tooltip("Ship teleporters have a delay of 1.\nParticle effects are predetermined to last this amount of time.\nTeleport delay is not applied to teleporting game objects currently.\nThis gets ignored when triggering a random teleport in favor of what the random teleport region is.")]
         public float teleportDelay = 0;
         public TeleportEffect teleportEffect = TeleportEffect.None;
         public AudioClip teleportSound;
         public AudioSource audioSource;
-
-        private readonly List<int> TeleportPlayerIds = new List<int>();
 
         [Header("Random Teleport")]
         public float randomRange = 10f;
@@ -38,6 +43,74 @@ namespace JLL.Components
             None,
             ShipTeleport,
             InverseTeleport,
+        }
+
+        private readonly List<TeleportEntry> TeleportPlayers = new List<TeleportEntry>();
+        private readonly List<TeleportEntry> Expired = new List<TeleportEntry>();
+
+        private class TeleportEntry
+        {
+            public PlayerControllerB player;
+            public float startTime;
+            public float delay;
+
+            public bool random;
+            public Region region;
+
+            public TeleportEntry(PlayerControllerB player, float delay, bool random, Region region = Region.None)
+            {
+                this.player = player;
+                startTime = Time.realtimeSinceStartup;
+                this.delay = delay;
+                this.random = random;
+                this.region = region;
+            }
+
+            public bool Update(TelePoint telePoint)
+            {
+                if (Time.realtimeSinceStartup - startTime > delay)
+                {
+                    if (random)
+                    {
+                        JLLNetworkManager.Instance.RandomTeleportServerRpc((int)player.actualClientId, (int)telePoint.randomTeleportRegion, telePoint.rotatePlayer, telePoint.transform.rotation.y, telePoint.randomRange);
+                    }
+                    else
+                    {
+                        player.TeleportPlayer(telePoint.transform.position, telePoint.rotatePlayer, telePoint.transform.eulerAngles.y);
+                        switch (region)
+                        {
+                            case Region.Outdoor:
+                                player.isInsideFactory = false;
+                                break;
+                            case Region.Indoor:
+                                player.isInsideFactory = true;
+                                break;
+                            default: break;
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        public void Update()
+        {
+            foreach (TeleportEntry entry in TeleportPlayers)
+            {
+                if (entry.Update(this))
+                {
+                    Expired.Add(entry);
+                }
+            }
+            if (Expired.Count > 0)
+            {
+                foreach (TeleportEntry entry in Expired)
+                {
+                    TeleportPlayers.Remove(entry);
+                }
+                Expired.Clear();
+            }
         }
 
         public void Teleport(GameObject obj)
@@ -53,35 +126,13 @@ namespace JLL.Components
         public void TeleportPlayer(PlayerControllerB player)
         {
             PlayEffects(player);
-            TeleportPlayerIds.Add((int)player.actualClientId);
-            StartCoroutine(TeleportPlayer());
-        }
-
-        private IEnumerator TeleportPlayer()
-        {
-            yield return new WaitForSeconds(teleportDelay);
-            if (TeleportPlayerIds.Count > 0)
-            {
-                RoundManager.Instance.playersManager.allPlayerScripts[TeleportPlayerIds[0]].TeleportPlayer(transform.position, rotatePlayer, transform.eulerAngles.y);
-                TeleportPlayerIds.RemoveAt(0);
-            }
+            TeleportPlayers.Add(new TeleportEntry(player, teleportDelay, false, region));
         }
 
         public void RandomTeleport(PlayerControllerB player)
         {
             PlayEffects(player);
-            TeleportPlayerIds.Add((int)player.actualClientId);
-            StartCoroutine(TeleportPlayerRandomly());
-        }
-
-        private IEnumerator TeleportPlayerRandomly()
-        {
-            yield return new WaitForSeconds(teleportDelay);
-            if (TeleportPlayerIds.Count > 0)
-            {
-                JLLNetworkManager.Instance.RandomTeleportServerRpc(TeleportPlayerIds[0], (int)randomTeleportRegion, rotatePlayer, transform.rotation.y, randomRange);
-                TeleportPlayerIds.RemoveAt(0);
-            }
+            TeleportPlayers.Add(new TeleportEntry(player, teleportDelay, true));
         }
 
         private void PlayEffects(PlayerControllerB? player = null)

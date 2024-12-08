@@ -138,7 +138,7 @@ namespace JLL.API
                         JLogHelper.LogWarning($"Error Parsing {files[x]}\n{e}");
                     }
                 }
-                else if (lower.EndsWith(".jllmod") || (!JCompatabilityHelper.IsModLoaded.LLL && lower.EndsWith(".lethalbundle")))
+                else if (lower.EndsWith(".jllmod"))
                 {
                     JLogHelper.LogInfo($"Parsing Bundle: {files[x]}", JLogLevel.Debuging);
                     filesRead++;

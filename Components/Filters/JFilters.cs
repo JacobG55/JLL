@@ -40,7 +40,6 @@ namespace JLL.Components.Filters
         public abstract void FilterDefault();
     }
 
-
     [Serializable]
     public abstract class JFilterProperty<T, F>
     {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JLL.API;
+using System;
 using UnityEngine;
 
 namespace JLL.Components
@@ -42,20 +43,20 @@ namespace JLL.Components
         {
             if (audioSource && weightedClips.Length > 0)
             {
-                int random = IWeightedItem.GetRandomIndex(weightedClips);
-                if (weightedClips[random].clip != null)
+                WeightedAudioClip clip = weightedClips.GetWeightedRandom();
+                if (clip.clip != null)
                 {
                     if (changePitch)
                     {
                         audioSource.pitch = UnityEngine.Random.Range(minPitch, maxPitch);
                     }
-                    float volume = UnityEngine.Random.Range(minVolume, maxVolume) * weightedClips[random].volumeMultiplier;
+                    float volume = UnityEngine.Random.Range(minVolume, maxVolume) * clip.volumeMultiplier;
 
-                    audioSource.PlayOneShot(weightedClips[random].clip, volume);
+                    audioSource.PlayOneShot(clip.clip, volume);
 
                     if (walkieCanHear)
                     {
-                        WalkieTalkie.TransmitOneShotAudio(audioSource, weightedClips[random].clip, volume * walkieVolumeMultiplier);
+                        WalkieTalkie.TransmitOneShotAudio(audioSource, clip.clip, volume * walkieVolumeMultiplier);
                     }
                     if (creaturesCanHear)
                     {

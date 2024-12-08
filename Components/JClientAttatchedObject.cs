@@ -9,6 +9,7 @@ namespace JLL.Components
         public ActiveCondition enableCondition = ActiveCondition.ActiveOutdoors;
 
         [Header("Player Attatchment")]
+        [Tooltip("When disabled the player will not attach to the target and isntead just enable / disable it's self based on the Enable Condition.")]
         public bool attachToLocalPlayer = false;
         public bool lerpPosition = false;
 

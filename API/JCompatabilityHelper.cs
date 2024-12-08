@@ -11,6 +11,7 @@ namespace JLL.API
             public bool SimpleCommands = false;
             public bool WeatherRegistry = false;
             public bool LLL = false;
+            public bool LethalLib = false;
             public bool ReservedSlotCore = false;
             public bool LethalConfig = false;
             public bool MoreCompany = false;
@@ -21,6 +22,7 @@ namespace JLL.API
             {
                 public bool Core = false;
                 public bool Frailty = false;
+                public bool Cutscene = false;
             }
             public StarlancerModules Starlancer = new StarlancerModules();
             public class StarlancerModules
@@ -47,6 +49,9 @@ namespace JLL.API
                         case "imabatby.lethallevelloader":
                             IsModLoaded.LLL = true;
                             break;
+                        case "evaisa.lethallib":
+                            IsModLoaded.LethalLib = true;
+                            break;
                         case "FlipMods.ReservedItemSlotCore":
                             IsModLoaded.ReservedSlotCore = true;
                             break;
@@ -58,6 +63,9 @@ namespace JLL.API
                             break;
                         case "Chaos.Frailty":
                             IsModLoaded.Diversity.Frailty = true;
+                            break;
+                        case "Chaos.LCCutscene":
+                            IsModLoaded.Diversity.Cutscene = true;
                             break;
                         case "me.swipez.melonloader.morecompany":
                             IsModLoaded.MoreCompany = true;
@@ -99,12 +107,14 @@ namespace JLL.API
             SimpleCommands,
             WeatherRegistry,
             LethalLevelLoader,
+            LethalLib,
             ReservedSlotCore,
             LethalConfig,
             MoreCompany,
             LittleCompany,
             Diversity,
             Frailty,
+            LCCutscene,
             StarlancerAIFix,
             StarlancerEnemyFix,
             Mirage,
@@ -119,12 +129,14 @@ namespace JLL.API
                 CachedMods.SimpleCommands => IsModLoaded.SimpleCommands,
                 CachedMods.WeatherRegistry => IsModLoaded.WeatherRegistry,
                 CachedMods.LethalLevelLoader => IsModLoaded.LLL,
+                CachedMods.LethalLib => IsModLoaded.LethalLib,
                 CachedMods.ReservedSlotCore => IsModLoaded.ReservedSlotCore,
                 CachedMods.LethalConfig => IsModLoaded.LethalConfig,
                 CachedMods.MoreCompany => IsModLoaded.MoreCompany,
                 CachedMods.LittleCompany => IsModLoaded.LittleCompany,
                 CachedMods.Diversity => IsModLoaded.Diversity.Core,
                 CachedMods.Frailty => IsModLoaded.Diversity.Frailty,
+                CachedMods.LCCutscene => IsModLoaded.Diversity.Cutscene,
                 CachedMods.StarlancerAIFix => IsModLoaded.Starlancer.AIFix,
                 CachedMods.StarlancerEnemyFix => IsModLoaded.Starlancer.EnemyEscape,
                 CachedMods.Mirage => IsModLoaded.Mirage,

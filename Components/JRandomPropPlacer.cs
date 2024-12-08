@@ -1,6 +1,7 @@
 ﻿using JLL.API;
 using JLL.API.LevelProperties;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.AI.Navigation;
 using Unity.Netcode;
@@ -60,7 +61,7 @@ namespace JLL.Components
             FacingAwayFromWall,
             BackToWall
         }
-        
+
         public enum SpawnNodes
         {
             Children,
@@ -71,9 +72,9 @@ namespace JLL.Components
 
         public enum NavMeshToRebake
         {
-            None,
+            None = 0,
             Exterior,
-            Custom = -1
+            Custom = -1,
         }
 
         void Start()
@@ -86,6 +87,17 @@ namespace JLL.Components
 
         public void PostDungeonGeneration()
         {
+            StartCoroutine(SpawnNextFrame());
+        }
+
+        private IEnumerator SpawnNextFrame()
+        {
+            yield return null;
+            SpawnProps();
+        }
+
+        private void SpawnProps()
+        {
             JLogHelper.LogInfo($"{name} Spawning map props. {PropContainer == null} {spawnableProps.Length == 0}");
             if (PropContainer == null || spawnableProps.Length == 0) return;
 
@@ -94,7 +106,7 @@ namespace JLL.Components
             // Sets up posible spawn nodes.
 
             List<Vector3> spawnNodes = new List<Vector3>();
-            switch(spawnNodeSelection)
+            switch (spawnNodeSelection)
             {
                 case SpawnNodes.Children:
                     for (int i = 0; i < transform.childCount; i++)

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace JLL.API.LevelProperties
 {
@@ -7,10 +9,14 @@ namespace JLL.API.LevelProperties
     {
         private static readonly Dictionary<string, JLevelPropertyEntry> Registry = new Dictionary<string, JLevelPropertyEntry>();
         public static bool IsLevelGenerated { private set; get; } = false;
+        public static UnityEvent PostLevelSettup = new UnityEvent();
 
         public static readonly List<EnemyType> AllSortedEnemies = new List<EnemyType>();
         public static readonly List<EntranceTeleport> EntranceTeleports = new List<EntranceTeleport>();
+        private static readonly Dictionary<string, LevelPOI> LevelPOIs = new Dictionary<string, LevelPOI>();
         private static Terminal Terminal;
+
+        public static bool ApparatusPulled { internal set; get; } = false;
 
         private static JLevelPropertyEntry original = new JLevelPropertyEntry();
         public static JLevelPropertyEntry GetLevelProperties(SelectableLevel level)
@@ -69,6 +75,53 @@ namespace JLL.API.LevelProperties
             return null;
         }
 
+        public static bool GetPOI(string name, int id, out Transform pos)
+        {
+            if (LevelPOIs.ContainsKey(name) && LevelPOIs[name].Count() > 0)
+            {
+                pos = LevelPOIs[name].GetTransform(id);
+                return true;
+            }
+            else
+            {
+                pos = null;
+                return false;
+            }
+        }
+
+        public static bool GetPOI(string name, out Transform pos)
+        {
+            return GetPOI(name, 0, out pos);
+        }
+
+        public static bool GetPOI(string name, int id, out Vector3 pos)
+        {
+            bool success = GetPOI(name, id, out Transform t);
+            pos = success ? t.position : Vector3.zero;
+            return success;
+        }
+
+        public static bool GetPOI(string name, out Vector3 pos)
+        {
+            return GetPOI(name, 0, out pos);
+        }
+
+        public static void CreatePOI(string name, Transform pos)
+        {
+            name = Regex.Replace(name, @"[\d-]", string.Empty);
+            if (!LevelPOIs.ContainsKey(name))
+            {
+                LevelPOIs.Add(name, LevelPOI.Create());
+            }
+            JLogHelper.LogInfo($"Registering POI {name} at {pos.position}");
+            LevelPOIs[name].Add(pos);
+        }
+
+        public static bool HasPOI(string name)
+        {
+            return LevelPOIs.ContainsKey(name);
+        }
+
         public static Terminal GetTerminal()
         {
             if (Terminal == null)
@@ -118,12 +171,15 @@ namespace JLL.API.LevelProperties
             }
 
             original.enemyPropertyOverrides = originalValues.ToArray();
+            PostLevelSettup.Invoke();
         }
 
         internal static void RemoveLevelOverrides()
         {
+            ApparatusPulled = false;
             IsLevelGenerated = false;
             EntranceTeleports.Clear();
+            LevelPOIs.Clear();
 
             foreach (EnemyPropertyOverride property in original.enemyPropertyOverrides)
             {

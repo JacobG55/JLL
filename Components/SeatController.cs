@@ -18,7 +18,7 @@ namespace JLL.Components
         [HideInInspector] public PlayerControllerB? currentPassenger;
         [HideInInspector] public bool localPlayerInSeat = false;
 
-        private readonly int exitLayerMask = 2305;
+        private static readonly int exitLayerMask = 2305;
 
         public void Start()
         {
@@ -46,14 +46,30 @@ namespace JLL.Components
             PlayerControllerB playerControllerB = StartOfRound.Instance.allPlayerScripts[playerId];
             if (!(playerControllerB == GameNetworkManager.Instance.localPlayerController))
             {
-                playerControllerB.TeleportPlayer(exitPoint);
-                currentPassenger = null;
-                if (!base.IsOwner)
-                {
-                    SetVehicleCollisionForPlayer(setEnabled: true, GameNetworkManager.Instance.localPlayerController);
-                }
-                seatTrigger.interactable = true;
+                LeaveSeat(playerControllerB, exitPoint);
             }
+        }
+
+        private void LeaveSeat(PlayerControllerB player, Vector3 exitPoint, bool forced = false)
+        {
+            player.TeleportPlayer(exitPoint);
+            currentPassenger = null;
+            if (!IsOwner)
+            {
+                SetVehicleCollisionForPlayer(setEnabled: true, GameNetworkManager.Instance.localPlayerController);
+            }
+            if (forced)
+            {
+                player.CancelSpecialTriggerAnimations();
+                if (player.IsLocalPlayer)
+                {
+                    if (disableExitTrigger)
+                    {
+                        ToggleExitColliders(false);
+                    }
+                }
+            }
+            seatTrigger.interactable = true;
         }
 
         public void SetPlayerInSeat(PlayerControllerB player)
@@ -92,6 +108,19 @@ namespace JLL.Components
             return -1;
         }
 
+        private Vector3 GetExitPoint()
+        {
+            int pos = GetExitPos();
+            if (pos != -1)
+            {
+                return exitPoints[pos].position;
+            }
+            else
+            {
+                return transform.position + Vector3.up;
+            }
+        }
+
         public void OnCancelAnim()
         {
             seatTrigger.interactable = true;
@@ -99,6 +128,23 @@ namespace JLL.Components
             currentPassenger = null;
             SetVehicleCollisionForPlayer(setEnabled: true, GameNetworkManager.Instance.localPlayerController);
             LeaveSeatServerRpc((int)GameNetworkManager.Instance.localPlayerController.playerClientId, GameNetworkManager.Instance.localPlayerController.transform.position);
+        }
+
+        void OnDisable()
+        {
+            if (currentPassenger != null)
+            {
+                LeaveSeat(currentPassenger, GetExitPoint(), true);
+            }
+        }
+
+        public override void OnDestroy()
+        {
+            if (currentPassenger != null)
+            {
+                LeaveSeat(currentPassenger, GetExitPoint(), true);
+            }
+            base.OnDestroy();
         }
 
         public void ExitSeat()
@@ -109,15 +155,7 @@ namespace JLL.Components
                 {
                     ToggleExitColliders(false);
                 }
-                int pos = GetExitPos();
-                if (pos != -1)
-                {
-                    GameNetworkManager.Instance.localPlayerController.TeleportPlayer(exitPoints[pos].position);
-                }
-                else
-                {
-                    GameNetworkManager.Instance.localPlayerController.TeleportPlayer(transform.position + Vector3.up);
-                }
+                GameNetworkManager.Instance.localPlayerController.TeleportPlayer(GetExitPoint());
             }
         }
 

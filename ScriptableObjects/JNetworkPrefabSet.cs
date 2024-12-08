@@ -2,6 +2,7 @@
 using JLL.Components;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -30,6 +31,16 @@ namespace JLL.ScriptableObjects
                 return Weight;
             }
         }
+
+        public void AddPrefabs(params JIdentifiablePrefab[] prefabsToAdd)
+        {
+            List<JIdentifiablePrefab> prefabs = prefabList.ToList();
+            prefabs.AddRange(prefabsToAdd);
+            prefabList = prefabs.ToArray();
+        }
+
+        public void AddPrefab(string name, GameObject prefab, int weight = 20) 
+            => AddPrefabs(new JIdentifiablePrefab { name = name, prefab = prefab, Weight = weight });
 
         internal static void RegisterPrefabs()
         {
@@ -88,7 +99,7 @@ namespace JLL.ScriptableObjects
 
         public GameObject GetRandomPrefab()
         {
-            return prefabList[IWeightedItem.GetRandomIndex(prefabList)].prefab;
+            return prefabList.GetWeightedRandom().prefab;
         }
     }
 }

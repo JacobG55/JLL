@@ -27,11 +27,7 @@ namespace JLL.API.Compatability
             }
         }
 
-        public static ExtendedLevel? GetLevel(SelectableLevel level)
-        {
-            return GetLevel(level.sceneName);
-        }
-
+        public static ExtendedLevel? GetLevel(SelectableLevel level) => GetLevel(level.sceneName);
         public static ExtendedLevel? GetLevel(string sceneName)
         {
             for (int i = 0; i < PatchedContent.ExtendedLevels.Count; i++)

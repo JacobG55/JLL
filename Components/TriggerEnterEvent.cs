@@ -1,6 +1,5 @@
 ﻿using GameNetcodeStuff;
 using JLL.API.Events;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -30,12 +29,6 @@ namespace JLL.Components
 
         public void OnEnable()
         {
-            StartCoroutine(EnabledEventNextFixedUpdate());
-        }
-
-        private IEnumerator EnabledEventNextFixedUpdate()
-        {
-            yield return new WaitForFixedUpdate();
             onEnabled.Invoke();
         }
 

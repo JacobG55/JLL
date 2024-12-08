@@ -1,5 +1,6 @@
 ﻿using GameNetcodeStuff;
 using JLL.Components.Filters;
+using JLL.API;
 using Unity.Netcode;
 
 namespace JLL.Components
@@ -48,18 +49,17 @@ namespace JLL.Components
             OnSuccess:
 
             RemoveItemFromClientRpc(playerWhoSent);
-
-            return;
         }
 
         [ClientRpc]
         private void RemoveItemFromClientRpc(int playerWhoSent)
         {
             PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerWhoSent];
+            bool isLocalPlayer = player.IsLocalPlayer();
 
-            if (player.IsOwner) player.DestroyItemInSlotAndSync(player.currentItemSlot);
+            if (isLocalPlayer) player.DestroyItemInSlotAndSync(player.currentItemSlot);
 
-            if (runEventOnAllClients || player.IsOwner)
+            if (runEventOnAllClients || isLocalPlayer)
             {
                 OnSuccess.Invoke(player);
             }

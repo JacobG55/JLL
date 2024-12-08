@@ -21,6 +21,7 @@ namespace JLL.Components
         {
             [Range(0,100)]
             public int Weight = 20;
+            public string ItemName = "";
             public Item Item;
             public bool FindRegisteredItem = true;
             public bool OverrideValue = false;
@@ -34,7 +35,18 @@ namespace JLL.Components
 
             public void FindRegistered()
             {
-                if (FindRegisteredItem && Item != null)
+                if (ItemName != "")
+                {
+                    foreach (Item registeredItem in RoundManager.Instance.playersManager.allItemsList.itemsList)
+                    {
+                        if (ItemName == registeredItem.itemName)
+                        {
+                            Item = registeredItem;
+                            break;
+                        }
+                    }
+                }
+                else if (FindRegisteredItem && Item != null)
                 {
                     foreach (Item registeredItem in RoundManager.Instance.playersManager.allItemsList.itemsList)
                     {
@@ -90,7 +102,7 @@ namespace JLL.Components
                     if (weightedItems != null)
                     {
                         if (weightedItems.Length == 0) break;
-                        WeightedItemRefrence weightedItem = weightedItems[IWeightedItem.GetRandomIndex(weightedItems)];
+                        WeightedItemRefrence weightedItem = weightedItems.GetWeightedRandom();
                         randomItem = weightedItem.Item;
                         if (weightedItem.OverrideValue)
                         {
@@ -108,7 +120,7 @@ namespace JLL.Components
                     {
                         levelItems.Add(new WeightedItemRefrence() { Item = itemRarity.spawnableItem, Weight = itemRarity.rarity });
                     }
-                    randomItem = levelItems[IWeightedItem.GetRandomIndex(levelItems.ToArray())].Item;
+                    randomItem = levelItems.GetWeightedRandom().Item;
                     break;
                 case SpawnPoolSource.StoreItems:
                     Terminal terminal = JLevelPropertyRegistry.GetTerminal();
@@ -123,7 +135,7 @@ namespace JLL.Components
 
         public void SpawnRandom(int count = 1)
         {
-            SpawnRandomItems(SourcePool, transform.position, RoundManager.Instance.spawnedScrapContainer, CustomList, count: count, rotation: spawnRotation);
+            SpawnRandomItems(SourcePool, transform.position, RoundManager.Instance.spawnedScrapContainer, transform.rotation, CustomList, count: count, rotation: spawnRotation);
         }
 
         public void SpawnRandom(MonoBehaviour target)
@@ -138,11 +150,11 @@ namespace JLL.Components
 
         public void SpawnRandom(Vector3 pos)
         {
-            SpawnRandomItems(SourcePool, pos, RoundManager.Instance.spawnedScrapContainer, CustomList, count: 1, rotation: spawnRotation);
+            SpawnRandomItems(SourcePool, pos, RoundManager.Instance.spawnedScrapContainer, transform.rotation, CustomList, count: 1, rotation: spawnRotation);
         }
 
         // Returned list contains spawned items and override values on server and is empty on client.
-        public static List<KeyValuePair<GrabbableObject, int>> SpawnRandomItems(SpawnPoolSource sourcePool, Vector3 position, Transform parent, WeightedItemRefrence[]? customList = null, Vector3[]? offsets = null, int count = 1, bool spawnOnNetwork = true, RotationType rotation = RotationType.NoRotation)
+        public static List<KeyValuePair<GrabbableObject, int>> SpawnRandomItems(SpawnPoolSource sourcePool, Vector3 position, Transform parent, Quaternion sourceRot, WeightedItemRefrence[]? customList = null, Vector3[]? offsets = null, int count = 1, bool spawnOnNetwork = true, RotationType rotation = RotationType.NoRotation)
         {
             List<KeyValuePair<GrabbableObject, int>> grabbableObjects = new List<KeyValuePair<GrabbableObject, int>>();
             if (RoundManager.Instance.IsServer || RoundManager.Instance.IsHost)
@@ -159,7 +171,7 @@ namespace JLL.Components
                         {
                             offset += offsets[i];
                         }
-                        GrabbableObject? spawned = SpawnItem(itemToSpawn, position + offset, parent, overrideValue, spawnOnNetwork, rotation: rotation);
+                        GrabbableObject? spawned = SpawnItem(itemToSpawn, position + offset, parent, sourceRot, overrideValue, spawnOnNetwork, rotation: rotation);
                         if (spawned != null)
                         {
                             grabbableObjects.Add(new KeyValuePair<GrabbableObject, int>(spawned, overrideValue));
@@ -170,12 +182,12 @@ namespace JLL.Components
             return grabbableObjects;
         }
 
-        public static GrabbableObject? SpawnItem(Item item, Vector3 pos, Transform? parent, int overrideValue = -1, bool spawnOnNetwork = true, RotationType rotation = RotationType.NoRotation)
+        public static GrabbableObject? SpawnItem(Item item, Vector3 pos, Transform? parent, Quaternion sourceRot, int overrideValue = -1, bool spawnOnNetwork = true, RotationType rotation = RotationType.NoRotation)
         {
             JLogHelper.LogInfo($"Spawn on network: {spawnOnNetwork}", JLogLevel.Wesley);
             if (RoundManager.Instance.IsServer || RoundManager.Instance.IsHost)
             {
-                GrabbableObject grabbable = Instantiate(item.spawnPrefab, pos, Quaternion.Euler(new Vector3(0, parent == null ? 0 : GetRot(rotation, parent), 0)), parent).GetComponent<GrabbableObject>();
+                GrabbableObject grabbable = Instantiate(item.spawnPrefab, pos, GetRot(rotation, sourceRot), parent).GetComponent<GrabbableObject>();
                 grabbable.fallTime = 0f;
                 if (spawnOnNetwork)
                 {

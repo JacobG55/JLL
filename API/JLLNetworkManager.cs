@@ -102,40 +102,61 @@ namespace JLL.API
         {
             if (Enum.IsDefined(typeof(RandomTeleportRegion), selection))
             {
-                List<GameObject> nodes = new List<GameObject>();
+                GameObject? node = null;
+                bool inside = false;
 
                 switch (selection)
                 {
                     case (int)RandomTeleportRegion.Indoor:
-                        nodes.AddRange(RoundManager.Instance.insideAINodes);
+                        node = GetRandom(RoundManager.Instance.insideAINodes);
+                        inside = true;
                         break;
                     case (int)RandomTeleportRegion.Outdoor:
-                        nodes.AddRange(RoundManager.Instance.outsideAINodes);
+                        node = GetRandom(RoundManager.Instance.outsideAINodes);
                         break;
                     case (int)RandomTeleportRegion.Moon:
-                        nodes.AddRange(RoundManager.Instance.insideAINodes);
-                        nodes.AddRange(RoundManager.Instance.outsideAINodes);
+                        int random = UnityEngine.Random.Range(0, RoundManager.Instance.outsideAINodes.Length + RoundManager.Instance.insideAINodes.Length);
+                        if (random < RoundManager.Instance.outsideAINodes.Length)
+                        {
+                            node = RoundManager.Instance.insideAINodes[random];
+                        }
+                        else
+                        {
+                            inside = true;
+                            node = RoundManager.Instance.outsideAINodes[random - RoundManager.Instance.outsideAINodes.Length];
+                        }
                         break;
                     case (int)RandomTeleportRegion.Nearby:
-                        nodes.Add(RoundManager.Instance.playersManager.allPlayerObjects[playerTarget]);
+                        PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerTarget];
+                        node = player.gameObject;
+                        inside = player.isInsideFactory;
                         break;
                     case (int)RandomTeleportRegion.RandomPlayer:
-                        nodes.AddRange(RoundManager.Instance.playersManager.allPlayerObjects);
+                        PlayerControllerB randomPlayer = GetRandom(RoundManager.Instance.playersManager.allPlayerScripts);
+                        node = randomPlayer.gameObject;
+                        inside = randomPlayer.isInsideFactory;
                         break;
                     default: break;
                 }
 
-                if (nodes.Count > 0)
+                if (node != null)
                 {
-                    RandomTeleportClientRpc(playerTarget, RoundManager.Instance.GetRandomNavMeshPositionInRadius(nodes[UnityEngine.Random.Range(0, nodes.Count)].transform.position, range), withRotation, rotation);
+                    RandomTeleportClientRpc(playerTarget, RoundManager.Instance.GetRandomNavMeshPositionInRadius(node.transform.position, range), inside, withRotation, rotation);
                 }
             }
         }
 
         [ClientRpc]
-        private void RandomTeleportClientRpc(int playerTarget, Vector3 pos, bool withRotation = false, float rotation = 0)
+        private void RandomTeleportClientRpc(int playerTarget, Vector3 pos, bool inside, bool withRotation = false, float rotation = 0)
         {
-            RoundManager.Instance.playersManager.allPlayerScripts[playerTarget].TeleportPlayer(pos, withRotation, rotation);
+            PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerTarget];
+            player.TeleportPlayer(pos, withRotation, rotation);
+            player.isInsideFactory = inside;
+        }
+
+        public static T GetRandom<T>(T[] array)
+        {
+            return array[UnityEngine.Random.Range(0, array.Length)];
         }
 
         public static string GetPath(Transform current)
@@ -156,6 +177,10 @@ namespace JLL.API
             if (target.TryGet(out NetworkObject netObj) && netObj.gameObject.TryGetComponent(out GrabbableObject item))
             {
                 item.SetScrapValue(value);
+            }
+            else
+            {
+                JLogHelper.LogInfo("Networked GrabbableObject could not be found. Safely ignoring operation.");
             }
         }
     }

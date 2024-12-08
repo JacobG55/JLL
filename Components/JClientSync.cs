@@ -114,5 +114,11 @@ namespace JLL.Components
                 syncedPlayerEvent.Invoke(RoundManager.Instance.playersManager.allPlayerScripts[playerId]);
             }
         }
+
+        public override void OnDestroy()
+        {
+            hostFilter.FilteredResult.RemoveListener(FilterResultServerRpc);
+            base.OnDestroy();
+        }
     }
 }

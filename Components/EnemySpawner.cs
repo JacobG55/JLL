@@ -2,7 +2,6 @@
 using JLL.API.Events;
 using JLL.API.LevelProperties;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -15,9 +14,21 @@ namespace JLL.Components
         [Tooltip("Determines weather to spawn a random enemy from the pool or to spawn the specified type")]
         public bool spawnRandom = false;
         public RotationType spawnRotation = RotationType.ObjectRotation;
-        public List<SpawnableEnemyWithRarity> randomPool = new List<SpawnableEnemyWithRarity>();
+        public List<WeightedEnemyRefrence> randomPool = new List<WeightedEnemyRefrence>();
 
-        public EnemyType type;
+        [Serializable]
+        public class WeightedEnemyRefrence
+        {
+            public string enemyName = "";
+            public EnemyType enemyType;
+
+            [Range(0f, 100f)]
+            public int rarity;
+        }
+
+        public string enemyName = "";
+        public EnemyType? type;
+
         [Tooltip("Ran after an enemy spawns. Enemy provided is the one that was just spawned.")]
         public EnemyEvent SpawnedEvent = new EnemyEvent();
 
@@ -38,13 +49,23 @@ namespace JLL.Components
             NoRotation,
         }
 
-        public static float GetRot(RotationType rotation, Transform refrence)
+        public static float GetRot(RotationType rotation, float yRot = 0)
         {
             return rotation switch
             {
-                RotationType.ObjectRotation => refrence.rotation.y,
+                RotationType.ObjectRotation => yRot,
                 RotationType.RandomRotation => UnityEngine.Random.Range(0f, 360f),
                 _ => 0,
+            };
+        }
+
+        public static Quaternion GetRot(RotationType rotation, Quaternion refrence)
+        {
+            return rotation switch
+            {
+                RotationType.ObjectRotation => refrence,
+                RotationType.RandomRotation => Quaternion.Euler(0, UnityEngine.Random.Range(0f, 360f), 0),
+                _ => Quaternion.identity,
             };
         }
 
@@ -52,7 +73,11 @@ namespace JLL.Components
         {
             if (checkRegistry)
             {
-                if (type != null)
+                if (!string.IsNullOrEmpty(enemyName))
+                {
+                    type = JLevelPropertyRegistry.GetRegisteredEnemy(enemyName);
+                }
+                else if (type != null)
                 {
                     type = JLevelPropertyRegistry.GetRegisteredEnemy(type);
                 }
@@ -61,7 +86,12 @@ namespace JLL.Components
                 {
                     for (int i = 0; i < randomPool.Count; i++)
                     {
-                        if (randomPool[i].enemyType != null)
+                        if (!string.IsNullOrEmpty(randomPool[i].enemyName))
+                        {
+                            EnemyType? type = JLevelPropertyRegistry.GetRegisteredEnemy(randomPool[i].enemyName);
+                            if (type != null) randomPool[i].enemyType = type;
+                        }
+                        else if (randomPool[i].enemyType != null)
                         {
                             randomPool[i].enemyType = JLevelPropertyRegistry.GetRegisteredEnemy(randomPool[i].enemyType);
                         }
@@ -75,7 +105,7 @@ namespace JLL.Components
                 {
                     for (int i = 0; i < JLevelPropertyRegistry.AllSortedEnemies.Count; i++)
                     {
-                        SpawnableEnemyWithRarity spawnableRarity = new SpawnableEnemyWithRarity
+                        WeightedEnemyRefrence spawnableRarity = new WeightedEnemyRefrence
                         {
                             enemyType = JLevelPropertyRegistry.AllSortedEnemies[i],
                             rarity = 10
@@ -91,14 +121,8 @@ namespace JLL.Components
         {
             if (spawnOnEnable)
             {
-                StartCoroutine(SpawnNextFixedUpdate());
+                SpawnEnemy();
             }
-        }
-
-        private IEnumerator SpawnNextFixedUpdate()
-        {
-            yield return new WaitForFixedUpdate();
-            SpawnEnemy();
         }
 
         public void SpawnEnemy()
@@ -141,7 +165,7 @@ namespace JLL.Components
                         if ((flag = NavMesh.SamplePosition(pos, out NavMeshHit hit, navMeshRange, NavMesh.AllAreas)) || navMeshRange < 0)
                         {
                             JLogHelper.LogInfo($"({name}) Spawning: {spawn.enemyName} at {pos}");
-                            GameObject obj = RoundManager.Instance.SpawnEnemyGameObject(flag ? hit.position : pos, GetRot(spawnRotation, transform), 0, spawn);
+                            GameObject obj = RoundManager.Instance.SpawnEnemyGameObject(flag ? hit.position : pos, GetRot(spawnRotation, transform.transform.eulerAngles.y), 0, spawn);
                             if (obj.TryGetComponent(out EnemyAI enemy))
                             {
                                 SpawnedEvent.Invoke(enemy);

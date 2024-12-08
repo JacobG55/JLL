@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using JLL.API.LevelProperties;
 using JLL.Components;
 
 namespace JLL.Patches
@@ -12,6 +13,7 @@ namespace JLL.Patches
         {
             if (__instance.isLungDocked)
             {
+                JLevelPropertyRegistry.ApparatusPulled = true;
                 for (int i = 0; i < JLevelEventTriggers.EventTriggers.Count; i++)
                 {
                     JLevelEventTriggers.EventTriggers[i].InvokeApparatus();

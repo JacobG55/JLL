@@ -115,7 +115,7 @@ namespace JLL.Components
 
         void Start()
         {
-            if (DamageTriggerNetworking != null && DamageTriggerNetworking.DamageTrigger == null)
+            if (DamageTriggerNetworking != null)
             {
                 DamageTriggerNetworking.DamageTrigger = this;
             }
