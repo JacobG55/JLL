@@ -363,7 +363,7 @@ namespace JLLItemsModule.Components
         {
             Vector3 spawnPos = transform.position + Vector3.up * 0.25f;
             Transform parent = ((!isInElevator) ? RoundManager.Instance.mapPropsContainer.transform : StartOfRound.Instance.elevatorTransform);
-            SpawnRandomItems(SourcePool, spawnPos, parent, CustomList, SpawnOffsets, amount);
+            SpawnRandomItems(SourcePool, spawnPos, parent, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0), CustomList, SpawnOffsets, amount);
         }
 
         public Vector3 GetThrowDestination()

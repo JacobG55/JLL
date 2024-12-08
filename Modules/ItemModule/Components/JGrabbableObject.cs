@@ -33,6 +33,10 @@ namespace JLLItemsModule.Components
         public override void EquipItem()
         {
             base.EquipItem();
+            foreach (GameObject obj in hideWhenPocketed)
+            {
+                obj.SetActive(true);
+            }
             OnEquip.Invoke();
         }
         public override void PocketItem()
@@ -40,7 +44,7 @@ namespace JLLItemsModule.Components
             base.PocketItem();
             foreach (GameObject obj in hideWhenPocketed)
             {
-                obj.SetActive(!isPocketed);
+                obj.SetActive(false);
             }
             OnPocketed.Invoke();
         }
@@ -58,6 +62,34 @@ namespace JLLItemsModule.Components
         public virtual void PlacedOnDepositDesk()
         {
 
+        }
+
+        public bool IsBeingHeldByPlayer()
+        {
+            return playerHeldBy != null && isHeld;
+        }
+
+        public void DamageHolder(int damage)
+        {
+            if (IsBeingHeldByPlayer())
+            {
+                playerHeldBy.DamagePlayer(damage);
+            }
+        }
+
+        public void ForceDrop(bool dropAll)
+        {
+            if (IsBeingHeldByPlayer())
+            {
+                if (dropAll)
+                {
+                    playerHeldBy.DropAllHeldItemsAndSync();
+                }
+                else
+                {
+                    playerHeldBy.DiscardHeldObject();
+                }
+            }
         }
     }
 }

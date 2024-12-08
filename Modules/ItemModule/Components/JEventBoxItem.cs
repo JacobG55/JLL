@@ -113,7 +113,7 @@ namespace JLLItemsModule.Components
         {
             Vector3 spawnPos = transform.position + Vector3.up * 0.25f;
             Transform parent = (((!(playerHeldBy != null) || !playerHeldBy.isInElevator) && !StartOfRound.Instance.inShipPhase) || !(RoundManager.Instance.spawnedScrapContainer != null)) ? StartOfRound.Instance.elevatorTransform : RoundManager.Instance.spawnedScrapContainer;
-            List<KeyValuePair<GrabbableObject, int>> spawned = SpawnRandomItems(SourcePool, spawnPos, parent, CustomList, count: amount, spawnOnNetwork: false);
+            List<KeyValuePair<GrabbableObject, int>> spawned = SpawnRandomItems(SourcePool, spawnPos, parent, Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0), CustomList, count: amount, spawnOnNetwork: false);
 
             foreach (var spawnedItem in spawned)
             {

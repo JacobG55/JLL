@@ -89,7 +89,7 @@ namespace JLLItemsModule.Components
                     previousPlayerHeldBy = playerHeldBy;
                     if (reelingUpCoroutine != null)
                     {
-                        if (playerHeldBy.IsOwner) playerHeldBy.playerBodyAnimator.speed = 1f;
+                        if (playerHeldBy.IsLocalPlayer()) playerHeldBy.playerBodyAnimator.speed = 1f;
                         StopCoroutine(reelingUpCoroutine);
                     }
 
@@ -103,7 +103,7 @@ namespace JLLItemsModule.Components
                 if (playerHeldBy != null)
                 {
                     previousPlayerHeldBy = playerHeldBy;
-                    if (playerHeldBy.IsOwner)
+                    if (playerHeldBy.IsLocalPlayer())
                     {
                         playerHeldBy.playerBodyAnimator.SetTrigger("UseHeldItem1");
                     }
@@ -122,7 +122,7 @@ namespace JLLItemsModule.Components
             playerHeldBy.twoHanded = true;
             playerHeldBy.playerBodyAnimator.ResetTrigger("shovelHit");
             playerHeldBy.playerBodyAnimator.SetBool("reelingUp", value: true);
-            if (playerHeldBy.IsOwner)
+            if (playerHeldBy.IsLocalPlayer())
             {
                 reelingAnimSpeed = 0.35f / reelingTime;
                 playerHeldBy.playerBodyAnimator.speed = reelingAnimSpeed;
@@ -131,7 +131,7 @@ namespace JLLItemsModule.Components
             ReelUpSFXServerRpc();
             yield return new WaitForSeconds(reelingTime);
             yield return new WaitUntil(() => !isHoldingButton || !isHeld);
-            if (playerHeldBy.IsOwner) playerHeldBy.playerBodyAnimator.speed = 1f;
+            if (playerHeldBy.IsLocalPlayer()) playerHeldBy.playerBodyAnimator.speed = 1f;
             SwingHeavyWeapon(!isHeld);
             yield return new WaitForSeconds(swingTime);
             yield return new WaitForEndOfFrame();
@@ -158,7 +158,7 @@ namespace JLLItemsModule.Components
             if (playerHeldBy != null)
             {
                 playerHeldBy.activatingItem = false;
-                if (playerHeldBy.IsOwner) playerHeldBy.playerBodyAnimator.speed = 1f;
+                if (playerHeldBy.IsLocalPlayer()) playerHeldBy.playerBodyAnimator.speed = 1f;
             }
 
             base.DiscardItem();
