@@ -14,14 +14,14 @@ namespace JLL.Components
 
         public void SetLevelLocked(bool locked)
         {
-            if (JCompatabilityHelper.IsModLoaded.LLL)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
             {
                 LLLHelper.LockExtendedLevel(sceneName, locked);
             }
         }
         public void SetLevelHidden(bool hidden)
         {
-            if (JCompatabilityHelper.IsModLoaded.LLL)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
             {
                 LLLHelper.HideExtendedLevel(sceneName, hidden);
             }
@@ -29,14 +29,14 @@ namespace JLL.Components
 
         public void LockLevel(string sceneName)
         {
-            if (JCompatabilityHelper.IsModLoaded.LLL)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
             {
                 LLLHelper.LockExtendedLevel(sceneName, shouldUnlock);
             }
         }
         public void HideLevel(string sceneName)
         {
-            if (JCompatabilityHelper.IsModLoaded.LLL)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
             {
                 LLLHelper.HideExtendedLevel(sceneName, shouldUnlock);
             }

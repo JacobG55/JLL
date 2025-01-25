@@ -76,6 +76,7 @@ namespace JLL.Components
                     }
                     else
                     {
+                        JLogHelper.LogInfo($"{telePoint.name} Teleporting {player.actualClientId}", JLogLevel.Debuging);
                         player.TeleportPlayer(telePoint.transform.position, telePoint.rotatePlayer, telePoint.transform.eulerAngles.y);
                         switch (region)
                         {

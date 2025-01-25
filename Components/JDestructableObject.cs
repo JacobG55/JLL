@@ -46,6 +46,7 @@ namespace JLL.Components
         }
 
         public GameObject DisableObject;
+        public UnityEvent DamageEvent = new UnityEvent();
         public UnityEvent DestroyEvent = new UnityEvent();
 
         [Header("FX")]
@@ -138,6 +139,7 @@ namespace JLL.Components
 
         private void PlayDamageFX(bool destroyed)
         {
+            DamageEvent.Invoke();
             if (destroyed)
             {
                 if (destroyClips.Length > 0)

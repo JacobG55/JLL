@@ -11,7 +11,7 @@ namespace JLL.API.Compatability
             LethalConfigManager.AddConfigItem(new EnumDropDownConfigItem<JLogLevel>(JLL.loggingLevel, false));
             LethalConfigManager.AddConfigItem(new BoolCheckBoxConfigItem(JLL.purgeWesley, false));
 
-            if (JCompatabilityHelper.IsModLoaded.Diversity.Cutscene)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LCCutscene))
             {
                 LethalConfigManager.AddConfigItem(new BoolCheckBoxConfigItem(JLL.disableCutscenes, false));
             }

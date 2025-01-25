@@ -10,8 +10,6 @@ namespace JLL.Patches
     [HarmonyPatch(typeof(GameNetworkManager))]
     public class GameNetworkManagerPatch
     {
-
-
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
         public static void patchStart(GameNetworkManager __instance)

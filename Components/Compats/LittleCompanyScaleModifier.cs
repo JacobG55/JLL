@@ -19,9 +19,11 @@ namespace JLL.Components.Compats
             Normalizing = 0
         }
 
+        private static bool? Loaded = null;
         public bool IsModLoaded()
         {
-            return JCompatabilityHelper.IsModLoaded.LittleCompany;
+            Loaded ??= JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LittleCompany);
+            return Loaded.Value;
         }
 
         public void Modify(PlayerControllerB target)

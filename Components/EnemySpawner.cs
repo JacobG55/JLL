@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
+using static JLL.API.CustomConfigEntry;
 
 namespace JLL.Components
 {
@@ -41,12 +42,23 @@ namespace JLL.Components
         public bool spawnOnEnable = false;
         public bool checkRegistry = true;
 
+        public bool respectEnemyCap = false;
+        public PowerCap respectPowerCap = PowerCap.None;
+
         [Serializable]
         public enum RotationType
         {
             ObjectRotation,
             RandomRotation,
             NoRotation,
+        }
+
+        public enum PowerCap
+        {
+            None,
+            Indoor,
+            Daytime,
+            Nighttime
         }
 
         public static float GetRot(RotationType rotation, float yRot = 0)
@@ -159,6 +171,27 @@ namespace JLL.Components
 
                 if (spawn != null)
                 {
+                    if (respectEnemyCap && spawn.numberSpawned > spawn.MaxCount) return;
+                    if (spawn.PowerLevel > (respectPowerCap switch
+                    {
+                        PowerCap.Indoor => RoundManager.Instance.currentMaxInsidePower - RoundManager.Instance.currentEnemyPower,
+                        PowerCap.Daytime => RoundManager.Instance.currentLevel.maxDaytimeEnemyPowerCount - RoundManager.Instance.currentDaytimeEnemyPower,
+                        PowerCap.Nighttime => RoundManager.Instance.currentMaxOutsidePower - RoundManager.Instance.currentOutsideEnemyPower,
+                        _ => 1000000
+                    })) return;
+
+                    switch (respectPowerCap)
+                    {
+                        case PowerCap.Indoor:
+                            if () return;
+                            break;
+                        case PowerCap.Daytime: 
+                            break;
+                        case PowerCap.Nighttime: 
+                            break;
+                        default: break;
+                    }
+
                     if (spawn.enemyPrefab != null)
                     {
                         bool flag;

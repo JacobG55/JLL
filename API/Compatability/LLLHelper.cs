@@ -2,6 +2,7 @@
 using JLL.Components.Filters;
 using LethalLevelLoader;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace JLL.API.Compatability
 {
@@ -30,11 +31,11 @@ namespace JLL.API.Compatability
         public static ExtendedLevel? GetLevel(SelectableLevel level) => GetLevel(level.sceneName);
         public static ExtendedLevel? GetLevel(string sceneName)
         {
-            for (int i = 0; i < PatchedContent.ExtendedLevels.Count; i++)
+            foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
             {
-                if (PatchedContent.ExtendedLevels[i].SelectableLevel.sceneName == sceneName)
+                if (level.SelectableLevel.sceneName == sceneName)
                 {
-                    return PatchedContent.ExtendedLevels[i];
+                    return level;
                 }
             }
             return null;

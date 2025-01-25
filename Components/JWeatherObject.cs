@@ -68,7 +68,7 @@ namespace JLL.Components
             }
             if (!success)
             {
-                if (JCompatabilityHelper.IsModLoaded.WeatherRegistry)
+                if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.WeatherRegistry))
                 {
                     WeatherStrings.Contains(JWeatherRegistryHelper.GetCurrentWeatherName());
                 }

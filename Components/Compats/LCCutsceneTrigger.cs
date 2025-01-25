@@ -21,9 +21,11 @@ namespace JLL.Components.Compats
         public Animator? animator;
         public string triggerName = "Cutscene";
 
+        private static bool? Loaded = null;
         public bool IsModLoaded()
         {
-            return JCompatabilityHelper.IsModLoaded.Diversity.Cutscene;
+            Loaded ??= JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LCCutscene);
+            return Loaded.Value;
         }
 
         public void StartCutscene()

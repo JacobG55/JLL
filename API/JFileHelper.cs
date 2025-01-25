@@ -102,7 +102,7 @@ namespace JLL.API
 
         public static void LoadFilesInPlugins()
         {
-            if (JCompatabilityHelper.IsModLoaded.LLL)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
             {
                 JLogHelper.LogInfo("Linking to LLL", JLogLevel.Debuging);
                 LLLHelper.LinkBundlesLoadedEvent();

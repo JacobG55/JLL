@@ -150,7 +150,7 @@ namespace JLL.Components.Filters
                     {
                         return false;
                     }
-                    if (JCompatabilityHelper.IsModLoaded.LLL && contentTags.Length > 0)
+                    if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader) && contentTags.Length > 0)
                     {
                         if (!LLLHelper.ItemTagFilter(item.itemProperties, contentTags, mustHaveAllTags))
                         {

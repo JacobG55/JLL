@@ -117,7 +117,7 @@ namespace JLL.Components
 
         public override void OnDestroy()
         {
-            hostFilter.FilteredResult.RemoveListener(FilterResultServerRpc);
+            if (hostFilter != null) hostFilter.FilteredResult.RemoveListener(FilterResultServerRpc);
             base.OnDestroy();
         }
     }

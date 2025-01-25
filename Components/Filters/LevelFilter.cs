@@ -34,7 +34,7 @@ namespace JLL.Components.Filters
             if (!planetName.Check(level.PlanetName)) goto Failed;
             if (!scrapInside.Check(RoundManager.Instance.totalScrapValueInLevel)) goto Failed;
             if (!moldIterations.Check(level.moldSpreadIterations)) goto Failed;
-            if (JCompatabilityHelper.IsModLoaded.LLL)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
             {
                 if (!LLLHelper.ExtendedLevelFilters(this, level))
                 {

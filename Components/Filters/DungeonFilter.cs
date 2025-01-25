@@ -22,7 +22,7 @@ namespace JLL.Components.Filters
                 return;
             }
 
-            if (JCompatabilityHelper.IsModLoaded.LLL)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
             {
                 if (!LLLHelper.ExtendedDungeonFilters(this, dungeon))
                 {

@@ -75,7 +75,7 @@ namespace JLL.Components
 
         private void OverrideWeatherObjects()
         {
-            if (JCompatabilityHelper.IsModLoaded.WeatherRegistry)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.WeatherRegistry))
             {
                 JWeatherRegistryHelper.OverrideWeatherObjects(this);
             }
@@ -152,7 +152,7 @@ namespace JLL.Components
 
         private void CheckWeatherEffectChanges()
         {
-            if (JCompatabilityHelper.IsModLoaded.WeatherRegistry)
+            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.WeatherRegistry))
             {
                 JWeatherRegistryHelper.CheckWeatherChanges(this);
             }

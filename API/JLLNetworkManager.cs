@@ -1,7 +1,6 @@
 ﻿using GameNetcodeStuff;
 using JLL.Components;
 using System;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -149,6 +148,7 @@ namespace JLL.API
         [ClientRpc]
         private void RandomTeleportClientRpc(int playerTarget, Vector3 pos, bool inside, bool withRotation = false, float rotation = 0)
         {
+            JLogHelper.LogInfo($"Random Teleporting {playerTarget}", JLogLevel.Debuging);
             PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerTarget];
             player.TeleportPlayer(pos, withRotation, rotation);
             player.isInsideFactory = inside;

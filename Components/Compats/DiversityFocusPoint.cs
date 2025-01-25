@@ -11,9 +11,11 @@ namespace JLL.Components.Compats
         private PlayerControllerB? player = null;
         private bool beingUsed = false;
 
+        private static bool? Loaded = null;
         public bool IsModLoaded()
         {
-            return JCompatabilityHelper.IsModLoaded.Diversity.Core;
+            Loaded ??= JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.Diversity);
+            return Loaded.Value;
         }
 
         void Update()

@@ -62,9 +62,16 @@ namespace JLL.ScriptableObjects
 
                     if (!RegisteredNetworkPrefabs.Contains(NetworkPrefabSet.prefabList[i].prefab))
                     {
-                        NetworkManager.AddNetworkPrefab(NetworkPrefabSet.prefabList[i].prefab);
-                        registeredPrefabs++;
-                        JLogHelper.LogInfo($"Registered Network Object: {NetworkPrefabSet.prefabList[i].name} ({NetworkPrefabSet.prefabList[i].prefab.name})", JLogLevel.Wesley);
+                        try
+                        {
+                            NetworkManager.AddNetworkPrefab(NetworkPrefabSet.prefabList[i].prefab);
+                            registeredPrefabs++;
+                            JLogHelper.LogInfo($"Registered Network Object: {NetworkPrefabSet.prefabList[i].name} ({NetworkPrefabSet.prefabList[i].prefab.name})", JLogLevel.Wesley);
+                        }
+                        catch (Exception ex)
+                        {
+                            JLogHelper.LogError($"JLL Addon failed to register network object: {ex}");
+                        }
                     }
                 }
             }
