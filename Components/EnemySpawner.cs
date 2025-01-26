@@ -180,18 +180,6 @@ namespace JLL.Components
                         _ => 1000000
                     })) return;
 
-                    switch (respectPowerCap)
-                    {
-                        case PowerCap.Indoor:
-                            if () return;
-                            break;
-                        case PowerCap.Daytime: 
-                            break;
-                        case PowerCap.Nighttime: 
-                            break;
-                        default: break;
-                    }
-
                     if (spawn.enemyPrefab != null)
                     {
                         bool flag;

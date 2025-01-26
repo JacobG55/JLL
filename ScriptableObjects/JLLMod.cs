@@ -1,4 +1,5 @@
-﻿using JLL.API;
+﻿using BepInEx;
+using JLL.API;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -40,10 +41,7 @@ namespace JLL.ScriptableObjects
         public string modAuthor = "";
         public string modName = "";
 
-        public string GUID()
-        {
-            return modAuthor + "." + modName;
-        }
+        public string GUID() => modAuthor + "." + modName;
 
         [Header("Network Prefabs")]
         public JNetworkPrefabSet[] prefabSets = new JNetworkPrefabSet[0];
@@ -65,6 +63,9 @@ namespace JLL.ScriptableObjects
 
         [Header("JLL Addons")]
         public JLLAddon[] jllAddons = new JLLAddon[0];
+
+        public bool Invalid() => modAuthor.IsNullOrWhiteSpace() || modName.IsNullOrWhiteSpace();
+        public bool HasConfigs() => Booleans.Count + Strings.Count + Integers.Count + Floats.Count > 0;
 
         internal void Init()
         {

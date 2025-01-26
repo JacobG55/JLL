@@ -24,6 +24,9 @@ namespace JLL.API
 
         public static bool RegisterMod(JLLMod mod)
         {
+            if (mod.Invalid()) return false;
+            if (!mod.HasConfigs()) return true;
+
             CustomConfigEntry configEntry = CustomConfigEntry.Create(mod);
 
             if (Register(configEntry.GUID, configEntry))

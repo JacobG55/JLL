@@ -122,7 +122,8 @@ namespace JLL.API
                     {
                         if (ConvertJson(File.ReadAllText(files[x]), out JsonModSettings modSettings))
                         {
-                            if (CustomConfigRegistry.RegisterMod(modSettings.ToMod()))
+                            JLLMod mod = modSettings.ToMod();
+                            if (CustomConfigRegistry.RegisterMod(mod))
                             {
                                 jllModsCount++;
                                 for (int i = 0; i < modSettings.levelPropertyOverrides.Length; i++)
@@ -130,7 +131,9 @@ namespace JLL.API
                                     levelPropertyOverrides++;
                                     JLevelPropertyRegistry.RegisterLevelProperties(new JLevelPropertyEntry { sceneName = modSettings.levelPropertyOverrides[i].sceneName, enemyPropertyOverrides = modSettings.levelPropertyOverrides[i].enemyPropertyOverrides });
                                 }
+                                mod.Init();
                             }
+                            else GameObject.Destroy(mod);
                         }
                     }
                     catch (Exception e)
@@ -168,13 +171,14 @@ namespace JLL.API
                 }
                 try
                 {
-                    JLLMod[] jllMods = bundle.LoadAllAssets<JLLMod>();
-
-                    for (int i = 0; i < jllMods.Length; i++)
+                    foreach (JLLMod mod in bundle.LoadAllAssets<JLLMod>())
                     {
-                        jllModsCount++;
-                        CustomConfigRegistry.RegisterMod(jllMods[i]);
-                        jllMods[i].Init();
+                        if (CustomConfigRegistry.RegisterMod(mod))
+                        {
+                            jllModsCount++;
+                            mod.Init();
+                        }
+                        else GameObject.Destroy(mod);
                     }
 
                     JLevelProperties[] levelProperties = bundle.LoadAllAssets<JLevelProperties>();
