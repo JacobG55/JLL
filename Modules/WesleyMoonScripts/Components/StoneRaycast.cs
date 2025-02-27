@@ -22,7 +22,6 @@ namespace WesleyMoonScripts.Components
                 KillCast();
             }
         }
-
         public void KillCast()
         {
             if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out RaycastHit hit, Range, mask))

@@ -33,6 +33,7 @@ namespace WesleyMoonScripts.Components
         public float killDistance = 8f;
         public float damageRange = 18f;
         public int nonLethalDMG = 50;
+        public float pushForce = 60;
 
         [Header("Targetting Region")]
         public bool drawDebug = true;
@@ -63,9 +64,9 @@ namespace WesleyMoonScripts.Components
                 return new Vector3(lerpPos.x, lerpPos.y + arc.Evaluate(progress), lerpPos.z);
             }
 
-            public void Explode(float killRange, float damageRange, int nonLethalDamage, GameObject prefab)
+            public void Explode(float killRange, float damageRange, int nonLethalDamage, float pushForce, GameObject prefab)
             {
-                Landmine.SpawnExplosion(targetPos + Vector3.up, true, killRange, damageRange, nonLethalDamage, 60, prefab, true);
+                Landmine.SpawnExplosion(targetPos + Vector3.up, true, killRange, damageRange, nonLethalDamage, pushForce, prefab, true);
                 inAir = false;
                 foreach(MeshRenderer renderer in obj.GetComponentsInChildren<MeshRenderer>())
                 {
@@ -82,7 +83,7 @@ namespace WesleyMoonScripts.Components
         public AudioClip farClip;
         public Vector2 pitchMinMax = new Vector2(1, 1);
 
-        void Start()
+        void OnEnable()
         {
             cooldownTimer = timeBetweenFires * Random.Range(0.8f, 1.35f);
         }
@@ -132,7 +133,7 @@ namespace WesleyMoonScripts.Components
                     shell.airTime += Time.deltaTime;
                     if (shell.airTime > projAirTime)
                     {
-                        shell.Explode(killDistance, damageRange, nonLethalDMG, ExplosionPrefab);
+                        shell.Explode(killDistance, damageRange, nonLethalDMG, pushForce, ExplosionPrefab);
                     }
                     else
                     {
@@ -154,6 +155,7 @@ namespace WesleyMoonScripts.Components
 
         public void EnableLooping() => ToggleLoopFireServerRpc(true);
         public void DisableFire() => ToggleLoopFireServerRpc(false);
+        public void ToggleLoop(bool toggle) => ToggleLoopFireServerRpc(toggle);
 
         [ServerRpc(RequireOwnership = false)]
         private void ToggleLoopFireServerRpc(bool enabled)
@@ -336,13 +338,12 @@ namespace WesleyMoonScripts.Components
             }
         }
 
-        public override void OnDestroy()
+        public void OnDisable()
         {
             foreach (var projectile in launchedProjectiles)
             {
                 Destroy(projectile.obj);
             }
-            base.OnDestroy();
         }
     }
 

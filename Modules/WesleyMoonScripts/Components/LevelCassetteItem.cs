@@ -1,5 +1,5 @@
 ﻿using LethalLevelLoader;
-using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Video;
@@ -22,16 +22,13 @@ namespace WesleyMoonScripts.Components
 
         public bool GetExtendedLevel(out ExtendedLevel extendedLevel)
         {
-            for (int i = 0; i < PatchedContent.ExtendedLevels.Count; i++)
+            extendedLevel = PatchedContent.ExtendedLevels.FirstOrDefault((x) => x.SelectableLevel.sceneName == LevelSceneName);
+            if (extendedLevel == null)
             {
-                if (PatchedContent.ExtendedLevels[i].SelectableLevel.sceneName == LevelSceneName)
-                {
-                    extendedLevel = PatchedContent.ExtendedLevels[i];
-                    return true;
-                }
+                extendedLevel = PatchedContent.ExtendedLevels[0];
+                return false;
             }
-            extendedLevel = PatchedContent.ExtendedLevels[0];
-            return false;
+            return true;
         }
     }
 }

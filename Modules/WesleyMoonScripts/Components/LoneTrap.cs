@@ -21,10 +21,9 @@ namespace WesleyMoonScripts.Components
         {
             if (target == null)
             {
-                Collider[] colliders = Physics.OverlapSphere(transform.position, range);
-                foreach (Collider collider in colliders)
+                foreach (PlayerControllerB player in RoundManager.Instance.playersManager.allPlayerScripts)
                 {
-                    if (collider.gameObject.layer == 3 && collider.TryGetComponent(out PlayerControllerB player) && player.isPlayerAlone && !player.isPlayerDead)
+                    if (Vector3.Distance(player.transform.position, transform.position) < range && player.isPlayerAlone && !player.isPlayerDead)
                     {
                         target = player;
                         break;

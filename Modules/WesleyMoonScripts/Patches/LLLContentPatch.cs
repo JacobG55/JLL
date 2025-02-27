@@ -11,13 +11,16 @@ namespace WesleyMoonScripts.Patches
         [HarmonyPostfix]
         static void PopulateContentPatch()
         {
-            foreach(WesleyIntegratedLevel level in AllLevels)
+            if (WesleyScripts.ProtectionEnabled())
             {
-                ExtendedLevel? extendedLevel = LLLHelper.GetLevel(level.sceneName);
-                if (extendedLevel != null && level.forceLock)
+                foreach (WesleyIntegratedLevel level in AllLevels)
                 {
-                    extendedLevel.IsRouteLocked = true;
-                    extendedLevel.IsRouteHidden = true;
+                    ExtendedLevel? extendedLevel = LLLHelper.GetLevel(level.sceneName);
+                    if (extendedLevel != null && level.forceLock)
+                    {
+                        extendedLevel.IsRouteLocked = true;
+                        extendedLevel.IsRouteHidden = true;
+                    }
                 }
             }
         }

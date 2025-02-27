@@ -1,4 +1,6 @@
-﻿using JLL.ScriptableObjects;
+﻿using JLL.API;
+using JLL.API.Compatability;
+using JLL.ScriptableObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +28,16 @@ namespace WesleyMoonScripts.ScriptableObjects
         public override void Init(JLLMod parent)
         {
             AllLevels.AddRange(IntegratedLevels);
+
+            if (WesleyScripts.WesleyPresent && WesleyScripts.LockMoons.Value)
+            {
+                List<WesleyIntegratedLevel> forceLocks = IntegratedLevels.Where((x) => x.forceLock).ToList();
+
+                if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalMoonUnlocks))
+                {
+                    LMUHelper.SubscribeStoryLocks(forceLocks.Select((x) => x.NumberlessName).ToArray());
+                }
+            }
         }
     }
 }

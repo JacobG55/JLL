@@ -1,5 +1,6 @@
 ﻿using GameNetcodeStuff;
 using JLL.API;
+using JLL.API.Compatability;
 using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
@@ -115,8 +116,15 @@ namespace WesleyMoonScripts.Components
             {
                 unlockedLevelName = level.SelectableLevel.PlanetName;
                 WesleyScripts.Instance.mls.LogInfo($"Unlocking {unlockedLevelName} | Tape Length: {tapeLength}");
-                level.IsRouteLocked = !cassette.unlockLevel;
-                level.IsRouteHidden = !cassette.unlockLevel;
+                if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalMoonUnlocks))
+                {
+                    LMUHelper.ReleaseLock(level.NumberlessPlanetName);
+                }
+                else
+                {
+                    level.IsRouteLocked = !cassette.unlockLevel;
+                    level.IsRouteHidden = !cassette.unlockLevel;
+                }
             }
         }
 

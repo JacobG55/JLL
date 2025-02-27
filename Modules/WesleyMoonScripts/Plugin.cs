@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using JLL.API;
@@ -13,6 +14,7 @@ namespace WesleyMoonScripts
     [BepInDependency("JacobG5.JLL")]
     [BepInDependency("JacobG5.JLLItemModule")]
     [BepInDependency("imabatby.lethallevelloader")]
+    [BepInDependency("JacobG5.WesleyMoons", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("ProjectBots.MoonUnlockUnhide", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.xmods.lethalmoonunlocks", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("DisplayAllMoons", BepInDependency.DependencyFlags.SoftDependency)]
@@ -20,13 +22,17 @@ namespace WesleyMoonScripts
     {
         private const string modGUID = "JacobG5.WesleyMoonScripts";
         private const string modName = "WesleyMoonScripts";
-        private const string modVersion = "1.0.0";
+        private const string modVersion = "1.1.0";
 
         public static WesleyScripts Instance;
 
         internal ManualLogSource mls;
 
+        public static ConfigEntry<bool> LockMoons;
+
         private readonly Harmony harmony = new Harmony(modGUID);
+
+        internal static bool WesleyPresent = false;
 
         public void Awake()
         {
@@ -36,42 +42,37 @@ namespace WesleyMoonScripts
 
             JLL.JLL.NetcodePatch(mls, Assembly.GetExecutingAssembly().GetTypes());
 
-            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.WesleyMoons))
+            WesleyPresent = JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.WesleyMoons);
+
+            if (WesleyPresent)
             {
-                if (JCompatabilityHelper.IsLoaded("ProjectBots.MoonUnlockUnhide"))
+                LockMoons = Config.Bind("Core", "LockMoons", true, "Locks moons that have progression integration set up to enable playing the campaign.");
+
+                if (LockMoons.Value)
                 {
-                    mls.LogInfo("Patching MoonUnlockUnhide");
-                    try
+                    if (JCompatabilityHelper.IsLoaded("ProjectBots.MoonUnlockUnhide"))
                     {
-                        harmony.PatchAll(typeof(MoonUnlockUnhidePatch));
+                        mls.LogInfo("Patching MoonUnlockUnhide");
+                        try
+                        {
+                            harmony.PatchAll(typeof(MoonUnlockUnhidePatch));
+                        }
+                        catch (Exception e)
+                        {
+                            mls.LogWarning($"Patching MoonUnlockUnhide Failed!\n{e}");
+                        }
                     }
-                    catch (Exception e)
+                    if (JCompatabilityHelper.IsLoaded("DisplayAllMoons"))
                     {
-                        mls.LogWarning($"Patching MoonUnlockUnhide Failed!\n{e}");
-                    }
-                }
-                if (JCompatabilityHelper.IsLoaded("com.xmods.lethalmoonunlocks"))
-                {
-                    mls.LogInfo("Patching LethalMoonUnlocks");
-                    try
-                    {
-                        harmony.PatchAll(typeof(LethalMoonUnlocksPatch));
-                    }
-                    catch (Exception e)
-                    {
-                        mls.LogWarning($"Patching LethalMoonUnlocks Failed!\n{e}");
-                    }
-                }
-                if (JCompatabilityHelper.IsLoaded("DisplayAllMoons"))
-                {
-                    mls.LogInfo("Patching DisplayAllMoons");
-                    try
-                    {
-                        harmony.PatchAll(typeof(DisplayAllMoonsPatch));
-                    }
-                    catch (Exception e)
-                    {
-                        mls.LogWarning($"Patching DisplayAllMoons Failed!\n{e}");
+                        mls.LogInfo("Patching DisplayAllMoons");
+                        try
+                        {
+                            harmony.PatchAll(typeof(DisplayAllMoonsPatch));
+                        }
+                        catch (Exception e)
+                        {
+                            mls.LogWarning($"Patching DisplayAllMoons Failed!\n{e}");
+                        }
                     }
                 }
             }
@@ -85,7 +86,8 @@ namespace WesleyMoonScripts
             }
 
             harmony.PatchAll(typeof(EntranceTeleportPatch));
-            harmony.PatchAll(typeof(DepositItemsDeskPatch));
         }
+
+        public static bool ProtectionEnabled() => WesleyPresent && LockMoons.Value;
     }
 }
