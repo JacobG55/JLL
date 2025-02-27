@@ -89,30 +89,6 @@ namespace JLL.Components
         private readonly List<GameObject> markedForRemoval = new List<GameObject>();
         private readonly List<GameObject> foundInside = new List<GameObject>();
 
-        public enum ColliderType
-        {
-            Unknown = -1,
-            Player = 0,
-            Enemy = 1,
-            Vehicle = 2,
-            Object = 3
-        }
-
-        public enum PlayerBone
-        {
-            Base = 6,
-            Neck = 0,
-            Spine = 5,
-            RightArmUpper = 9,
-            LeftArmUpper = 10,
-            RightArmLower = 1,
-            LeftArmLower = 2,
-            RightThigh = 7,
-            LeftThigh = 8,
-            RightShin = 3,
-            LeftShin = 4,
-        }
-
         void Start()
         {
             if (DamageTriggerNetworking != null)

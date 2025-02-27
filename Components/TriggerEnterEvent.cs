@@ -42,16 +42,16 @@ namespace JLL.Components
         {
             switch (type)
             {
-                case (int)DamageTrigger.ColliderType.Player:
+                case (int)ColliderType.Player:
                     playerEntered.Invoke(target.GetComponent<PlayerControllerB>());
                     break;
-                case (int)DamageTrigger.ColliderType.Enemy:
+                case (int)ColliderType.Enemy:
                     enemyEntered.Invoke(target.GetComponent<EnemyAICollisionDetect>().mainScript);
                     break;
-                case (int)DamageTrigger.ColliderType.Vehicle:
+                case (int)ColliderType.Vehicle:
                     vehicleEntered.Invoke(target.GetComponent<VehicleController>());
                     break;
-                case (int)DamageTrigger.ColliderType.Object:
+                case (int)ColliderType.Object:
                     hittableEntered.Invoke(target.GetComponent<IHittable>());
                     break;
                 default:

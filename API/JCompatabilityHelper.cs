@@ -24,7 +24,8 @@ namespace JLL.API
             Mirage,
             SellBodies,
             FacilityMeltdown,
-            WesleyMoons
+            WesleyMoons,
+            LethalMoonUnlocks
         }
 
         public static bool IsLoaded(CachedMods mod)
@@ -48,6 +49,7 @@ namespace JLL.API
                 CachedMods.SellBodies => IsLoaded("Entity378.sellbodies"),
                 CachedMods.FacilityMeltdown => IsLoaded("me.loaforc.facilitymeltdown"),
                 CachedMods.WesleyMoons => IsLoaded("JacobG5.WesleyMoons"),
+                CachedMods.LethalMoonUnlocks => IsLoaded("com.xmods.lethalmoonunlocks"),
                 _ => false,
             };
         }

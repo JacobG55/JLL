@@ -2,7 +2,6 @@
 using JLL.Components.Filters;
 using LethalLevelLoader;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace JLL.API.Compatability
 {
@@ -13,7 +12,11 @@ namespace JLL.API.Compatability
             ExtendedLevel? extendedLevel = GetLevel(sceneName);
             if (extendedLevel != null)
             {
-                extendedLevel.IsRouteLocked = isLocked;
+                if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalMoonUnlocks))
+                {
+                    LMUHelper.ReleaseLock(extendedLevel.NumberlessPlanetName);
+                }
+                else extendedLevel.IsRouteLocked = isLocked;
                 JLogHelper.LogInfo($"{extendedLevel.SelectableLevel.PlanetName} Locked: {extendedLevel.IsRouteLocked}");
             }
         }
@@ -65,6 +68,18 @@ namespace JLL.API.Compatability
             return null;
         }
 
+        public static ExtendedEnemyType? GetEnemy(EnemyType enemy)
+        {
+            for (int i = 0; i < PatchedContent.ExtendedEnemyTypes.Count; i++)
+            {
+                if (PatchedContent.ExtendedEnemyTypes[i].EnemyType == enemy)
+                {
+                    return PatchedContent.ExtendedEnemyTypes[i];
+                }
+            }
+            return null;
+        }
+
         public static bool LevelHasTag(SelectableLevel level, string tag)
         {
             ExtendedLevel? extended = GetLevel(level);
@@ -78,6 +93,16 @@ namespace JLL.API.Compatability
         public static bool ItemHasTag(Item item, string tag)
         {
             ExtendedItem? extended = GetItem(item);
+            if (extended != null)
+            {
+                return extended.TryGetTag(tag);
+            }
+            return false;
+        }
+
+        public static bool EnemyHasTag(EnemyType enemy, string tag)
+        {
+            ExtendedEnemyType? extended = GetEnemy(enemy);
             if (extended != null)
             {
                 return extended.TryGetTag(tag);

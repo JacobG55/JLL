@@ -24,5 +24,7 @@ namespace JLL.Components
             //JLogHelper.LogInfo($"{currentTime} / {TimeOfDay.Instance.totalTime} = {normalizedDayTime} | {normalizedDayTime * fixedAnimEndTime}", JLogLevel.Wesley);
             anim.SetFloat("time", normalizedDayTime * fixedAnimEndTime);
         }
+
+        public void SetFixedAnimTime(float time) => fixedAnimEndTime = time;
     }
 }

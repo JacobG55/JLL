@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
-using static JLL.Components.DamageTrigger;
 
 namespace JLL.Components
 {

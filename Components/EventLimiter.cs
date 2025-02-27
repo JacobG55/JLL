@@ -30,5 +30,8 @@ namespace JLL.Components
                 }
             }
         }
+
+        public void AddUses(int num) => maxTriggers += num;
+        public void SetUses(int num) => maxTriggers = num;
     }
 }

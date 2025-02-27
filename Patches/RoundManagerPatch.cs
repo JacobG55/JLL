@@ -24,7 +24,7 @@ namespace JLL.Patches
         }
 
         [HarmonyPatch("FinishGeneratingNewLevelClientRpc")]
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         public static void patchPostLevelGeneration()
         {
             if (!JLevelPropertyRegistry.IsLevelGenerated)

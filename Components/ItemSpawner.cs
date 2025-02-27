@@ -60,15 +60,6 @@ namespace JLL.Components
             }
         }
 
-        [Serializable]
-        public enum SpawnPoolSource
-        {
-            CustomList,
-            AllItems,
-            LevelItems,
-            StoreItems,
-        }
-
         private bool checkRegistry = true;
 
         public void Awake()

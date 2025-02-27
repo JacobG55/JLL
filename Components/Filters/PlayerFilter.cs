@@ -3,9 +3,7 @@ using HarmonyLib;
 using JLL.API;
 using JLL.API.Compatability;
 using System;
-using System.Linq.Expressions;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI.Table;
 
 namespace JLL.Components.Filters
 {
@@ -45,9 +43,12 @@ namespace JLL.Components.Filters
 
         [Header("Legacy (May be removed in the future)")]
         public HeldItemFilter heldItem = new HeldItemFilter();
+        public bool ignoreDeadCheck = false;
 
         public override void Filter(PlayerControllerB player)
         {
+            if (!ignoreDeadCheck && player.isPlayerDead) goto Failed;
+
             if (!heldItemFilter.Check(player.currentlyHeldObjectServer)) goto Failed;
             if (heldItem.shouldCheck && !heldItem.CheckValue(player)) goto Failed;
             if (inventoryContents.Length > 0)

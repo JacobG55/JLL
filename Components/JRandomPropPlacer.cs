@@ -10,11 +10,6 @@ using UnityEngine.AI;
 
 namespace JLL.Components
 {
-    public interface IDungeonLoadListener
-    {
-        public abstract void PostDungeonGeneration();
-    }
-
     public class JRandomPropPlacer : MonoBehaviour, IDungeonLoadListener
     {
         public SpawnNodes spawnNodeSelection = SpawnNodes.Children;
@@ -52,29 +47,6 @@ namespace JLL.Components
                 }
                 return position;
             }
-        }
-
-        public enum SpawnRotation
-        {
-            Random,
-            FacingWall,
-            FacingAwayFromWall,
-            BackToWall
-        }
-
-        public enum SpawnNodes
-        {
-            Children,
-            OutsideAINodes,
-            InsideAINodes,
-            AINodes,
-        }
-
-        public enum NavMeshToRebake
-        {
-            None = 0,
-            Exterior,
-            Custom = -1,
         }
 
         void Start()

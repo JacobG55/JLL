@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
-using static JLL.API.CustomConfigEntry;
 
 namespace JLL.Components
 {
@@ -44,22 +43,6 @@ namespace JLL.Components
 
         public bool respectEnemyCap = false;
         public PowerCap respectPowerCap = PowerCap.None;
-
-        [Serializable]
-        public enum RotationType
-        {
-            ObjectRotation,
-            RandomRotation,
-            NoRotation,
-        }
-
-        public enum PowerCap
-        {
-            None,
-            Indoor,
-            Daytime,
-            Nighttime
-        }
 
         public static float GetRot(RotationType rotation, float yRot = 0)
         {

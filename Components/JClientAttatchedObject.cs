@@ -13,14 +13,6 @@ namespace JLL.Components
         public bool attachToLocalPlayer = false;
         public bool lerpPosition = false;
 
-        public enum ActiveCondition
-        {
-            None,
-            ActiveOutdoors,
-            ActiveIndoors,
-            ActiveOutdoorsOutsideShip,
-        }
-
         public void Update()
         {
             if (target == null) return;

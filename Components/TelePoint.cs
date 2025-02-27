@@ -1,25 +1,11 @@
 ﻿using GameNetcodeStuff;
 using JLL.API;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace JLL.Components
 {
-    public enum RandomTeleportRegion
-    {
-        Indoor,
-        Outdoor,
-        Moon,
-        Nearby,
-        RandomPlayer,
-    }
-    public enum Region
-    {
-        None,
-        Outdoor,
-        Indoor,
-    }
-
     public class TelePoint : MonoBehaviour
     {
         public bool rotateObjects = true;
@@ -37,13 +23,6 @@ namespace JLL.Components
         [Header("Random Teleport")]
         public float randomRange = 10f;
         public RandomTeleportRegion randomTeleportRegion = RandomTeleportRegion.Indoor;
-
-        public enum TeleportEffect
-        {
-            None,
-            ShipTeleport,
-            InverseTeleport,
-        }
 
         private readonly List<TeleportEntry> TeleportPlayers = new List<TeleportEntry>();
         private readonly List<TeleportEntry> Expired = new List<TeleportEntry>();
@@ -138,6 +117,9 @@ namespace JLL.Components
 
         private void PlayEffects(PlayerControllerB? player = null)
         {
+            int[] ids = RoundManager.Instance.playersManager.allPlayerScripts.Select((x) => (int)x.actualClientId).ToArray();
+            JLogHelper.LogInfo(string.Join(", ", ids), JLogLevel.User);
+
             if (player != null)
             {
                 switch(teleportEffect)

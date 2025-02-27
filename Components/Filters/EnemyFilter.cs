@@ -15,6 +15,8 @@ namespace JLL.Components.Filters
 
         public override void Filter(EnemyAI enemy)
         {
+            if (enemy.isEnemyDead) goto Failed;
+
             if (!enemyType.Check(enemy.enemyType.enemyName)) goto Failed;
             if (!isInvulnerable.Check(!enemy.enemyType.canDie)) goto Failed;
 

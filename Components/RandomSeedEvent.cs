@@ -2,14 +2,17 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace JLL.Components
 {
-    public class RandomSeedEvent : MonoBehaviour
+    public class RandomSeedEvent : MonoBehaviour, IDungeonLoadListener
     {
+        private System.Random Random;
         [Tooltip("Value gets added to level seed to determine random seed.")]
         public int relativeSeed = 25;
-        public bool rollOnStart = true;
+        [FormerlySerializedAs("rollOnStart")]
+        public bool rollOnDungeonLoad = true;
 
         public WeightedPosEvent[] Events = new WeightedPosEvent[] { new WeightedPosEvent() };
 
@@ -39,27 +42,25 @@ namespace JLL.Components
             }
         }
 
-        [HideInInspector]
-        public int Seed => StartOfRound.Instance.randomMapSeed + relativeSeed;
+        public void PostDungeonGeneration()
+        {
+            Random ??= new System.Random(RoundManager.Instance.playersManager.randomMapSeed + relativeSeed);
+            if (rollOnDungeonLoad)
+            {
+                Roll();
+            }
+        }
 
         public void Roll()
         {
-            System.Random random = new System.Random(Seed);
-            WeightedPosEvent posEvent = Events.GetWeightedRandom(random);
+            if (Random == null) return;
+            WeightedPosEvent posEvent = Events.GetWeightedRandom(Random);
 
             foreach (TransformMove tMove in posEvent.MoveObjects)
             {
                 tMove.Move();
             }
             posEvent.Event.Invoke();
-        }
-
-        void Start()
-        {
-            if (rollOnStart)
-            {
-                Roll();
-            }
         }
     }
 }
