@@ -12,14 +12,7 @@ namespace JLLEditorModule.EditorScripts
         {
             base.AtHeader();
 
-            if (Physics.GetIgnoreLayerCollision(Component.gameObject.layer, 30))
-            {
-                JLLEditor.HelpMessage(
-                    $"{LayerMask.LayerToName(Component.gameObject.layer)} Layer does not interact with the Vehicle Layer.",
-                    "In order for this script to work you will need to make sure your colliders / Layermasks can interact with the vehicle layer.",
-                    "The Collision Matrix can be found at: ProjectSettings/Physics/LayerCollisionMatrix"
-                );
-            }
+            WarnVehicleLayer("In order for this script to work you will need to make sure your colliders / Layermasks can interact with the vehicle layer.");
 
             if (Component.TryGetComponent(out MeshCollider collider))
             {

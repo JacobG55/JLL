@@ -1,7 +1,7 @@
-﻿using JLLItemsModule.Components;
+﻿using JLL.Components;
+using JLLItemsModule.Components;
 using UnityEditor;
 using UnityEditorInternal;
-using static JLL.Components.ItemSpawner;
 
 namespace JLLEditorModule.EditorScripts
 {

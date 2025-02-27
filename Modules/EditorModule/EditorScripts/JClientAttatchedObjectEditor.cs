@@ -24,7 +24,7 @@ namespace JLLEditorModule.EditorScripts
                 {
                     JLLEditor.HelpMessage("Target Object being null will not move anything.", "Please put the object you want this script to effect in the Target field.");
                 }
-                else if (Component.enableCondition != JClientAttatchedObject.ActiveCondition.None && (Component.gameObject == Component.target || JLLEditor.ObjectIsParent(Component.target, Component.transform)))
+                else if (Component.enableCondition != ActiveCondition.None && (Component.gameObject == Component.target || JLLEditor.ObjectIsParent(Component.target, Component.transform)))
                 {
                     JLLEditor.HelpMessage("Target should not be self or parent when an Enable Condition is set.", "Disabling the object containing this script will stop it from working.");
                 }

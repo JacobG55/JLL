@@ -8,32 +8,12 @@ namespace JLLEditorModule.EditorScripts
     [CanEditMultipleObjects]
     public class DamageTriggerEditor : JLLCustomEditor<DamageTrigger>
     {
-        bool hasTriggerCollider = false;
-        bool hasCollider = false;
         int indent = 0;
 
         public override void AtHeader()
         {
             base.AtHeader();
-
-            hasTriggerCollider = false;
-            hasCollider = false;
-
-            foreach (Collider collider in Component.gameObject.GetComponents<Collider>())
-            {
-                if (collider.isTrigger)
-                {
-                    hasTriggerCollider = true;
-                }
-                else
-                {
-                    hasCollider = true;
-                }
-                if (hasTriggerCollider && hasCollider)
-                {
-                    break;
-                }
-            }
+            CheckForColliders();
         }
 
         public override bool DisplayProperty(SerializedProperty property)
@@ -73,13 +53,9 @@ namespace JLLEditorModule.EditorScripts
 
         public override void DisplayWarnings(SerializedProperty property)
         {
-            if (property.name == "vehicleTargets" && Component.vehicleTargets.enabled && Physics.GetIgnoreLayerCollision(Component.gameObject.layer, 30))
+            if (property.name == "vehicleTargets" && Component.vehicleTargets.enabled)
             {
-                JLLEditor.HelpMessage(
-                    $"{LayerMask.LayerToName(Component.gameObject.layer)} Layer does not interact with the Vehicle Layer.",
-                    "In order to damage Vehicles you will need to make sure your colliders / Layermasks can interact with the vehicle layer.",
-                    "The Collision Matrix can be found at: ProjectSettings/Physics/LayerCollisionMatrix"
-                );
+                WarnVehicleLayer("In order to damage Vehicles you will need to make sure your colliders / Layermasks can interact with the vehicle layer.");
             }
 
             if (!hasCollider && property.name == "damageOnCollision" && Component.damageOnCollision)
