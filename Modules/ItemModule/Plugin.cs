@@ -12,7 +12,7 @@ namespace JLLItemsModule
     {
         private const string modGUID = "JacobG5.JLLItemModule";
         private const string modName = "JLLItemModule";
-        private const string modVersion = "1.3.0";
+        private const string modVersion = "1.3.2";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 

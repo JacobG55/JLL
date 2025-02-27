@@ -5,6 +5,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
+using JLL.Components;
 using static JLL.Components.ItemSpawner;
 
 namespace JLLItemsModule.Components

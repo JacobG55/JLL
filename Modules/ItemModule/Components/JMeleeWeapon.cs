@@ -29,6 +29,8 @@ namespace JLLItemsModule.Components
         [Tooltip("Player is the player who swung the weapon")]
         public UnityEvent<PlayerControllerB> OnHitSuccess = new UnityEvent<PlayerControllerB>();
         public LayerMask hitMask = 1084754248;
+        [Tooltip("Default: 1\nPop Butlers: 5")]
+        public int HitId = 1;
 
         [Header("Heavy Weapons")]
         [Tooltip("Heavy Weapons are similar to the shovel or signs.\nNon Heavy Weapons are similar to the Kitchen Knife")]
@@ -217,14 +219,14 @@ namespace JLLItemsModule.Components
                         if (hit.collider.TryGetComponent(out IHittable hittable))
                         {
                             GameObject? obj = null;
-                            DamageTrigger.ColliderType type = DamageTrigger.ColliderType.Object;
+                            ColliderType type = ColliderType.Object;
                             bool shouldDamage = true;
 
                             if (hittable is EnemyAICollisionDetect detect)
                             {
                                 shouldDamage = damageEnemies;
                                 obj = detect.mainScript.gameObject;
-                                type = DamageTrigger.ColliderType.Enemy;
+                                type = ColliderType.Enemy;
                             }
                             else if (hittable is PlayerControllerB player)
                             {
@@ -234,7 +236,7 @@ namespace JLLItemsModule.Components
                                 }
                                 shouldDamage = damagePlayers;
                                 obj = player.gameObject;
-                                type = DamageTrigger.ColliderType.Player;
+                                type = ColliderType.Player;
                             }
                             else 
                             {
@@ -255,15 +257,15 @@ namespace JLLItemsModule.Components
 
                                     switch (type)
                                     {
-                                        case DamageTrigger.ColliderType.Player:
+                                        case ColliderType.Player:
                                             OnPlayerHit.Invoke(hit.collider.GetComponent<PlayerControllerB>());
                                             bloodParticle?.Play(withChildren: true);
                                             break;
-                                        case DamageTrigger.ColliderType.Enemy:
+                                        case ColliderType.Enemy:
                                             OnEnemyHit.Invoke(hit.collider.GetComponent<EnemyAICollisionDetect>().mainScript);
                                             bloodParticle?.Play(withChildren: true);
                                             break;
-                                        case DamageTrigger.ColliderType.Object:
+                                        case ColliderType.Object:
                                             OnObjectHit.Invoke(hittable);
                                             break;
                                     }
@@ -309,7 +311,7 @@ namespace JLLItemsModule.Components
 
         public virtual bool OnWeaponHit(IHittable target, Vector3 hitDir)
         {
-            return target.Hit(HitForce, hitDir, previousPlayerHeldBy, playHitSFX: true, 1);
+            return target.Hit(HitForce, hitDir, previousPlayerHeldBy, playHitSFX: true, HitId);
         }
 
         [ServerRpc]

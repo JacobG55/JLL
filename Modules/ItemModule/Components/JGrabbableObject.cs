@@ -11,7 +11,9 @@ namespace JLLItemsModule.Components
         public GameObject[] hideWhenPocketed = new GameObject[0];
 
         public UnityEvent OnEquip = new UnityEvent();
+        public InteractEvent OnEquipPlayer = new InteractEvent();
         public UnityEvent OnPocketed = new UnityEvent();
+        public InteractEvent OnPocketedPlayer = new InteractEvent();
         public BoolEvent OnSetInShip = new BoolEvent();
         public UnityEvent OnPlacedOnDepositDesk = new UnityEvent();
 
@@ -38,6 +40,7 @@ namespace JLLItemsModule.Components
                 obj.SetActive(true);
             }
             OnEquip.Invoke();
+            if (playerHeldBy != null) OnEquipPlayer.Invoke(playerHeldBy);
         }
         public override void PocketItem()
         {
@@ -47,6 +50,7 @@ namespace JLLItemsModule.Components
                 obj.SetActive(false);
             }
             OnPocketed.Invoke();
+            if (playerHeldBy != null) OnPocketedPlayer.Invoke(playerHeldBy);
         }
 
         public virtual void HeldUpdate()
@@ -74,6 +78,14 @@ namespace JLLItemsModule.Components
             if (IsBeingHeldByPlayer())
             {
                 playerHeldBy.DamagePlayer(damage);
+            }
+        }
+
+        public void DestroyItemInHand()
+        {
+            if (IsBeingHeldByPlayer())
+            {
+                DestroyObjectInHand(playerHeldBy);
             }
         }
 

@@ -27,6 +27,7 @@ namespace JLLItemsModule.Components
         public Animator? triggerAnimator;
 
         private PlayerControllerB? playerLastHeld;
+        private bool toggle = false;
 
         public enum InteractionType
         {
@@ -50,7 +51,7 @@ namespace JLLItemsModule.Components
             switch (interactionType)
             {
                 case InteractionType.Toggle:
-                    ToggleInteract(used);
+                    ToggleInteract(!toggle);
                     break;
                 case InteractionType.Hold:
                     if (buttonDown)
@@ -80,13 +81,11 @@ namespace JLLItemsModule.Components
             }
         }
 
-        public void ToggleInteract()
-        {
-            ToggleInteract(!isBeingUsed);
-        }
+        public void ToggleInteract() => ToggleInteract(!toggle);
 
         public void ToggleInteract(bool on)
         {
+            toggle = on;
             if (on)
             {
                 InteractFX(interactSFX, "toggleOn");
