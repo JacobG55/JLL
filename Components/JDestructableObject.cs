@@ -73,7 +73,7 @@ namespace JLL.Components
         public bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
         {
             JLogHelper.LogInfo($"{name} Hit By Shovel:");
-            DamageObjectServerRpc(playerWhoHit == null ? -1 : (int)playerWhoHit.actualClientId, force);
+            DamageObjectServerRpc(playerWhoHit == null ? -1 : playerWhoHit.Index(), force);
             return true;
         }
 

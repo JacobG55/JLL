@@ -72,11 +72,11 @@ namespace JLL.Components
         {
             if (isNetworkSynced)
             {
-                RollRandomServerRpc((int)player.actualClientId);
+                RollRandomServerRpc(player.Index());
             }
             else
             {
-                TriggerEvent(IWeightedItem.GetRandomIndex(weightedEvents), (int)player.actualClientId);
+                TriggerEvent(IWeightedItem.GetRandomIndex(weightedEvents), player.Index());
             }
         }
 

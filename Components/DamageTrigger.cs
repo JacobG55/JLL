@@ -300,7 +300,7 @@ namespace JLL.Components
             {
                 if (DamageTriggerNetworking != null)
                 {
-                    DamageTriggerNetworking.DamageTriggerKilledPlayerServerRpc((int)player.actualClientId);
+                    DamageTriggerNetworking.DamageTriggerKilledPlayerServerRpc(player.Index());
                 }
                 else if (corpseType < 0)
                 {

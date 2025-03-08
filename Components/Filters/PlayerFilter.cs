@@ -72,7 +72,7 @@ namespace JLL.Components.Filters
             if (!staminaCheck.Check(player.sprintMeter)) goto Failed;
             if (!weightCheck.Check(player.carryWeight)) goto Failed;
             if (!inFacility.Check(player.isInsideFactory)) goto Failed;
-            if (!isLocalPlayer.Check(player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)) goto Failed;
+            if (!isLocalPlayer.Check(player.IsLocalPlayer())) goto Failed;
             if (!username.Check(player.playerUsername)) goto Failed;
 
             if (isWalking.shouldCheck)

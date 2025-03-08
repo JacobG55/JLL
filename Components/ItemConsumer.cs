@@ -16,7 +16,7 @@ namespace JLL.Components
 
         public void CheckHeldItem(PlayerControllerB player)
         {
-            CheckItemServerRpc((int)player.actualClientId);
+            CheckItemServerRpc(player.Index());
         }
 
         [ServerRpc(RequireOwnership = false)]

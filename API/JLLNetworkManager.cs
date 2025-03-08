@@ -76,7 +76,7 @@ namespace JLL.API
         }
         public void DestroyPlayerCorpse(PlayerControllerB player)
         {
-            DestroyPlayerCorpseServerRpc((int)player.actualClientId);
+            DestroyPlayerCorpseServerRpc(player.Index());
         }
 
         [ServerRpc(RequireOwnership = false)]

@@ -19,11 +19,12 @@ namespace JLL
     [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("imabatby.lethallevelloader", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("ainavt.lc.lethalconfig", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Chaos.LCCutscene", BepInDependency.DependencyFlags.SoftDependency)]
     public class JLL : BaseUnityPlugin
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.9.2";
+        private const string modVersion = "1.9.3";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 

@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using JLL.API;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -31,10 +32,11 @@ namespace JLL.Components
         {
             if (collider.gameObject.CompareTag("Player") && collider.gameObject.TryGetComponent(out PlayerControllerB player))
             {
-                foundInside.Add((int)player.actualClientId);
-                if (!playersInside.Contains((int)player.actualClientId))
+                int index = player.Index();
+                foundInside.Add(index);
+                if (!playersInside.Contains(index))
                 {
-                    playersInside.Add((int)player.actualClientId);
+                    playersInside.Add(index);
                     PlayerEnterEvent.Invoke(player);
                 }
             }

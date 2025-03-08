@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using JLL.API;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,7 +14,7 @@ namespace JLL.Components
 
         public void SeperateClientEvents(PlayerControllerB player)
         {
-            if (player.actualClientId == HUDManager.Instance.localPlayer.actualClientId)
+            if (player.IsLocalPlayer())
             {
                 eventsForClient.Invoke(player);
             }

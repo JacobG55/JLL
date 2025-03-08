@@ -51,11 +51,10 @@ namespace JLL.Components
                 {
                     if (random)
                     {
-                        JLLNetworkManager.Instance.RandomTeleportServerRpc((int)player.actualClientId, (int)telePoint.randomTeleportRegion, telePoint.rotatePlayer, telePoint.transform.rotation.y, telePoint.randomRange);
+                        JLLNetworkManager.Instance.RandomTeleportServerRpc(player.Index(), (int)telePoint.randomTeleportRegion, telePoint.rotatePlayer, telePoint.transform.rotation.y, telePoint.randomRange);
                     }
                     else
                     {
-                        JLogHelper.LogInfo($"{telePoint.name} Teleporting {player.actualClientId}", JLogLevel.Debuging);
                         player.TeleportPlayer(telePoint.transform.position, telePoint.rotatePlayer, telePoint.transform.eulerAngles.y);
                         switch (region)
                         {
@@ -117,7 +116,7 @@ namespace JLL.Components
 
         private void PlayEffects(PlayerControllerB? player = null)
         {
-            int[] ids = RoundManager.Instance.playersManager.allPlayerScripts.Select((x) => (int)x.actualClientId).ToArray();
+            int[] ids = RoundManager.Instance.playersManager.allPlayerScripts.Select((x) => x.Index()).ToArray();
             JLogHelper.LogInfo(string.Join(", ", ids), JLogLevel.User);
 
             if (player != null)

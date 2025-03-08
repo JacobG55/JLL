@@ -22,39 +22,39 @@ namespace JLL.Components
         private class PlayerCorpse
         {
             public PlayerControllerB player;
-            public float startTime;
+            public float startTime = 0;
             public float stickTime = 0;
             public bool permaStuck = false;
             private bool stuck = false;
-
-            public bool Start(DamageTrigger trigger)
-            {
-                if (trigger.corpseType < 0)
-                {
-                    Destroy(player.deadBody.gameObject);
-                    player.deadBody = null;
-                    return false;
-                }
-                if (permaStuck)
-                {
-                    OverrideModel(trigger);
-                }
-                if (trigger.attachCorpseToPoint && trigger.corpseAttachPoint != null)
-                {
-                    JLogHelper.LogInfo($"Attatching {player.playerUsername}'s corpse to {trigger.corpseAttachPoint.name}");
-                    player.deadBody.matchPositionExactly = trigger.matchPointExactly;
-                    player.deadBody.attachedTo = trigger.corpseAttachPoint;
-                    player.deadBody.attachedLimb = player.deadBody.bodyParts[(int)trigger.connectedBone];
-                    stuck = true;
-                }
-                return true;
-            }
+            private bool initialized = false;
 
             public bool Update(DamageTrigger trigger)
             {
-                if (permaStuck) return true;
+                if (permaStuck && initialized) return true;
                 if (player.deadBody != null)
                 {
+                    if (!initialized)
+                    {
+                        if (trigger.corpseType < 0)
+                        {
+                            Destroy(player.deadBody.gameObject);
+                            player.deadBody = null;
+                            return false;
+                        }
+                        if (permaStuck)
+                        {
+                            OverrideModel(trigger);
+                        }
+                        if (trigger.attachCorpseToPoint && trigger.corpseAttachPoint != null)
+                        {
+                            JLogHelper.LogInfo($"Attatching {player.playerUsername}'s corpse to {trigger.corpseAttachPoint.name}");
+                            player.deadBody.matchPositionExactly = trigger.matchPointExactly;
+                            player.deadBody.attachedTo = trigger.corpseAttachPoint;
+                            player.deadBody.attachedLimb = player.deadBody.bodyParts[(int)trigger.connectedBone];
+                            stuck = true;
+                        }
+                        initialized = true;
+                    }
                     if (stickTime > 0)
                     {
                         if (stuck)
@@ -152,8 +152,7 @@ namespace JLL.Components
                             stickTime = Mathf.Abs(DamageTrigger.corpseStickTime),
                             permaStuck = DamageTrigger.corpseStickTime < 0
                         };
-                        if (corpse.Start(DamageTrigger))
-                            playerCorpses.Add(corpse);
+                        playerCorpses.Add(corpse);
                         PlayerKilled.Invoke(corpse.player);
                     }
                     break;

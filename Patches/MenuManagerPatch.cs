@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using JLL.API;
 using JLL.API.LevelProperties;
 
 namespace JLL.Patches
@@ -11,6 +12,7 @@ namespace JLL.Patches
         public static void patchStart()
         {
             JLevelPropertyRegistry.RemoveLevelOverrides();
+            JLLExtentions.PlayerIndexes.Clear();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using GameNetcodeStuff;
+using JLL.API;
 using JLL.Components.Filters;
 using Unity.Netcode;
 using UnityEngine;
@@ -76,7 +77,7 @@ namespace JLL.Components
 
         public void TriggerOnHost(PlayerControllerB player)
         {
-            RunOnHostServerRpc((int)player.actualClientId);
+            RunOnHostServerRpc(player.Index());
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -96,7 +97,7 @@ namespace JLL.Components
 
         public void TriggerSyncedEvent(PlayerControllerB player)
         {
-            SyncEventServerRpc((int)player.actualClientId);
+            SyncEventServerRpc(player.Index());
         }
 
         [ServerRpc(RequireOwnership = false)]

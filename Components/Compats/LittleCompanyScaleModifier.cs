@@ -28,7 +28,7 @@ namespace JLL.Components.Compats
 
         public void Modify(PlayerControllerB target)
         {
-            ModifyPlayerServerRpc((int)target.actualClientId);
+            ModifyPlayerServerRpc(target.Index());
         }
 
 
