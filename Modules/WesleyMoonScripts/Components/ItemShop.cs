@@ -35,9 +35,9 @@ namespace WesleyMoonScripts.Components
             [HideInInspector] public bool ready = false;
         }
 
-
-        public void Start()
+        public override void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
             foreach (SaleSpot itemSpawn in spawnPositions)
             {
                 itemSpawn.buyInteract.interactable = false;
@@ -106,7 +106,7 @@ namespace WesleyMoonScripts.Components
 
                 saleSpot.buyInteract.interactable = true;
                 saleSpot.buyInteract.hoverTip = $"{item.itemProperties.itemName} : {price}";
-                saleSpot.buyInteract.onInteract.AddListener((player) => AttemptPurchaseServerRpc(index, (int)player.actualClientId));
+                saleSpot.buyInteract.onInteract.AddListener((player) => AttemptPurchaseServerRpc(index, player.Index()));
             }
         }
 
@@ -146,7 +146,7 @@ namespace WesleyMoonScripts.Components
         [ClientRpc]
         private void FailPurchaseClientRpc(int clientId)
         {
-            if ((int)StartOfRound.Instance.localPlayerController.actualClientId != clientId) return;
+            if (StartOfRound.Instance.localPlayerController.Index() != clientId) return;
 
             JHudHelper.QueueDisplayTip("Error", "Not enough credits to purchase this item.", isWarning: true);
         }

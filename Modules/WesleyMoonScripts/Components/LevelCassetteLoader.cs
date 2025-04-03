@@ -22,7 +22,7 @@ namespace WesleyMoonScripts.Components
         public float tapeEndOffset = -2f;
         public bool isTapePlaying = false;
         public float tapeLength = 0;
-        private string unlockedLevelName = "";
+        private string unlockedLevelName = string.Empty;
 
         private PlayerControllerB lastPlayerUsed;
 
@@ -36,8 +36,9 @@ namespace WesleyMoonScripts.Components
             public InteractEvent FinishedEvent = new InteractEvent();
         }
 
-        public void Awake()
+        public override void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
             if (screenPlayer)
             {
                 if (awakeClip != null)
@@ -57,7 +58,7 @@ namespace WesleyMoonScripts.Components
 
         public void StartLoadingCassette(PlayerControllerB player)
         {
-            LoadCassetteServerRpc((int)player.actualClientId);
+            LoadCassetteServerRpc(player.Index());
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -145,12 +146,17 @@ namespace WesleyMoonScripts.Components
             isTapePlaying = false;
             animator?.SetBool("playing", false);
             tapeLength = 0;
-            if (unlockedLevelName != "")
+            if (unlockedLevelName != string.Empty)
             {
                 JHudHelper.QueueDisplayTip("Route Discovered!", $"Location: {unlockedLevelName}");
-                unlockedLevelName = "";
+                unlockedLevelName = string.Empty;
             }
             OnTapeFinished.Invoke(lastPlayerUsed);
+            if (awakeClip != null)
+            {
+                screenPlayer.clip = awakeClip;
+                screenPlayer.Play();
+            }
             if (TapeFinishedEvents != null && screenPlayer != null && screenPlayer.clip != null)
             {
                 foreach (TapeFinishedEvent tapeEvent in TapeFinishedEvents)

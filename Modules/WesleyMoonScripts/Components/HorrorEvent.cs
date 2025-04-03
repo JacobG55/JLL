@@ -42,8 +42,9 @@ namespace WesleyMoonScripts.Components
             public int GetWeight() => Weight;
         }
 
-        public void Start()
+        public override void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
             if (cooldown < 0) cooldown = -cooldown;
             RollTimer = Random.Range(-cooldown, 0);
         }

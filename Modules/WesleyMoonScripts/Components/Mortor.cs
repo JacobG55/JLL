@@ -50,6 +50,8 @@ namespace WesleyMoonScripts.Components
         private float fireCooldown = 0;
 
         private List<Shell> launchedProjectiles = new List<Shell>();
+
+        private bool networkSpawned = false;
         private class Shell
         {
             public GameObject obj;
@@ -88,8 +90,15 @@ namespace WesleyMoonScripts.Components
             cooldownTimer = timeBetweenFires * Random.Range(0.8f, 1.35f);
         }
 
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            networkSpawned = true;
+        }
+
         void Update()
         {
+            if (!networkSpawned) return;
             if (IsHost || IsServer)
             {
                 if (OnCooldown)

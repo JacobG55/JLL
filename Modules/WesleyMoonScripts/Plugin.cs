@@ -22,7 +22,7 @@ namespace WesleyMoonScripts
     {
         private const string modGUID = "JacobG5.WesleyMoonScripts";
         private const string modName = "WesleyMoonScripts";
-        private const string modVersion = "1.1.0";
+        private const string modVersion = "1.1.2";
 
         public static WesleyScripts Instance;
 
