@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 namespace JLL.Components
 {
-    public class JLevelEventTriggers : MonoBehaviour
+    public class JLevelEventTriggers : MonoBehaviour, IDungeonLoadListener
     {
         public static List<JLevelEventTriggers> EventTriggers = new List<JLevelEventTriggers>();
 
@@ -38,10 +38,14 @@ namespace JLL.Components
             public int hour;
         }
 
-        public void Start()
+        void Enable()
         {
             EventTriggers.Add(this);
-            LevelLoaded.Invoke();
+        }
+
+        void Disable()
+        {
+            EventTriggers.Remove(this);
         }
 
         public void FixedUpdate()
@@ -74,6 +78,11 @@ namespace JLL.Components
         {
             if (apparatusWasPulled && !breakerIgnoresApparatus) return;
             BreakerBox.Invoke(active);
+        }
+
+        public void PostDungeonGeneration()
+        {
+            LevelLoaded.Invoke();
         }
     }
 }

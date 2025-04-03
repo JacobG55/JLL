@@ -26,7 +26,7 @@ namespace JLL.Components
         public UnityEvent syncedEvent = new UnityEvent();
         public InteractEvent syncedPlayerEvent = new InteractEvent();
 
-        void Start()
+        public override void OnNetworkSpawn()
         {
             if (IsHost || IsServer)
             {
@@ -38,6 +38,7 @@ namespace JLL.Components
                 if (runHostEventOnStart) TriggerOnHost();
                 if (runSyncedEventOnStart) TriggerSyncedEvent();
             }
+            base.OnNetworkSpawn();
         }
 
         public void FilterOnHost()

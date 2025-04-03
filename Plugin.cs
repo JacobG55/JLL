@@ -24,7 +24,7 @@ namespace JLL
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.9.3";
+        private const string modVersion = "1.9.4";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -102,7 +102,6 @@ namespace JLL
 
         public static GameObject CreateNetworkPrefab(string name)
         {
-            
             GameObject networkObject = new GameObject("JLL")
             {
                 hideFlags = HideFlags.HideAndDontSave

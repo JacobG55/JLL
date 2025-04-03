@@ -14,7 +14,7 @@ namespace JLL.API.Compatability
             {
                 if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalMoonUnlocks))
                 {
-                    LMUHelper.ReleaseLock(extendedLevel.NumberlessPlanetName);
+                    if (!isLocked) LMUHelper.ReleaseLock(extendedLevel.NumberlessPlanetName);
                 }
                 else extendedLevel.IsRouteLocked = isLocked;
                 JLogHelper.LogInfo($"{extendedLevel.SelectableLevel.PlanetName} Locked: {extendedLevel.IsRouteLocked}");

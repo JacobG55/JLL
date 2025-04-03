@@ -1,5 +1,6 @@
 ﻿using JLL.API;
 using JLL.API.Compatability;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace JLL.Components
@@ -31,14 +32,14 @@ namespace JLL.Components
         {
             if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
             {
-                LLLHelper.LockExtendedLevel(sceneName, shouldUnlock);
+                LLLHelper.LockExtendedLevel(sceneName, !shouldUnlock);
             }
         }
         public void HideLevel(string sceneName)
         {
             if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
             {
-                LLLHelper.HideExtendedLevel(sceneName, shouldUnlock);
+                LLLHelper.HideExtendedLevel(sceneName, !shouldUnlock);
             }
         }
 

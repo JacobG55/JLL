@@ -20,8 +20,9 @@ namespace JLL.Components
 
         private static readonly int exitLayerMask = 2305;
 
-        public void Start()
+        public override void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
             exitColliders = exitTrigger.gameObject.GetComponents<Collider>();
             ToggleExitColliders(!disableExitTrigger);
         }

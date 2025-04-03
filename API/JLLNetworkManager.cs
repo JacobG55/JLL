@@ -22,7 +22,7 @@ namespace JLL.API
             if (DestroyTerrainObstacleAtPosition(pos, damage))
             {
                 JLogHelper.LogInfo($"Sending Terrain Obstacle RPC! {pos} {damage}", JLogLevel.Wesley);
-                BreakTerrainObstacleServerRpc(pos, damage, (int)GameNetworkManager.Instance.localPlayerController.playerClientId);
+                BreakTerrainObstacleServerRpc(pos, damage, GameNetworkManager.Instance.localPlayerController.Index());
             }
         }
 
@@ -69,7 +69,7 @@ namespace JLL.API
         private void BreakTerrainObstacleClientRpc(Vector3 pos, int damage, int playerWhoSent)
         {
             JLogHelper.LogInfo($"Received RPC! {pos} {damage} {playerWhoSent}", JLogLevel.Wesley);
-            if ((int)GameNetworkManager.Instance.localPlayerController.playerClientId != playerWhoSent)
+            if (GameNetworkManager.Instance.localPlayerController.Index() != playerWhoSent)
             {
                 DestroyTerrainObstacleAtPosition(pos, damage);
             }

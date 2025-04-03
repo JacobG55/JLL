@@ -12,7 +12,6 @@ namespace JLL.Patches
         public static void patchStart()
         {
             JLevelPropertyRegistry.RemoveLevelOverrides();
-            JLLExtentions.PlayerIndexes.Clear();
         }
     }
 }

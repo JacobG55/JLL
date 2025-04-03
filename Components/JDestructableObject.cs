@@ -59,8 +59,9 @@ namespace JLL.Components
         public float maxPitch = 1.0f;
         public AudioSource? audioSource;
 
-        public void Start()
+        public override void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
             currentHealth = maxHealth;
             JLogHelper.LogInfo($"{name} Set Health: {currentHealth}");
         }

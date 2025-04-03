@@ -62,7 +62,6 @@ namespace JLL.Patches
                 HudManagerPatch.customFilter.underwaterFilter.weight = 0f;
                 HudManagerPatch.customFilter = null;
             }
-            JLevelEventTriggers.EventTriggers = new List<JLevelEventTriggers>();
 
             JLevelPropertyRegistry.RemoveLevelOverrides();
         }

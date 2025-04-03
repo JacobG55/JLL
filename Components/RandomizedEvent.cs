@@ -40,9 +40,10 @@ namespace JLL.Components
                 return Weight;
             }
         }
-        
-        public void Start()
+
+        public override void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
             if (triggerOnStart && !(isNetworkSynced && !(IsHost || IsServer)))
             {
                 RollEvent();
