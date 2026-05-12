@@ -72,36 +72,5 @@ namespace JLLItemsModule.Components
         {
             return playerHeldBy != null && isHeld;
         }
-
-        public void DamageHolder(int damage)
-        {
-            if (IsBeingHeldByPlayer())
-            {
-                playerHeldBy.DamagePlayer(damage);
-            }
-        }
-
-        public void DestroyItemInHand()
-        {
-            if (IsBeingHeldByPlayer())
-            {
-                DestroyObjectInHand(playerHeldBy);
-            }
-        }
-
-        public void ForceDrop(bool dropAll)
-        {
-            if (IsBeingHeldByPlayer())
-            {
-                if (dropAll)
-                {
-                    playerHeldBy.DropAllHeldItemsAndSync();
-                }
-                else
-                {
-                    playerHeldBy.DiscardHeldObject();
-                }
-            }
-        }
     }
 }

@@ -32,7 +32,7 @@ namespace JLLItemsModule.Components
         public AudioSource? BoxAudio;
         public AudioClip? OpenBoxClip;
 
-        private PlayerControllerB previousPlayerHeldBy;
+        [HideInInspector] public PlayerControllerB previousPlayerHeldBy;
 
         public override void Start()
         {

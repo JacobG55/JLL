@@ -26,7 +26,7 @@ namespace JLLItemsModule.Components
 
         public Animator? triggerAnimator;
 
-        private PlayerControllerB? playerLastHeld;
+        [HideInInspector] public PlayerControllerB? playerLastHeld;
         private bool toggle = false;
 
         public enum InteractionType

@@ -88,9 +88,9 @@ namespace JLLItemsModule.Components
 
         private bool explodeOnThrow = false;
         private bool explodeOnDrop = false;
-        private bool wasThrown = false;
+        public bool wasThrown = false;
 
-        private PlayerControllerB? playerThrownBy;
+        [HideInInspector] public PlayerControllerB? playerThrownBy;
 
         public override void ItemActivate(bool used, bool buttonDown = true)
         {
@@ -297,14 +297,15 @@ namespace JLLItemsModule.Components
                 return;
             }
 
-            if (!StartOfRound.Instance.currentLevel.spawnEnemiesAndScrap && parentObject == FindObjectOfType<DepositItemsDesk>().deskObjectsContainer)
+            if (StartOfRound.Instance.currentLevel != null && !StartOfRound.Instance.currentLevel.spawnEnemiesAndScrap)
             {
-                if (playerThrownBy != null)
+                DepositItemsDesk desk = FindObjectOfType<DepositItemsDesk>();
+                if (desk != null && playerThrownBy != null && parentObject == desk.deskObjectsContainer)
                 {
                     playerThrownBy.activatingItem = false;
-                }
 
-                return;
+                    return;
+                }
             }
 
             itemAnimator?.SetTrigger("explode");
@@ -333,6 +334,7 @@ namespace JLLItemsModule.Components
             {
                 Landmine.SpawnExplosion(transform.position, false, killDistance, damageRange, nonLethalDamage, pushForce, goThroughCar: goThroughCar);
             }
+
             if (stunOnExplode)
             {
                 StunGrenadeItem.StunExplosion(transform.position, affectAudio, flashSeverityMultiplier, enemyStunTime, flashSeverityDistanceRolloff, isHeld, playerHeldBy, playerThrownBy);

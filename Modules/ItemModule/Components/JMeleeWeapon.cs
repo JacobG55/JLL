@@ -66,7 +66,7 @@ namespace JLLItemsModule.Components
         public AudioClip[] swingSFX;
         public AudioSource weaponAudio;
 
-        private PlayerControllerB previousPlayerHeldBy;
+        [HideInInspector] public PlayerControllerB previousPlayerHeldBy;
 
         public override void ItemActivate(bool used, bool buttonDown = true)
         {
