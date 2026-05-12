@@ -151,7 +151,7 @@ namespace JLL.API.LevelProperties
             foreach (EnemyPropertyOverride property in currentProperties.enemyPropertyOverrides)
             {
                 EnemyPropertyOverride og = new EnemyPropertyOverride();
-                EnemyType? target = GetRegisteredEnemy(property.enemyName);
+                EnemyType target = GetRegisteredEnemy(property.enemyName);
 
                 if (target != null)
                 {
@@ -183,7 +183,7 @@ namespace JLL.API.LevelProperties
 
             foreach (EnemyPropertyOverride property in original.enemyPropertyOverrides)
             {
-                EnemyType? target = GetRegisteredEnemy(property.enemyName);
+                EnemyType target = GetRegisteredEnemy(property.enemyName);
 
                 if (target != null)
                 {
@@ -201,7 +201,7 @@ namespace JLL.API.LevelProperties
             original = new JLevelPropertyEntry();
         }
 
-        public static EnemyType? GetRegisteredEnemy(string enemyName)
+        public static EnemyType GetRegisteredEnemy(string enemyName)
         {
             for (int i = 0; i < AllSortedEnemies.Count; i++)
             {

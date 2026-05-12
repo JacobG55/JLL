@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using JLL.API;
 using JLL.API.Compatability;
+using JLL.Components;
 using JLL.Patches;
 using JLL.ScriptableObjects;
 using System;
@@ -24,7 +25,7 @@ namespace JLL
     {
         private const string modGUID = "JacobG5.JLL";
         private const string modName = "JLL";
-        private const string modVersion = "1.9.4";
+        private const string modVersion = "1.10.1";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
@@ -37,13 +38,15 @@ namespace JLL
         public GameObject networkObject;
         public JNetworkPrefabSet JLLNetworkPrefabs;
 
+        internal GameObject ElevatorPrefab;
+
         public static ConfigEntry<JLogLevel> loggingLevel;
         public static ConfigEntry<bool> purgeWesley;
 
-        // Diversity
+        // Diversity 
         public static ConfigEntry<bool> disableCutscenes;
 
-        void Awake()
+        void Awake() 
         {
             if (Instance == null) Instance = this;
             JLLPrefabContainer = new GameObject("JLLPrefabContainer")
@@ -55,7 +58,19 @@ namespace JLL
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
             wesley = BepInEx.Logging.Logger.CreateLogSource("Wesley");
 
-            NetcodePatch(mls, Assembly.GetExecutingAssembly().GetTypes());
+            NetcodePatch(mls, [
+                typeof(JLLNetworkManager), 
+                typeof(DamageTriggerNetworking), 
+                typeof(ItemConsumer), 
+                typeof(JActionEvents), 
+                typeof(JBridgeTrigger), 
+                typeof(JClientSync), 
+                typeof(JDestructableObject), 
+                typeof(JPlayerInsideRegion), 
+                typeof(JTerminalController), 
+                typeof(RandomizedEvent), 
+                typeof(SeatController)
+            ]);
 
             loggingLevel = Config.Bind("Logging", "LoggingLevel", JLogLevel.User, "Changes the amount of logging JLL performs in it's scripts.");
             loggingLevel.SettingChanged += (obj, args) => JLogHelper.UpdateLogLevel();
@@ -66,8 +81,37 @@ namespace JLL
             JLLNetworkPrefabs.SetName = modName;
             JLLNetworkPrefabs.AddPrefabs(
                 new JNetworkPrefabSet.JIdentifiablePrefab { name = modName, prefab = networkObject = CreateNetworkPrefab(modName) },
-                new JNetworkPrefabSet.JIdentifiablePrefab { name = "EmptyPrefab", prefab = JNetworkPrefabSet.EmptyNetworkObject = CreateNetworkPrefab("EmptyPrefab") }
+                new JNetworkPrefabSet.JIdentifiablePrefab { name = "EmptyPrefab", prefab = JNetworkPrefabSet.EmptyNetworkObject = CreateNetworkPrefab("EmptyPrefab") },
+                new JNetworkPrefabSet.JIdentifiablePrefab { name = "ElevatorBody", prefab = ElevatorPrefab = CreateNetworkPrefab("JLLElevator") }
             );
+
+            /*
+            JElevatorBody elevatorBody = ElevatorPrefab.AddComponent<JElevatorBody>();
+            GameObject elevatorPhysicsBody = new("PhysicsRegion");
+            elevatorPhysicsBody.transform.SetParent(ElevatorPrefab.transform);
+
+            BoxCollider physicsBox = elevatorPhysicsBody.AddComponent<BoxCollider>();
+            physicsBox.isTrigger = true;
+            elevatorBody.PhysicsCollider = physicsBox;
+
+            BoxCollider floorCollider = elevatorPhysicsBody.AddComponent<BoxCollider>();
+            floorCollider.isTrigger = false;
+            elevatorBody.FloorCollider = floorCollider;
+
+            PlayerPhysicsRegion ppr = elevatorPhysicsBody.AddComponent<PlayerPhysicsRegion>();
+            ppr.parentNetworkObject = ElevatorPrefab.GetComponent<NetworkObject>();
+            ElevatorPrefab.AddComponent<Rigidbody>().isKinematic = true;
+            ppr.physicsTransform = ElevatorPrefab.transform;
+            ppr.physicsCollider = physicsBox;
+            ppr.itemDropCollider = physicsBox;
+            ppr.addPositionOffsetToItems = new(0, 0.2f, 0);
+            ppr.maxTippingAngle = 180;
+            ppr.allowDroppingItems = true;
+            elevatorBody.PhysicsRegion = ppr;
+
+            elevatorPhysicsBody.AddComponent<Rigidbody>().isKinematic = true;
+            */
+
             networkObject.AddComponent<JLLNetworkManager>();
             JNetworkPrefabSet.NetworkPrefabSets.Add(JLLNetworkPrefabs);
 
@@ -94,7 +138,8 @@ namespace JLL
                 typeof(MenuManagerPatch),
                 typeof(BreakerBoxPatch),
                 typeof(ItemDropshipPatch),
-                typeof(GameNetworkManagerPatch)
+                typeof(GameNetworkManagerPatch),
+                typeof(StormyWeatherPatch)
             );
 
             JFileHelper.LoadFilesInPlugins();

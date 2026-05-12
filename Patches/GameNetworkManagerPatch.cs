@@ -7,7 +7,7 @@ using UnityEngine;
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(GameNetworkManager))]
-    public class GameNetworkManagerPatch
+    internal static class GameNetworkManagerPatch
     {
         private static bool registeredPrefabs = false;
 
@@ -24,7 +24,12 @@ namespace JLL.Patches
 
         private static IEnumerator RegisterNetworkPrefabs()
         {
-            yield return new WaitUntil(() => JFileHelper.HaveJLLBundlesLoaded);
+            //yield return new WaitUntil(() => JFileHelper.HaveJLLBundlesLoaded);
+            while (!JFileHelper.HaveJLLBundlesLoaded)
+            {
+                JLogHelper.LogInfo($"{JFileHelper.JLLBundlesLoaded} {JFileHelper.LLLBundlesLoaded}");
+                yield return null;
+            }
             JNetworkPrefabSet.RegisterPrefabs();
         }
     }

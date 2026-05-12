@@ -17,7 +17,7 @@ namespace JLL.API
     {
         public readonly static List<AssetBundle> JLLBundles = new List<AssetBundle>();
 
-        private static bool JLLBundlesLoaded = false;
+        internal static bool JLLBundlesLoaded = false;
         internal static bool LLLBundlesLoaded = true;
 
         private static int filesRead = 0;
@@ -102,7 +102,8 @@ namespace JLL.API
 
         public static void LoadFilesInPlugins()
         {
-            if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader))
+            bool hasLLL = JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalLevelLoader);
+            if (hasLLL)
             {
                 JLogHelper.LogInfo("Linking to LLL", JLogLevel.Debuging);
                 LLLHelper.LinkBundlesLoadedEvent();
@@ -110,6 +111,7 @@ namespace JLL.API
 
             JLogHelper.LogInfo($"Searching for Bundles and JSONs....", JLogLevel.User);
             string[] files = Directory.GetFiles(Paths.PluginPath, "*.*", true ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+            int LLLBundles = 0;
 
             for (int x = 0; x < files.Length; x++)
             {
@@ -148,9 +150,16 @@ namespace JLL.API
                     AssetBundle bundle = AssetBundle.LoadFromFile(files[x]);
                     JLLBundles.Add(bundle);
                 }
+                else if (lower.EndsWith(".lethalbundle")) LLLBundles++;
             }
 
             JLogHelper.LogInfo($"Finished reading {filesRead} files.", JLogLevel.User);
+
+            if (hasLLL && LLLBundles == 0)
+            {
+                LLLBundlesLoaded = true;
+                JLogHelper.LogInfo($"Found 0 '.lethalbundle' files. Skipping LLL check.", JLogLevel.Debuging);
+            }
 
             JLLBundlesLoaded = true;
             SearchAllBundles();

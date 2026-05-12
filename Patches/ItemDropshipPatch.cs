@@ -6,7 +6,7 @@ using UnityEngine;
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(ItemDropship))]
-    internal class ItemDropshipPatch
+    internal static class ItemDropshipPatch
     {
         [HarmonyPatch("OpenShipDoorsOnServer")]
         [HarmonyPostfix]

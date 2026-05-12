@@ -4,9 +4,9 @@ using System;
 
 namespace JLL.API.Compatability
 {
-    public class LittleCompanyHelper
+    public static class LittleCompanyHelper
     {
-        public static void ApplyModification(PlayerControllerB target, int type, float multiplier = 1f, Action? onComplete = null)
+        public static void ApplyModification(PlayerControllerB target, int type, float multiplier = 1f, Action onComplete = null)
         {
             try
             {

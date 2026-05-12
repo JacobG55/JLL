@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace JLL.API.Compatability
 {
-    public class DiversityHelper
+    public static class DiversityHelper
     {
         public static void DrawFocus(PlayerControllerB player, bool beingUsed, Vector3 pos)
         {

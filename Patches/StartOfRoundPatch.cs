@@ -5,15 +5,16 @@ using UnityEngine;
 using System.Collections.Generic;
 using JLL.API.LevelProperties;
 using JLL.API;
+using System.Collections;
 
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(StartOfRound))]
-    internal class StartOfRoundPatch
+    internal static class StartOfRoundPatch
     {
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
-        public static void spawnNetworkManager(StartOfRound __instance)
+        public static void StartOfRound_Start(StartOfRound __instance)
         {
             if (__instance.IsHost || __instance.IsServer)
             {
@@ -22,12 +23,12 @@ namespace JLL.Patches
 
                 JLogHelper.LogInfo("JLL Network Manager Initialized.", JLogLevel.User);
             }
+            __instance.StartCoroutine(StoreDefaults());
         }
 
-        [HarmonyPatch("Awake")]
-        [HarmonyPostfix]
-        public static void FindAllEnemyTypes()
+        private static IEnumerator StoreDefaults()
         {
+            yield return new WaitForSeconds(0.5f);
             List<EnemyType> enemyTypes = new List<EnemyType>();
 
             SelectableLevel allEnemiesLevel = Object.FindObjectOfType<QuickMenuManager>().testAllEnemiesLevel;
@@ -64,6 +65,7 @@ namespace JLL.Patches
             }
 
             JLevelPropertyRegistry.RemoveLevelOverrides();
+            //JElevatorController.ActiveIndex = 0;
         }
 
         [HarmonyPatch("OnShipLandedMiscEvents")]

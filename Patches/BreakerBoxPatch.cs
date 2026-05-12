@@ -4,7 +4,7 @@ using JLL.Components;
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(BreakerBox))]
-    internal class BreakerBoxPatch
+    internal static class BreakerBoxPatch
     {
         [HarmonyPatch("SwitchBreaker")]
         [HarmonyPostfix]

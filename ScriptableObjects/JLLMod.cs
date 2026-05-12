@@ -10,11 +10,11 @@ namespace JLL.ScriptableObjects
     public class JLLMod : ScriptableObject
     {
         private static readonly List<JLLMod> m_ModList = new List<JLLMod>();
-        public static JLLMod? GetMod(string name, string author)
+        public static JLLMod GetMod(string name, string author)
         {
             return GetMod(author + "." + name);
         }
-        public static JLLMod? GetMod(string guid)
+        public static JLLMod GetMod(string guid)
         {
             for (int i = 0; i < m_ModList.Count; i++)
             {
@@ -87,7 +87,7 @@ namespace JLL.ScriptableObjects
             }
         }
 
-        public JNetworkPrefabSet? GetNetworkPrefabSet(string name)
+        public JNetworkPrefabSet GetNetworkPrefabSet(string name)
         {
             for (int i = 0; i < prefabSets.Length; i++)
             {

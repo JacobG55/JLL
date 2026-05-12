@@ -8,9 +8,9 @@ using UnityEngine;
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(HUDManager))]
-    public class HudManagerPatch
+    internal static class HudManagerPatch
     {
-        public static JWaterFilter? customFilter = null;
+        public static JWaterFilter customFilter = null;
 
         [HarmonyPatch("UnderwaterScreenFilters")]
         [HarmonyPrefix]

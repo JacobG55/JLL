@@ -7,7 +7,7 @@ using UnityEngine;
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(RoundManager))]
-    internal class RoundManagerPatch
+    internal static class RoundManagerPatch
     {
         [HarmonyPatch("FinishGeneratingLevel")]
         [HarmonyPrefix]
@@ -40,6 +40,7 @@ namespace JLL.Patches
                     }
                 }
             }
+
         }
     }
 }

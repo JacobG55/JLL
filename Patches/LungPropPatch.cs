@@ -5,9 +5,9 @@ using JLL.Components;
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(LungProp))]
-    internal class LungPropPatch
+    internal static class LungPropPatch
     {
-        private static EnemyType? VanillaRadMech;
+        private static EnemyType VanillaRadMech;
 
         [HarmonyPatch("EquipItem")]
         [HarmonyPrefix]

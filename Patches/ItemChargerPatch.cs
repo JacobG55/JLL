@@ -5,7 +5,7 @@ using JLL.Components;
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(ItemCharger))]
-    internal class ItemChargerPatch
+    internal static class ItemChargerPatch
     {
         [HarmonyPatch("chargeItemDelayed")]
         [HarmonyPrefix]

@@ -5,7 +5,7 @@ using JLL.API.LevelProperties;
 namespace JLL.Patches
 {
     [HarmonyPatch(typeof(MenuManager))]
-    internal class MenuManagerPatch
+    internal static class MenuManagerPatch
     {
         [HarmonyPatch("Start")]
         [HarmonyPrefix]

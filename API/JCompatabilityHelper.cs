@@ -25,7 +25,8 @@ namespace JLL.API
             SellBodies,
             FacilityMeltdown,
             WesleyMoons,
-            LethalMoonUnlocks
+            LethalMoonUnlocks,
+            PathfindingLib,
         }
 
         public static bool IsLoaded(CachedMods mod)
@@ -50,6 +51,7 @@ namespace JLL.API
                 CachedMods.FacilityMeltdown => IsLoaded("me.loaforc.facilitymeltdown"),
                 CachedMods.WesleyMoons => IsLoaded("JacobG5.WesleyMoons"),
                 CachedMods.LethalMoonUnlocks => IsLoaded("com.xmods.lethalmoonunlocks"),
+                CachedMods.PathfindingLib => IsLoaded("Zaggy1024.PathfindingLib"),
                 _ => false,
             };
         }

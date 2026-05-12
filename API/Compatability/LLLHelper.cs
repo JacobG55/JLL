@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 namespace JLL.API.Compatability
 {
-    public class LLLHelper
+    public static class LLLHelper
     {
         public static void LockExtendedLevel(string sceneName, bool isLocked = true)
         {
-            ExtendedLevel? extendedLevel = GetLevel(sceneName);
+            ExtendedLevel extendedLevel = GetLevel(sceneName);
             if (extendedLevel != null)
             {
                 if (JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.LethalMoonUnlocks))
@@ -23,7 +23,7 @@ namespace JLL.API.Compatability
 
         public static void HideExtendedLevel(string sceneName, bool isHidden = true)
         {
-            ExtendedLevel? extendedLevel = GetLevel(sceneName);
+            ExtendedLevel extendedLevel = GetLevel(sceneName);
             if (extendedLevel != null)
             {
                 extendedLevel.IsRouteHidden = isHidden;
@@ -31,8 +31,8 @@ namespace JLL.API.Compatability
             }
         }
 
-        public static ExtendedLevel? GetLevel(SelectableLevel level) => GetLevel(level.sceneName);
-        public static ExtendedLevel? GetLevel(string sceneName)
+        public static ExtendedLevel GetLevel(SelectableLevel level) => GetLevel(level.sceneName);
+        public static ExtendedLevel GetLevel(string sceneName)
         {
             foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
             {
@@ -44,7 +44,7 @@ namespace JLL.API.Compatability
             return null;
         }
 
-        public static ExtendedDungeonFlow? GetDungeon(DungeonFlow flow)
+        public static ExtendedDungeonFlow GetDungeon(DungeonFlow flow)
         {
             for (int i = 0; i < PatchedContent.ExtendedDungeonFlows.Count; i++)
             {
@@ -56,7 +56,7 @@ namespace JLL.API.Compatability
             return null;
         }
 
-        public static ExtendedItem? GetItem(Item item)
+        public static ExtendedItem GetItem(Item item)
         {
             for (int i = 0; i < PatchedContent.ExtendedItems.Count; i++)
             {
@@ -68,7 +68,7 @@ namespace JLL.API.Compatability
             return null;
         }
 
-        public static ExtendedEnemyType? GetEnemy(EnemyType enemy)
+        public static ExtendedEnemyType GetEnemy(EnemyType enemy)
         {
             for (int i = 0; i < PatchedContent.ExtendedEnemyTypes.Count; i++)
             {
@@ -82,7 +82,7 @@ namespace JLL.API.Compatability
 
         public static bool LevelHasTag(SelectableLevel level, string tag)
         {
-            ExtendedLevel? extended = GetLevel(level);
+            ExtendedLevel extended = GetLevel(level);
             if (extended != null)
             {
                 return extended.TryGetTag(tag);
@@ -92,7 +92,7 @@ namespace JLL.API.Compatability
 
         public static bool ItemHasTag(Item item, string tag)
         {
-            ExtendedItem? extended = GetItem(item);
+            ExtendedItem extended = GetItem(item);
             if (extended != null)
             {
                 return extended.TryGetTag(tag);
@@ -102,7 +102,7 @@ namespace JLL.API.Compatability
 
         public static bool EnemyHasTag(EnemyType enemy, string tag)
         {
-            ExtendedEnemyType? extended = GetEnemy(enemy);
+            ExtendedEnemyType extended = GetEnemy(enemy);
             if (extended != null)
             {
                 return extended.TryGetTag(tag);
@@ -112,7 +112,7 @@ namespace JLL.API.Compatability
 
         public static List<string> GetItemTags(Item item)
         {
-            ExtendedItem? extended = GetItem(item);
+            ExtendedItem extended = GetItem(item);
             if (extended != null)
             {
                 return GetExtendedTags(extended);
@@ -122,7 +122,7 @@ namespace JLL.API.Compatability
 
         public static List<string> GetLevelTags(SelectableLevel level)
         {
-            ExtendedLevel? extended = GetLevel(level);
+            ExtendedLevel extended = GetLevel(level);
             if (extended != null)
             {
                 return GetExtendedTags(extended);
@@ -142,7 +142,7 @@ namespace JLL.API.Compatability
 
         internal static bool ExtendedLevelFilters(LevelFilter levelFilter, SelectableLevel level)
         {
-            ExtendedLevel? extendedLevel = GetLevel(level);
+            ExtendedLevel extendedLevel = GetLevel(level);
 
             if (extendedLevel != null)
             {
@@ -155,7 +155,7 @@ namespace JLL.API.Compatability
 
         internal static bool ExtendedDungeonFilters(DungeonFilter dungeonFilter, DungeonFlow flow)
         {
-            ExtendedDungeonFlow? extendedDungeon = GetDungeon(flow);
+            ExtendedDungeonFlow extendedDungeon = GetDungeon(flow);
 
             if (extendedDungeon != null)
             {
@@ -171,7 +171,7 @@ namespace JLL.API.Compatability
 
         internal static bool ItemTagFilter(Item item, string[] contentTags, bool mustHaveAllTags)
         {
-            ExtendedItem? extendedItem = GetItem(item);
+            ExtendedItem extendedItem = GetItem(item);
 
             if (extendedItem != null)
             {

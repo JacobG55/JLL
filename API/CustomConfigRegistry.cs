@@ -135,7 +135,7 @@ namespace JLL.API
             ));
         }
 
-        public ConfigEntry<T>? GetConfigEntry<T>(string name)
+        public ConfigEntry<T> GetConfigEntry<T>(string name)
         {
             if (Configs.ContainsKey(name) && Configs[name].Key is ConfigEntry<T> Entry)
             {
@@ -146,7 +146,7 @@ namespace JLL.API
 
         public bool GetBool(string name)
         {
-            ConfigEntry<bool>? config = GetConfigEntry<bool>(name);
+            ConfigEntry<bool> config = GetConfigEntry<bool>(name);
             if (config != null)
             {
                 return config.Value;
@@ -156,7 +156,7 @@ namespace JLL.API
 
         public int GetInt(string name)
         {
-            ConfigEntry<int>? config = GetConfigEntry<int>(name);
+            ConfigEntry<int> config = GetConfigEntry<int>(name);
             if (config != null)
             {
                 return config.Value;
@@ -166,7 +166,7 @@ namespace JLL.API
 
         public float GetFloat(string name)
         {
-            ConfigEntry<float>? config = GetConfigEntry<float>(name);
+            ConfigEntry<float> config = GetConfigEntry<float>(name);
             if (config != null)
             {
                 return config.Value;
@@ -176,7 +176,7 @@ namespace JLL.API
 
         public string GetString(string name)
         {
-            ConfigEntry<string>? config = GetConfigEntry<string>(name);
+            ConfigEntry<string> config = GetConfigEntry<string>(name);
             if (config != null)
             {
                 return config.Value;

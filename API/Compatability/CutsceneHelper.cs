@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace JLL.API.Compatability
 {
-    public class CutsceneHelper
+    public static class CutsceneHelper
     {
         public static void StartCutscene(Transform cameraTrans, float length, bool allowDeath = true, bool allowMovement = false, float startTransition = 1, float endTransition = 1)
         {

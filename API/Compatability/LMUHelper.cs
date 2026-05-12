@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace JLL.API.Compatability
 {
-    public class LMUHelper
+    public static class LMUHelper
     {
         public static void ReleaseLock(string numberlessPlanetName) => UnlockManager.TryReleaseStoryLock(numberlessPlanetName);
 

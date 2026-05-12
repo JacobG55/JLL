@@ -5,14 +5,14 @@ using WeatherRegistry;
 
 namespace JLL.API.Compatability
 {
-    public class JWeatherRegistryHelper
+    public static class JWeatherRegistryHelper
     {
         public static bool HasCustomWeather(string name)
         {
             return GetCustomWeather(name) != null;
         }
 
-        public static Weather? GetCustomWeather(string name)
+        public static Weather GetCustomWeather(string name)
         {
             foreach (Weather weather in WeatherManager.Weathers)
             {
@@ -26,7 +26,7 @@ namespace JLL.API.Compatability
 
         public static void ChangeWeather(string weatherName, SelectableLevel level)
         {
-            Weather? weather = GetCustomWeather(weatherName);
+            Weather weather = GetCustomWeather(weatherName);
             if (weather != null)
             {
                 WeatherController.ChangeWeather(level, weather);
@@ -40,12 +40,12 @@ namespace JLL.API.Compatability
 
         public static List<string> GetCustomWeatherNames()
         {
-            return WeatherManager.Weathers.Select(weather => weather.name).ToList();
+            return WeatherManager.Weathers.Select(weather => weather.Name).ToList();
         }
 
         public static string GetCurrentWeatherName()
         {
-            return GetCurrentWeather().name;
+            return GetCurrentWeather().Name;
         }
 
         private static Weather GetCurrentWeather()
@@ -59,7 +59,7 @@ namespace JLL.API.Compatability
             Weather current = GetCurrentWeather();
 
             ImprovedWeatherEffect original = current.Effect;
-            WeatherEffect? weatherEffect = jWeatherOverride.getOverrideEffect(current.name);
+            WeatherEffect weatherEffect = jWeatherOverride.getOverrideEffect(current.Name);
 
             if (weatherEffect != null)
             {
@@ -86,7 +86,7 @@ namespace JLL.API.Compatability
             Weather current = GetCurrentWeather();
 
             ImprovedWeatherEffect original = current.Effect;
-            WeatherEffect? weatherEffect = jWeatherOverride.getOverrideEffect(current.name);
+            WeatherEffect weatherEffect = jWeatherOverride.getOverrideEffect(current.Name);
 
             if (weatherEffect != null)
             {

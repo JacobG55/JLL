@@ -1,10 +1,9 @@
 ﻿using LethalConfig;
 using LethalConfig.ConfigItems;
-using LethalConfig.ConfigItems.Options;
 
 namespace JLL.API.Compatability
 {
-    public class LethalConfigHelper
+    public static class LethalConfigHelper
     {
         internal static void CreateJLLModConfig()
         {
