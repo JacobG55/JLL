@@ -16,14 +16,14 @@ namespace JLL.Components
         [Tooltip("Event run after StartWaiting() is called by another event.")]
         public UnityEvent events = new UnityEvent();
         [Tooltip("Only gets triggered if a player is given on the StartWaiting() call.")]
-        public InteractEvent playerEvents = new InteractEvent();
+        public InteractEvent playerEvents = new();
 
-        private readonly List<QueuedEvent> queuedEvents = new List<QueuedEvent>();
-        private readonly List<QueuedEvent> expiredEvents = new List<QueuedEvent>();
+        private readonly List<QueuedEvent> queuedEvents = [];
+        private readonly List<QueuedEvent> expiredEvents = [];
 
         public class QueuedEvent
         {
-            public PlayerControllerB? target = null;
+            public PlayerControllerB target = null;
             public float timer;
         }
 
@@ -79,6 +79,18 @@ namespace JLL.Components
         {
             JLogHelper.LogInfo($"{name} started waiting {delaySeconds}", JLogLevel.Debuging);
             queuedEvents.Add(new QueuedEvent { timer = delaySeconds });
+        }
+
+        public void StartWaiting(float delay)
+        {
+            JLogHelper.LogInfo($"{name} started waiting {delay}", JLogLevel.Debuging);
+            queuedEvents.Add(new QueuedEvent { timer = delay });
+        }
+
+        public void StartWaiting(int delay)
+        {
+            JLogHelper.LogInfo($"{name} started waiting {delay}", JLogLevel.Debuging);
+            queuedEvents.Add(new QueuedEvent { timer = delay });
         }
 
         public void ClearEventQueue()

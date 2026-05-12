@@ -1,7 +1,7 @@
 ﻿using GameNetcodeStuff;
 using JLL.API;
+using JLL.API.Events;
 using System;
-using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -19,7 +19,13 @@ namespace JLL.Components
 
         [Header("Triggered by StartRandomPlayerEvent() using a random player in the lobby")]
         [Tooltip("Event run on a random player in the lobby after StartRandomPlayerEvent() is called by another event.")]
-        public InteractEvent RandomPlayerEvent = new InteractEvent();
+        public InteractEvent RandomPlayerEvent = new();
+
+        [Header("Triggered by StartRandomNumberEvent() generating a random number between X & Y")]
+        [Tooltip("Event run on all clients using a randomly generated number between two values.")]
+        public FloatEvent RandomNumberEvent = new();
+        [Tooltip("Event run on all clients using a randomly generated number between two values.")]
+        public IntEvent RandomRoundedNumberEvent = new();
 
         [Header("Advanced")]
         public bool isNetworkSynced = true;
@@ -27,8 +33,8 @@ namespace JLL.Components
         [Serializable]
         public class WeightedEvent : IWeightedItem
         {
-            public UnityEvent Event = new UnityEvent();
-            public InteractEvent PlayerEvent = new InteractEvent();
+            public UnityEvent Event = new();
+            public InteractEvent PlayerEvent = new();
 
             [Range(0f, 100f)]
             public int Weight = 20;
@@ -48,12 +54,6 @@ namespace JLL.Components
             {
                 RollEvent();
             }
-        }
-
-        private IEnumerator RollNextFixedUpdate()
-        {
-            yield return new WaitForFixedUpdate();
-            RollEvent();
         }
 
         public void RollEvent()
@@ -130,6 +130,25 @@ namespace JLL.Components
         private void RandomPlayerEventClientRpc(int playerId)
         {
             RandomPlayerEvent.Invoke(RoundManager.Instance.playersManager.allPlayerScripts[Math.Clamp(playerId, 0, RoundManager.Instance.playersManager.allPlayerScripts.Length-1)]);
+        }
+
+        public void StartRandomNumberEvent(Vector2 minMax)
+        {
+            RandomNumberEventServerRpc(minMax);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void RandomNumberEventServerRpc(Vector2 minMax)
+        {
+            if (minMax.x > minMax.y) return;
+            RandomNumberEventClientRpc(minMax.x == minMax.y ? minMax.x : UnityEngine.Random.Range(minMax.x, minMax.y));
+        }
+
+        [ClientRpc]
+        private void RandomNumberEventClientRpc(float number)
+        {
+            RandomNumberEvent.Invoke(number);
+            RandomRoundedNumberEvent.Invoke(Mathf.RoundToInt(number));
         }
     }
 }

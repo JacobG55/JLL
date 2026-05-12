@@ -35,16 +35,16 @@ namespace JLL.Components
 
         [Header("SFX")]
         public bool playNormalDamageSFX = true;
-        public AudioClip[] clips = new AudioClip[0];
-        public AudioSource[] sources = new AudioSource[0];
+        public AudioClip[] clips = [];
+        public AudioSource[] sources = [];
 
         [Header("Player")]
-        public InteractEvent OnPlayerDamaged = new InteractEvent();
+        public InteractEvent OnPlayerDamaged = new();
 
-        private List<PlayerControllerB> playersInside = new List<PlayerControllerB>();
-        private List<EnemyAI> creaturesInside = new List<EnemyAI>();
-        private List<VehicleController> vehiclesInside = new List<VehicleController>();
-        private List<IHittable> objectsInside = new List<IHittable>();
+        private List<PlayerControllerB> playersInside = [];
+        private List<EnemyAI> creaturesInside = [];
+        private List<VehicleController> vehiclesInside = [];
+        private List<IHittable> objectsInside = [];
 
         public void OnTriggerEnter(Collider collider)
         {

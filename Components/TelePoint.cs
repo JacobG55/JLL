@@ -24,26 +24,17 @@ namespace JLL.Components
         public float randomRange = 10f;
         public RandomTeleportRegion randomTeleportRegion = RandomTeleportRegion.Indoor;
 
-        private readonly List<TeleportEntry> TeleportPlayers = new List<TeleportEntry>();
-        private readonly List<TeleportEntry> Expired = new List<TeleportEntry>();
+        private readonly List<TeleportEntry> TeleportPlayers = [];
+        private readonly List<TeleportEntry> Expired = [];
 
-        private class TeleportEntry
+        private class TeleportEntry(PlayerControllerB player, float delay, bool random, Region region = Region.None)
         {
-            public PlayerControllerB player;
-            public float startTime;
-            public float delay;
+            public PlayerControllerB player = player;
+            public float startTime = Time.realtimeSinceStartup;
+            public float delay = delay;
 
-            public bool random;
-            public Region region;
-
-            public TeleportEntry(PlayerControllerB player, float delay, bool random, Region region = Region.None)
-            {
-                this.player = player;
-                startTime = Time.realtimeSinceStartup;
-                this.delay = delay;
-                this.random = random;
-                this.region = region;
-            }
+            public bool random = random;
+            public Region region = region;
 
             public bool Update(TelePoint telePoint)
             {
@@ -105,16 +96,16 @@ namespace JLL.Components
         public void TeleportPlayer(PlayerControllerB player)
         {
             PlayEffects(player);
-            TeleportPlayers.Add(new TeleportEntry(player, teleportDelay, false, region));
+            TeleportPlayers.Add(new(player, teleportDelay, false, region));
         }
 
         public void RandomTeleport(PlayerControllerB player)
         {
             PlayEffects(player);
-            TeleportPlayers.Add(new TeleportEntry(player, teleportDelay, true));
+            TeleportPlayers.Add(new(player, teleportDelay, true));
         }
 
-        private void PlayEffects(PlayerControllerB? player = null)
+        private void PlayEffects(PlayerControllerB player = null)
         {
             int[] ids = RoundManager.Instance.playersManager.allPlayerScripts.Select((x) => x.Index()).ToArray();
             JLogHelper.LogInfo(string.Join(", ", ids), JLogLevel.User);

@@ -8,7 +8,7 @@ namespace JLL.Components.Compats
     public class DiversityFocusPoint : MonoBehaviour, CompatibilityComponent
     {
         public float maxDistance = 4f;
-        private PlayerControllerB? player = null;
+        private PlayerControllerB player = null;
         private bool beingUsed = false;
 
         private static bool? Loaded = null;

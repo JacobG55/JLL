@@ -12,12 +12,12 @@ namespace JLL.Components
         public DamageTrigger DamageTrigger;
 
         [Tooltip("Warning!\nThe player will be dead at the time of this event. Be careful what you do when passing a player to another method that you don't break anything.")]
-        public InteractEvent PlayerKilled = new InteractEvent();
-        public UnityEvent EnemyKilled = new UnityEvent();
-        public UnityEvent VehicleKilled = new UnityEvent();
+        public InteractEvent PlayerKilled = new();
+        public UnityEvent EnemyKilled = new();
+        public UnityEvent VehicleKilled = new();
 
-        private readonly List<PlayerCorpse> playerCorpses = new List<PlayerCorpse>();
-        private readonly List<PlayerCorpse> removeCorpses = new List<PlayerCorpse>();
+        private readonly List<PlayerCorpse> playerCorpses = [];
+        private readonly List<PlayerCorpse> removeCorpses = [];
 
         private class PlayerCorpse
         {

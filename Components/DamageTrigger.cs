@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using static JLL.Components.EnemySpawner;
 
 namespace JLL.Components
 {
@@ -27,7 +26,7 @@ namespace JLL.Components
 
         [Header("NetworkHelper")]
         [Tooltip("This is only required to trigger some network related events.")]
-        public DamageTriggerNetworking? DamageTriggerNetworking;
+        public DamageTriggerNetworking DamageTriggerNetworking;
 
         [Header("Conditions")]
         [Tooltip("Damage when something enters a trigger collider")]
@@ -47,24 +46,24 @@ namespace JLL.Components
 
         [Header("Raycast")]
         public float raycastLength = 6f;
-        public Transform[] raycastDirections = new Transform[0];
+        public Transform[] raycastDirections = [];
         public LayerMask raycastMask = 1202194760;
 
         [Header("Targets")]
         public float damageMultiplier = 1f;
         [Tooltip("Players have 100 HP")]
-        public DamageTarget<PlayerControllerB> playerTargets = new DamageTarget<PlayerControllerB>();
+        public DamageTarget<PlayerControllerB> playerTargets = new();
         [Tooltip("Any instance of EnemyAICollisionDetect converted to EnemyAI")]
-        public DamageTarget<EnemyAI> enemyTargets = new DamageTarget<EnemyAI>();
+        public DamageTarget<EnemyAI> enemyTargets = new();
         [Tooltip("The Company Cruiser has 30 HP")]
-        public DamageTarget<VehicleController> vehicleTargets = new DamageTarget<VehicleController>();
+        public DamageTarget<VehicleController> vehicleTargets = new();
         [Tooltip("Anything that is damageable by shovels but not one of the things above")]
-        public DamageTarget<IHittable> objectTargets = new DamageTarget<IHittable>();
+        public DamageTarget<IHittable> objectTargets = new();
 
         [Header("SFX")]
         public bool playNormalDamageSFX = true;
-        public AudioClip[] clips = new AudioClip[0];
-        public AudioSource[] sources = new AudioSource[0];
+        public AudioClip[] clips = [];
+        public AudioSource[] sources = [];
 
         [Serializable]
         public class DamageTarget<T>

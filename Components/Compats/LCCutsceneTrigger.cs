@@ -18,7 +18,7 @@ namespace JLL.Components.Compats
         public float endTransition = 1f;
 
         [Header("Animator")]
-        public Animator? animator;
+        public Animator animator;
         public string triggerName = "Cutscene";
 
         private static bool? Loaded = null;

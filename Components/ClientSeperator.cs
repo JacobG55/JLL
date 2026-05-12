@@ -8,9 +8,9 @@ namespace JLL.Components
     public class ClientSeperator : MonoBehaviour
     {
         [Tooltip("Event run for the given client.")]
-        public InteractEvent eventsForClient = new InteractEvent();
+        public InteractEvent eventsForClient = new();
         [Tooltip("Event run for every client except the given one.")]
-        public UnityEvent eventsForEveryoneElse = new UnityEvent();
+        public UnityEvent eventsForEveryoneElse = new();
 
         public void SeperateClientEvents(PlayerControllerB player)
         {

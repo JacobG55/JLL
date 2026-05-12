@@ -26,7 +26,7 @@ namespace JLL.Components
         {
             if (RoundManager.Instance.IsServer || RoundManager.Instance.IsHost)
             {
-                GameObject? prefabToSpawn = null;
+                GameObject prefabToSpawn = null;
                 if (spawnRandom)
                 {
                     prefabToSpawn = PrefabSet.GetRandomPrefab();

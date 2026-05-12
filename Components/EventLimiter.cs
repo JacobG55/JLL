@@ -8,15 +8,15 @@ namespace JLL.Components
     {
         public int maxTriggers = 1;
 
-        public UnityEvent Event = new UnityEvent();
-        public InteractEvent PlayerEvent = new InteractEvent();
+        public UnityEvent Event = new();
+        public InteractEvent PlayerEvent = new();
 
         public void Trigger()
         {
             Trigger(null);
         }
 
-        public void Trigger(PlayerControllerB? player)
+        public void Trigger(PlayerControllerB player)
         {
             if (maxTriggers > 0)
             {

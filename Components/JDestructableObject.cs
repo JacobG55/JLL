@@ -22,9 +22,9 @@ namespace JLL.Components
         [Serializable]
         public class WeaponEventFilter
         {
-            public ItemFilter WeaponFilter = new ItemFilter();
+            public ItemFilter WeaponFilter = new();
             public float filteredDamageMultiplier = 1;
-            public InteractEvent FilteredDamageEvent = new InteractEvent();
+            public InteractEvent FilteredDamageEvent = new();
 
             public float GetMultiplier(GrabbableObject item, PlayerControllerB player)
             {
@@ -46,18 +46,18 @@ namespace JLL.Components
         }
 
         public GameObject DisableObject;
-        public UnityEvent DamageEvent = new UnityEvent();
-        public UnityEvent DestroyEvent = new UnityEvent();
+        public UnityEvent DamageEvent = new();
+        public UnityEvent DestroyEvent = new();
 
         [Header("FX")]
-        public ParticleSystem? destroyParticles;
-        public AudioClip[] damageClips = new AudioClip[0];
-        public AudioClip[] destroyClips = new AudioClip[0];
+        public ParticleSystem destroyParticles;
+        public AudioClip[] damageClips = [];
+        public AudioClip[] destroyClips = [];
         public float minVolume = 0.8f;
         public float maxVolume = 1.0f;
         public float minPitch = 0.6f;
         public float maxPitch = 1.0f;
-        public AudioSource? audioSource;
+        public AudioSource audioSource;
 
         public override void OnNetworkSpawn()
         {
@@ -71,7 +71,7 @@ namespace JLL.Components
             Hit(force, Vector3.zero);
         }
 
-        public bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
+        public bool Hit(int force, Vector3 hitDirection, PlayerControllerB playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
         {
             JLogHelper.LogInfo($"{name} Hit By Shovel:");
             DamageObjectServerRpc(playerWhoHit == null ? -1 : playerWhoHit.Index(), force);

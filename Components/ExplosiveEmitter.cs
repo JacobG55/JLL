@@ -17,7 +17,7 @@ namespace JLL.Components
         public float pushForce = 0;
         public bool goThroughCar = false;
 
-        public GameObject? overrideEffect = null;
+        public GameObject overrideEffect = null;
         public bool spawnParticles = true;
 
         [Header("Screen Shake Emmision")]

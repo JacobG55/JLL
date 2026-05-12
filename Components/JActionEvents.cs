@@ -10,23 +10,23 @@ namespace JLL.Components
     {
         [Header("Hittable")]
         public bool canBeHit = true;
-        public IntEvent OnHit = new IntEvent();
-        public InteractEvent OnPlayerHit = new InteractEvent();
+        public IntEvent OnHit = new();
+        public InteractEvent OnPlayerHit = new();
 
         [Header("Shockable")]
         public bool canBeShocked = false;
         public float shockDifficulty = 1.0f;
         public Vector3 shockPositionOffset = Vector3.zero;
-        public InteractEvent OnShock = new InteractEvent();
-        public UnityEvent OnStopShocking = new UnityEvent();
+        public InteractEvent OnShock = new();
+        public UnityEvent OnStopShocking = new();
 
         [Header("NoiseListener")]
         public bool isListening = false;
         public float minLoudness = 0.25f;
         public int minTimesInOneSpot = 0;
-        public UnityEvent SoundListenedEvent = new UnityEvent();
+        public UnityEvent SoundListenedEvent = new();
 
-        public bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
+        public bool Hit(int force, Vector3 hitDirection, PlayerControllerB playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
         {
             if (!canBeHit)
             {

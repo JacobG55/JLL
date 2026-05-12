@@ -9,23 +9,23 @@ namespace JLL.Components
     public class TriggerEnterEvent : MonoBehaviour
     {
         [FormerlySerializedAs("onAwake")]
-        public UnityEvent onEnabled = new UnityEvent();
+        public UnityEvent onEnabled = new();
 
         [Header("OnTriggerEnter")]
         [Tooltip("Event run when a GameObject enters the trigger")]
-        public ObjectEvent anythingEntered = new ObjectEvent();
+        public ObjectEvent anythingEntered = new();
 
         [Space(15)]
         [Tooltip("Event run when the entered collider is a Player")]
-        public InteractEvent playerEntered = new InteractEvent();
+        public InteractEvent playerEntered = new();
         [Tooltip("Event run when the entered collider is an Enemy")]
-        public EnemyEvent enemyEntered = new EnemyEvent();
+        public EnemyEvent enemyEntered = new();
         [Tooltip("Event run when the entered collider is a Vehicle")]
-        public VehicleEvent vehicleEntered = new VehicleEvent();
+        public VehicleEvent vehicleEntered = new();
         [Tooltip("Event run when the entered collider is damagable by weapons and not any of the above types")]
-        public DamageableEvent hittableEntered = new DamageableEvent();
+        public DamageableEvent hittableEntered = new();
         [Tooltip("Event run when the entered collider is not identified as any of the above things")]
-        public ObjectEvent unknownEntered = new ObjectEvent();
+        public ObjectEvent unknownEntered = new();
 
         public void OnEnable()
         {

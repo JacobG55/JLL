@@ -6,9 +6,9 @@ namespace JLL.Components.Helpers
 {
     public class MathHelper : MonoBehaviour
     {
-        public MathOperation[] Operations = new MathOperation[0];
-        public FloatEvent Value = new FloatEvent();
-        public IntEvent RoundedValue = new IntEvent();
+        public MathOperation[] Operations = [];
+        public FloatEvent Value = new();
+        public IntEvent RoundedValue = new();
 
         [Serializable]
         public class MathOperation

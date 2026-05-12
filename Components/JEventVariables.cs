@@ -12,33 +12,33 @@ namespace JLL.Components
     {
         private int targetIndex = 0;
         [Header("Number Variables (\"number\")")]
-        public List<JNumberEventVariable> numberVariables = new List<JNumberEventVariable>();
-        public UnityEvent allNumbersPassEvent = new UnityEvent();
+        public List<JNumberEventVariable> numberVariables = [];
+        public UnityEvent allNumbersPassEvent = new();
 
         [Header("Boolean Variables (\"bool\")")]
-        public List<JEventVariable<bool>> booleanVariables = new List<JEventVariable<bool>>();
-        public UnityEvent allTrueEvent = new UnityEvent();
+        public List<JEventVariable<bool>> booleanVariables = [];
+        public UnityEvent allTrueEvent = new();
 
         [Header("GameObjects")]
         public bool allowDuplicates = true;
 
         [Header("Player Variables (\"player\")")]
-        public List<JEventVariable<PlayerControllerB>> playerVariables = new List<JEventVariable<PlayerControllerB>>();
-        public InteractEvent playerEvent = new InteractEvent();
+        public List<JEventVariable<PlayerControllerB>> playerVariables = [];
+        public InteractEvent playerEvent = new();
 
         [Header("Enemy Variables (\"enemy\")")]
-        public List<JEventVariable<EnemyAI>> enemyVariables = new List<JEventVariable<EnemyAI>>();
-        public EnemyEvent enemyEvent = new EnemyEvent();
+        public List<JEventVariable<EnemyAI>> enemyVariables = [];
+        public EnemyEvent enemyEvent = new();
 
         [Header("GameObject Variables (\"object\")")]
-        public List<JEventVariable<GameObject>> gameObjectVariables = new List<JEventVariable<GameObject>>();
-        public ObjectEvent gameObjectEvent = new ObjectEvent();
+        public List<JEventVariable<GameObject>> gameObjectVariables = [];
+        public ObjectEvent gameObjectEvent = new();
 
         [Serializable]
         public class JEventVariable<T>
         {
             public T Variable;
-            public UnityEvent<T> Event = new UnityEvent<T>();
+            public UnityEvent<T> Event = new();
 
             public virtual void Trigger()
             {
@@ -58,9 +58,9 @@ namespace JLL.Components
         [Serializable]
         public class JNumberEventVariable : JEventVariable<float>
         {
-            public IntEvent RoundedEvent = new IntEvent();
-            public NumericFilter NumberCheck = new NumericFilter();
-            public UnityEvent FailedEvent = new UnityEvent();
+            public IntEvent RoundedEvent = new();
+            public NumericFilter NumberCheck = new();
+            public UnityEvent FailedEvent = new();
             public override void Trigger()
             {
                 if (NumberCheck.shouldCheck)

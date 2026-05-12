@@ -11,10 +11,10 @@ namespace JLL.Components
         public string modGUID = "JacobG5.JLL";
 
         [Tooltip("Disables GameObject when the select mod isn't loaded.")]
-        public GameObject? hideWhenMissing;
+        public GameObject hideWhenMissing;
 
-        public UnityEvent ModFound = new UnityEvent();
-        public UnityEvent ModMissing = new UnityEvent();
+        public UnityEvent ModFound = new();
+        public UnityEvent ModMissing = new();
 
         void Start()
         {

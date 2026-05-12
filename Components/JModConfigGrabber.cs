@@ -13,20 +13,20 @@ namespace JLL.Components
         public string modName = "";
 
         private string modGUID;
-        private CustomConfigEntry? modEntry;
+        private CustomConfigEntry modEntry;
 
         [FormerlySerializedAs("checkAllOnAwake")]
         public bool checkAllOnEnable = true;
 
         [Header("Mod Properties")]
-        public PropertyCheck<bool, CheckFilter>[] BoolChecks = new PropertyCheck<bool, CheckFilter>[0];
-        public PropertyCheck<int, IntFilter>[] IntChecks = new PropertyCheck<int, IntFilter>[0];
-        public PropertyCheck<float, NumericFilter>[] FloatChecks = new PropertyCheck<float, NumericFilter>[0];
-        public PropertyCheck<string, NameFilter>[] StringChecks = new PropertyCheck<string, NameFilter>[0];
+        public PropertyCheck<bool, CheckFilter>[] BoolChecks = [];
+        public PropertyCheck<int, IntFilter>[] IntChecks = [];
+        public PropertyCheck<float, NumericFilter>[] FloatChecks = [];
+        public PropertyCheck<string, NameFilter>[] StringChecks = [];
 
         [Header("Check All Properties Result")]
-        public UnityEvent CheckSuccess = new UnityEvent();
-        public UnityEvent CheckFailure = new UnityEvent();
+        public UnityEvent CheckSuccess = new();
+        public UnityEvent CheckFailure = new();
 
         [Serializable]
         public class PropertyCheck<T, F> where F : JFilterProperty<T>

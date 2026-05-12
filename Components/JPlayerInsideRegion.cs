@@ -9,7 +9,7 @@ namespace JLL.Components
 {
     public class JPlayerInsideRegion : NetworkBehaviour
     {
-        public InteractEvent PlayerEnterEvent = new InteractEvent();
+        public InteractEvent PlayerEnterEvent = new();
 
         [Header("Chance Event")]
         [Range(0, 100)]
@@ -17,16 +17,16 @@ namespace JLL.Components
         public float chanceInterval = 1f;
         private float timeAtLastRoll = 0f;
 
-        public UnityEvent ChanceEvent = new UnityEvent();
+        public UnityEvent ChanceEvent = new();
 
         [Header("Limit Triggers")]
         public bool limitEventTriggers = true;
         public int maxEventTriggers = 1;
         private int eventTriggers = 0;
 
-        private readonly List<int> playersInside = new List<int>();
-        private readonly List<int> foundInside = new List<int>();
-        private readonly List<int> markRemoval = new List<int>();
+        private readonly List<int> playersInside = [];
+        private readonly List<int> foundInside = [];
+        private readonly List<int> markRemoval = [];
 
         public void OnTriggerStay(Collider collider)
         {

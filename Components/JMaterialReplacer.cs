@@ -5,7 +5,7 @@ namespace JLL.Components
 {
     public class JMaterialReplacer : MonoBehaviour
     {
-        public MaterialReplacement[] replacements;
+        public MaterialReplacement[] replacements = [];
         public bool searchChildren = true;
         public bool triggerPostDunGen = false;
 

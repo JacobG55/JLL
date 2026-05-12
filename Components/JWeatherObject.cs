@@ -10,7 +10,7 @@ namespace JLL.Components
     public class JWeatherObject : MonoBehaviour
     {
         public bool isWhitelist = true;
-        public LevelWeatherType[] AllowedWeathers = new LevelWeatherType[0];
+        public LevelWeatherType[] AllowedWeathers = [];
 
         [Header("Targets ")]
         public GameObject activeObject;
@@ -18,11 +18,11 @@ namespace JLL.Components
         public GameObject inverseObject;
 
         [Header("Event Triggers")]
-        public UnityEvent onActivate = new UnityEvent();
-        public UnityEvent onDeactivate = new UnityEvent();
+        public UnityEvent onActivate = new();
+        public UnityEvent onDeactivate = new();
 
         [Header("Weather IDs (For Modded Weathers)")]
-        public string[] WeatherStrings = new string[0];
+        public string[] WeatherStrings = [];
 
         public void Start()
         {

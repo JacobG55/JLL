@@ -7,11 +7,11 @@ namespace JLL.Components
 {
     public class ItemConsumer : NetworkBehaviour
     {
-        public Item[] validItems = new Item[0];
+        public Item[] validItems = [];
         public bool checkExact = false;
-        public ItemFilter.Properties[] validItemFilters = new ItemFilter.Properties[0];
+        public ItemFilter.Properties[] validItemFilters = [];
 
-        public InteractEvent OnSuccess = new InteractEvent();
+        public InteractEvent OnSuccess = new();
         public bool runEventOnAllClients = true;
 
         public void CheckHeldItem(PlayerControllerB player)
@@ -57,7 +57,8 @@ namespace JLL.Components
             PlayerControllerB player = RoundManager.Instance.playersManager.allPlayerScripts[playerWhoSent];
             bool isLocalPlayer = player.IsLocalPlayer();
 
-            if (isLocalPlayer) player.DestroyItemInSlotAndSync(player.currentItemSlot);
+            JLogHelper.LogInfo($"Destroying Item in {player.playerUsername} {playerWhoSent} slot: {player.currentItemSlot}", JLogLevel.Debuging);
+            player.DestroyItemInSlot(player.currentItemSlot);
 
             if (runEventOnAllClients || isLocalPlayer)
             {

@@ -8,8 +8,8 @@ namespace JLL.Components
     public class JTerminalController : NetworkBehaviour
     {
         public int transactionAmount = 200;
-        public UnityEvent TransactionSuccess = new UnityEvent();
-        public UnityEvent TransactionFailed = new UnityEvent();
+        public UnityEvent TransactionSuccess = new();
+        public UnityEvent TransactionFailed = new();
 
         public void AwardCredits(int amount)
         {

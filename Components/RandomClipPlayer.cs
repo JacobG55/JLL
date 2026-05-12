@@ -8,7 +8,7 @@ namespace JLL.Components
     {
         public AudioSource audioSource;
 
-        public WeightedAudioClip[] weightedClips = new WeightedAudioClip[1] { new WeightedAudioClip() { Weight = 20 } };
+        public WeightedAudioClip[] weightedClips = [new() { Weight = 20 }];
 
         public float minVolume = 0.8f;
         public float maxVolume = 1.0f;

@@ -10,14 +10,14 @@ namespace JLL.Components
 {
     public class JWeatherOverride : MonoBehaviour
     {
-        public static JWeatherOverride? Instance;
+        public static JWeatherOverride Instance;
 
         [Header("Overrides")]
-        public WeatherEffect[] overrideEffects = new WeatherEffect[0];
+        public WeatherEffect[] overrideEffects = [];
 
         [Header("Foggy Weather")]
-        public LocalVolumetricFog[] foggyWeatherVolumes = new LocalVolumetricFog[0];
-        public Volume[] foggyVolumes = new Volume[0];
+        public LocalVolumetricFog[] foggyWeatherVolumes = [];
+        public Volume[] foggyVolumes = [];
 
         [Header("Debug")]
         public float overrideDelay = 4f;
@@ -25,7 +25,7 @@ namespace JLL.Components
         public void Start()
         {
             JLogHelper.LogInfo("Weather Override Start", JLogLevel.User);
-            System.Random random = new System.Random(StartOfRound.Instance.randomMapSeed + 101);
+            System.Random random = new(StartOfRound.Instance.randomMapSeed + 101);
 
             foreach (WeatherEffect effect in overrideEffects)
             {
@@ -53,7 +53,7 @@ namespace JLL.Components
             StartCoroutine(OverrideWeather());
         }
 
-        public WeatherEffect? getOverrideEffect(string original)
+        public WeatherEffect getOverrideEffect(string original)
         {
             foreach (WeatherEffect effect in overrideEffects)
             {
@@ -83,7 +83,7 @@ namespace JLL.Components
             if (StartOfRound.Instance.currentLevel.currentWeather != LevelWeatherType.None)
             {
                 WeatherEffect original = TimeOfDay.Instance.effects[(int)StartOfRound.Instance.currentLevel.currentWeather];
-                WeatherEffect? weatherEffect = getOverrideEffect(original.name);
+                WeatherEffect weatherEffect = getOverrideEffect(original.name);
 
                 if (weatherEffect != null)
                 {
@@ -160,7 +160,7 @@ namespace JLL.Components
             if (StartOfRound.Instance.currentLevel.currentWeather != LevelWeatherType.None)
             {
                 WeatherEffect original = TimeOfDay.Instance.effects[(int)StartOfRound.Instance.currentLevel.currentWeather];
-                WeatherEffect? weatherEffect = getOverrideEffect(original.name);
+                WeatherEffect weatherEffect = getOverrideEffect(original.name);
 
                 if (weatherEffect != null)
                 {

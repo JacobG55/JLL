@@ -15,8 +15,8 @@ namespace JLL.Components
 
         public float bridgeRegenerationRate = 0.2f;
 
-        private readonly List<PlayerControllerB> playersOnBridge = new List<PlayerControllerB>();
-        private readonly List<VehicleController> cruisersOnBridge = new List<VehicleController>();
+        private readonly List<PlayerControllerB> playersOnBridge = [];
+        private readonly List<VehicleController> cruisersOnBridge = [];
 
         public AudioSource bridgeAudioSource;
 

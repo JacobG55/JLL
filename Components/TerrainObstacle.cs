@@ -11,15 +11,15 @@ namespace JLL.Components
 
         [Header("FX")]
         public GameObject breakFX;
-        private GameObject? oldBreakFX;
-        public AudioClip[] clips = new AudioClip[0];
+        private GameObject oldBreakFX;
+        public AudioClip[] clips = [];
 
         [Header("Collision Types")]
         public bool detectTriggers = true;
         public bool detectColliders = true;
 
-        public UnityEvent OnDamage = new UnityEvent();
-        public UnityEvent OnDestroy = new UnityEvent();
+        public UnityEvent OnDamage = new();
+        public UnityEvent OnDestroy = new();
 
         public void OnTriggerEnter(Collider other)
         {

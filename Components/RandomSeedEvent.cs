@@ -14,13 +14,13 @@ namespace JLL.Components
         [FormerlySerializedAs("rollOnStart")]
         public bool rollOnDungeonLoad = true;
 
-        public WeightedPosEvent[] Events = new WeightedPosEvent[] { new WeightedPosEvent() };
+        public WeightedPosEvent[] Events = [new()];
 
         [Serializable]
         public class WeightedPosEvent : IWeightedItem
         {
-            public TransformMove[] MoveObjects = new TransformMove[0];
-            public UnityEvent Event = new UnityEvent();
+            public TransformMove[] MoveObjects = [];
+            public UnityEvent Event = new();
 
             [Range(0f, 100f)]
             public int Weight = 20;
@@ -44,7 +44,7 @@ namespace JLL.Components
 
         public void PostDungeonGeneration()
         {
-            Random ??= new System.Random(RoundManager.Instance.playersManager.randomMapSeed + relativeSeed);
+            Random ??= new(RoundManager.Instance.playersManager.randomMapSeed + relativeSeed);
             if (rollOnDungeonLoad)
             {
                 Roll();

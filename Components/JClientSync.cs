@@ -13,18 +13,18 @@ namespace JLL.Components
         [SerializeField]
         public JFilter hostFilter;
         public bool runFilterOnStart = false;
-        public UnityEvent SyncedFilterSuccess = new UnityEvent();
-        public UnityEvent SyncedFilterFailure = new UnityEvent();
+        public UnityEvent SyncedFilterSuccess = new();
+        public UnityEvent SyncedFilterFailure = new();
 
         [Header("Host Only")]
         public bool runHostEventOnStart = false;
-        public UnityEvent hostEvent = new UnityEvent();
-        public InteractEvent hostPlayerEvent = new InteractEvent();
+        public UnityEvent hostEvent = new();
+        public InteractEvent hostPlayerEvent = new();
 
         [Header("Synced")]
         public bool runSyncedEventOnStart = false;
-        public UnityEvent syncedEvent = new UnityEvent();
-        public InteractEvent syncedPlayerEvent = new InteractEvent();
+        public UnityEvent syncedEvent = new();
+        public InteractEvent syncedPlayerEvent = new();
 
         public override void OnNetworkSpawn()
         {

@@ -16,7 +16,7 @@ namespace JLL.Components
         [Tooltip("When left empty will default to this gameobject.")]
         public Transform PropContainer;
 
-        public SpawnableProp[] spawnableProps = new SpawnableProp[1] { new SpawnableProp() };
+        public SpawnableProp[] spawnableProps = [new()];
 
         public NavMeshToRebake rebakeNavMesh = NavMeshToRebake.None;
         public NavMeshSurface[] rebakeSurfaces;

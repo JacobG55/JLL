@@ -8,14 +8,14 @@ namespace JLL.Components
     {
         public InteractTrigger seatTrigger;
         public InteractTrigger exitTrigger;
-        private Collider[] exitColliders = new Collider[0];
+        private Collider[] exitColliders = [];
 
-        public Transform[] exitPoints = new Transform[0];
+        public Transform[] exitPoints = [];
         public bool disableExitTrigger = true;
 
         public AudioClip sitDown;
 
-        [HideInInspector] public PlayerControllerB? currentPassenger;
+        [HideInInspector] public PlayerControllerB currentPassenger;
         [HideInInspector] public bool localPlayerInSeat = false;
 
         private static readonly int exitLayerMask = 2305;

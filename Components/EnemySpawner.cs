@@ -3,6 +3,8 @@ using JLL.API.Events;
 using JLL.API.LevelProperties;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
@@ -14,7 +16,7 @@ namespace JLL.Components
         [Tooltip("Determines weather to spawn a random enemy from the pool or to spawn the specified type")]
         public bool spawnRandom = false;
         public RotationType spawnRotation = RotationType.ObjectRotation;
-        public List<WeightedEnemyRefrence> randomPool = new List<WeightedEnemyRefrence>();
+        public List<WeightedEnemyRefrence> randomPool = [];
 
         [Serializable]
         public class WeightedEnemyRefrence
@@ -27,10 +29,10 @@ namespace JLL.Components
         }
 
         public string enemyName = "";
-        public EnemyType? type;
+        public EnemyType type;
 
         [Tooltip("Ran after an enemy spawns. Enemy provided is the one that was just spawned.")]
-        public EnemyEvent SpawnedEvent = new EnemyEvent();
+        public EnemyEvent SpawnedEvent = new();
 
         [Header("NavMesh")]
         [Tooltip("The max distance from this transform that a navmesh will be found")]
@@ -40,6 +42,7 @@ namespace JLL.Components
         [FormerlySerializedAs("spawnOnAwake")]
         public bool spawnOnEnable = false;
         public bool checkRegistry = true;
+        public bool spawnNests = true;
 
         public bool respectEnemyCap = false;
         public PowerCap respectPowerCap = PowerCap.None;
@@ -83,7 +86,7 @@ namespace JLL.Components
                     {
                         if (!string.IsNullOrEmpty(randomPool[i].enemyName))
                         {
-                            EnemyType? type = JLevelPropertyRegistry.GetRegisteredEnemy(randomPool[i].enemyName);
+                            EnemyType type = JLevelPropertyRegistry.GetRegisteredEnemy(randomPool[i].enemyName);
                             if (type != null) randomPool[i].enemyType = type;
                         }
                         else if (randomPool[i].enemyType != null)
@@ -139,7 +142,7 @@ namespace JLL.Components
         {
             if (RoundManager.Instance.IsHost || RoundManager.Instance.IsServer)
             {
-                EnemyType? spawn;
+                EnemyType spawn;
 
                 if (spawnRandom)
                 {
@@ -168,6 +171,19 @@ namespace JLL.Components
                         bool flag;
                         if ((flag = NavMesh.SamplePosition(pos, out NavMeshHit hit, navMeshRange, NavMesh.AllAreas)) || navMeshRange < 0)
                         {
+                            if (spawnNests && spawn.nestSpawnPrefab != null && spawn.requireNestObjectsToSpawn)
+                            {
+                                if (spawn.isOutsideEnemy && !HasNest(spawn))
+                                {
+                                    JLogHelper.LogInfo($"({name}) Spawning Missing Outside Nest for: {spawn.enemyName}");
+
+                                    RoundManager.Instance.SpawnNestObjectForOutsideEnemy(spawn, new System.Random());
+
+                                    RoundManager.Instance.SyncNestSpawnObjectsOrderServerRpc(
+                                        RoundManager.Instance.enemyNestSpawnObjects.Select<EnemyAINestSpawnObject, NetworkObjectReference>(nest => nest.GetComponent<NetworkObject>()).ToArray());
+                                }
+                            }
+
                             JLogHelper.LogInfo($"({name}) Spawning: {spawn.enemyName} at {pos}");
                             GameObject obj = RoundManager.Instance.SpawnEnemyGameObject(flag ? hit.position : pos, GetRot(spawnRotation, transform.transform.eulerAngles.y), 0, spawn);
                             if (obj.TryGetComponent(out EnemyAI enemy))
@@ -186,6 +202,16 @@ namespace JLL.Components
                     JLogHelper.LogWarning($"({name}) Enemy Spawner tried to spawn a null EnemyType!");
                 }
             }
+        }
+
+        private bool HasNest(EnemyType enemyType)
+        {
+            foreach (EnemyAINestSpawnObject nest in RoundManager.Instance.enemyNestSpawnObjects)
+            {
+                if (nest == null) continue;
+                if (nest.enemyType == enemyType) return true;
+            }
+            return false;
         }
 
         private int GetWeightedIndex()
