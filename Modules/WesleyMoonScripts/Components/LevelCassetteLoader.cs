@@ -104,10 +104,12 @@ namespace WesleyMoonScripts.Components
             {
                 WesleyScripts.Instance.mls.LogInfo($"Attempting to play video.");
                 screenPlayer.Stop();
+                screenPlayer.EnableAudioTrack(0, true);
+                screenPlayer.SetTargetAudioSource(0, audioPlayer);
+
                 screenPlayer.clip = cassette.Video;
                 screenPlayer.Play();
                 tapeLength = (float)cassette.Video.length + tapeEndOffset;
-
             }
 
             cassette.AudioLog?.Play();
@@ -152,12 +154,14 @@ namespace WesleyMoonScripts.Components
                 unlockedLevelName = string.Empty;
             }
             OnTapeFinished.Invoke(lastPlayerUsed);
+            if (screenPlayer == null) return;
             if (awakeClip != null)
             {
+                screenPlayer.Stop();
                 screenPlayer.clip = awakeClip;
                 screenPlayer.Play();
             }
-            if (TapeFinishedEvents != null && screenPlayer != null && screenPlayer.clip != null)
+            if (TapeFinishedEvents != null && screenPlayer.clip != null)
             {
                 foreach (TapeFinishedEvent tapeEvent in TapeFinishedEvents)
                 {

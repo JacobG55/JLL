@@ -4,7 +4,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using JLL.API;
 using System;
-using System.Reflection;
+using WesleyMoonScripts.Components;
 using WesleyMoonScripts.Patches;
 using WesleyMoonScripts.Patches.ReLocker;
 
@@ -22,7 +22,7 @@ namespace WesleyMoonScripts
     {
         private const string modGUID = "JacobG5.WesleyMoonScripts";
         private const string modName = "WesleyMoonScripts";
-        private const string modVersion = "1.1.2";
+        private const string modVersion = "1.1.7";
 
         public static WesleyScripts Instance;
 
@@ -40,7 +40,7 @@ namespace WesleyMoonScripts
 
             mls = BepInEx.Logging.Logger.CreateLogSource(modGUID);
 
-            JLL.JLL.NetcodePatch(mls, Assembly.GetExecutingAssembly().GetTypes());
+            JLL.JLL.NetcodePatch(mls, new Type[] { typeof(HorrorEvent), typeof(ItemShop), typeof(LevelCassetteLoader), typeof(MicBombItem), typeof(Mortor) });
 
             WesleyPresent = JCompatabilityHelper.IsLoaded(JCompatabilityHelper.CachedMods.WesleyMoons);
 

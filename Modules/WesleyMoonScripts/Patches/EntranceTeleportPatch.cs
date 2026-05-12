@@ -9,11 +9,11 @@ namespace WesleyMoonScripts.Patches
     {
         [HarmonyPatch("TeleportPlayerClientRpc")]
         [HarmonyPostfix]
-        public static void patchTeleportPlayerClient(AudioSource ___exitPointAudio)
+        public static void patchTeleportPlayerClient(EntranceTeleport __instance)
         {
-            if (___exitPointAudio != null)
+            if (__instance.exitScript != null)
             {
-                if (___exitPointAudio.TryGetComponent(out ExitDoorEffects exitFX))
+                if (__instance.exitScript.TryGetComponent(out ExitDoorEffects exitFX))
                 {
                     exitFX.PlayExitFX();
                 }
